@@ -27,6 +27,7 @@ export const Badge: React.FC<BadgeProps> = ({
     <span
       className={cn(
         'inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full border',
+        'animate-fade-in transition-all duration-300 hover:shadow-subtle hover:-translate-y-[1px]',
         variants[variant],
         className,
       )}

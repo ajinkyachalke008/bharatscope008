@@ -14,7 +14,7 @@ export const Header: React.FC = () => {
   }, []);
 
   return (
-    <header className="h-14 bg-monitor-surface/90 backdrop-blur-xl border-b border-monitor-border flex items-center px-4 justify-between z-50">
+    <header className="h-14 bg-monitor-surface/90 backdrop-blur-xl border-b border-monitor-border flex items-center px-4 justify-between z-50 animate-slide-down shadow-subtle">
       <div className="flex items-center gap-3">
         <button
           onClick={toggleSidebar}

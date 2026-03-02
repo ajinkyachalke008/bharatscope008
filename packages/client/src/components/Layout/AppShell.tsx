@@ -11,7 +11,7 @@ interface AppShellProps {
 
 export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden">
+    <div className="h-screen w-screen flex flex-col overflow-hidden animate-fade-in">
       <Header />
       <div className="flex-1 flex overflow-hidden">
         <Sidebar />

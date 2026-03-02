@@ -26,7 +26,7 @@ export const Sidebar: React.FC = () => {
       )}
     >
       <nav className="flex-1 py-4 space-y-1 px-2">
-        {NAV_ITEMS.map((item) => {
+        {NAV_ITEMS.map((item, index) => {
           const Icon = item.icon;
           const isActive = activePage === item.id;
           const alertCount = item.id === 'feeds' ? alerts.length : 0;
@@ -35,11 +35,12 @@ export const Sidebar: React.FC = () => {
             <button
               key={item.id}
               onClick={() => setActivePage(item.id)}
+              style={{ animationDelay: `${index * 0.05}s` }}
               className={cn(
-                'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium',
+                'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 text-sm font-medium animate-slide-in opacity-0 [animation-fill-mode:forwards]',
                 isActive
-                  ? 'bg-monitor-accent/15 text-monitor-accent border border-monitor-accent/30'
-                  : 'text-gray-400 hover:text-gray-200 hover:bg-monitor-surface2',
+                  ? 'bg-monitor-accent/15 text-monitor-accent border border-monitor-accent/30 shadow-subtle'
+                  : 'text-gray-400 hover:text-gray-200 hover:bg-monitor-surface2 hover:-translate-y-0.5',
               )}
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
