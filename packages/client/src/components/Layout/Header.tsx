@@ -25,8 +25,8 @@ export const Header: React.FC = () => {
         <div className="flex items-center gap-2">
           <Globe className="w-6 h-6 text-monitor-accent" />
           <h1 className="text-lg font-bold tracking-tight">
-            <span className="text-monitor-accent">WORLD</span>
-            <span className="text-gray-300">MONITOR</span>
+            <span className="text-monitor-accent">BHARAT</span>
+            <span className="text-gray-300">SCOPE</span>
           </h1>
         </div>
         <Badge variant="info" className="hidden sm:inline-flex">

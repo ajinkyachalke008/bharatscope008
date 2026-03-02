@@ -565,7 +565,7 @@ export class InsightsPanel extends Panel {
   private renderWorldBrief(brief: string): string {
     return `
       <div class="insights-brief">
-        <div class="insights-section-title">${SITE_VARIANT === 'tech' ? '🚀 TECH BRIEF' : '🌍 WORLD BRIEF'}</div>
+        <div class="insights-section-title">${SITE_VARIANT === 'tech' ? '🚀 TECH BRIEF' : '🌍 BHARAT BRIEF'}</div>
         <div class="insights-brief-text">${escapeHtml(brief)}</div>
       </div>
     `;
@@ -677,16 +677,15 @@ export class InsightsPanel extends Panel {
           <span class="insight-stat-value">${fastMoving}</span>
           <span class="insight-stat-label">Fast-moving</span>
         </div>
-        ${
-          alerts > 0
-            ? `
+        ${alerts > 0
+        ? `
         <div class="insight-stat alert">
           <span class="insight-stat-value">${alerts}</span>
           <span class="insight-stat-label">Alerts</span>
         </div>
         `
-            : ''
-        }
+        : ''
+      }
       </div>
     `;
   }

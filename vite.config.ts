@@ -65,13 +65,13 @@ const VARIANT_META: Record<
   }
 > = {
   full: {
-    title: 'World Monitor - Real-Time Global Intelligence Dashboard',
+    title: 'Bharat Scope - Global Situation with AI Insights',
     description:
       'Real-time global intelligence dashboard with live news, markets, military tracking, infrastructure monitoring, and geopolitical data. OSINT in one view.',
     keywords:
       'global intelligence, geopolitical dashboard, world news, market data, military bases, nuclear facilities, undersea cables, conflict zones, real-time monitoring, situation awareness, OSINT, flight tracking, AIS ships, earthquake monitor, protest tracker, power outages, oil prices, government spending, polymarket predictions',
     url: 'https://worldmonitor.app/',
-    siteName: 'World Monitor',
+    siteName: 'Bharat Scope',
     shortName: 'WorldMonitor',
     subject: 'Real-Time Global Intelligence and Situation Awareness',
     classification: 'Intelligence Dashboard, OSINT Tool, News Aggregator',
@@ -231,7 +231,7 @@ function htmlVariantPlugin(): Plugin {
           /<meta name="twitter:description" content=".*?" \/>/,
           `<meta name="twitter:description" content="${activeMeta.description}" />`,
         )
-        .replace(/"name": "World Monitor"/, `"name": "${activeMeta.siteName}"`)
+        .replace(/"name": "Bharat Scope"/, `"name": "${activeMeta.siteName}"`)
         .replace(
           /"alternateName": "WorldMonitor"/,
           `"alternateName": "${activeMeta.siteName.replace(' ', '')}"`,

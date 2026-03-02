@@ -76,7 +76,7 @@ export function initLiveChannelsWindow(containerEl?: HTMLElement): void {
   if (!appEl) return;
 
   if (!containerEl) {
-    document.title = `${t('components.liveNews.manage') ?? 'Channel management'} - World Monitor`;
+    document.title = `${t('components.liveNews.manage') ?? 'Channel management'} - Bharat Scope`;
   }
 
   let channels = loadChannelsFromStorage();
@@ -485,7 +485,7 @@ export function initLiveChannelsWindow(containerEl?: HTMLElement): void {
         handleInput.setAttribute(
           'title',
           t('components.liveNews.invalidHandle') ??
-            'Enter a valid YouTube handle (e.g. @ChannelName)',
+          'Enter a valid YouTube handle (e.g. @ChannelName)',
         );
       }
       return;

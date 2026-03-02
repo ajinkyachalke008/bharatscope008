@@ -963,7 +963,7 @@
       "infoTooltip": "<strong>المنهجية</strong> درجة مركّبة (0-100) تمزج:<ul><li>50% عدم استقرار الدول (أعلى 5 مرجّحة)</li><li>30% مناطق التقارب الجغرافي</li><li>20% حوادث البنية التحتية</li></ul>يُحدّث تلقائياً كل 5 دقائق.",
       "insufficientData": "Insufficient Data",
       "unableToAssess": "Unable to assess risk level.",
-      "enableDataSources": "Enable data sources to begin monitoring.",
+      "enableDataSources": "Enable data sources to beginBharat Scopeing.",
       "requiredDataSources": "Required Data Sources",
       "optionalSources": "Optional Sources",
       "enableCoreFeeds": "Enable Core Feeds",
