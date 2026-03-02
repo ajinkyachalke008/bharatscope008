@@ -1,7 +1,7 @@
 export const SEVERITY_SCORE = {
-  'AIS_DISRUPTION_SEVERITY_LOW': 1,
-  'AIS_DISRUPTION_SEVERITY_ELEVATED': 2,
-  'AIS_DISRUPTION_SEVERITY_HIGH': 3,
+  AIS_DISRUPTION_SEVERITY_LOW: 1,
+  AIS_DISRUPTION_SEVERITY_ELEVATED: 2,
+  AIS_DISRUPTION_SEVERITY_HIGH: 3,
 };
 
 export function computeDisruptionScore(warningCount, congestionSeverity) {
@@ -28,7 +28,9 @@ export function riskRating(hhi) {
 
 export function detectSpike(history) {
   if (!history || history.length < 3) return false;
-  const values = history.map(h => typeof h === 'number' ? h : h.value).filter(v => Number.isFinite(v));
+  const values = history
+    .map((h) => (typeof h === 'number' ? h : h.value))
+    .filter((v) => Number.isFinite(v));
   if (values.length < 3) return false;
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
   const variance = values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length;

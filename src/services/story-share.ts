@@ -5,12 +5,12 @@ export function generateStoryDeepLink(
   countryCode: string,
   type: 'ciianalysis' | 'convergence' | 'brief' = 'ciianalysis',
   score?: number,
-  level?: string
+  level?: string,
 ): string {
   const params = new URLSearchParams({
     c: countryCode,
     t: type,
-    ts: Date.now().toString()
+    ts: Date.now().toString(),
   });
   if (score !== undefined) params.set('s', String(score));
   if (level) params.set('l', level);
@@ -23,7 +23,7 @@ export function parseStoryParams(url: URL): { countryCode: string; type: string 
   if (!countryCode) return null;
   return {
     countryCode,
-    type: url.searchParams.get('t') || 'ciianalysis'
+    type: url.searchParams.get('t') || 'ciianalysis',
   };
 }
 
@@ -35,16 +35,16 @@ export function generateQRCode(data: string, size: number = 200): string {
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext('2d')!;
-  
+
   // Placeholder - would use actual QR library
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, size, size);
   ctx.fillStyle = '#000000';
   ctx.font = '14px monospace';
   ctx.textAlign = 'center';
-  ctx.fillText('Scan to view', size/2, size/2 - 10);
-  ctx.fillText(data.substring(0, 20) + '...', size/2, size/2 + 10);
-  
+  ctx.fillText('Scan to view', size / 2, size / 2 - 10);
+  ctx.fillText(data.substring(0, 20) + '...', size / 2, size / 2 + 10);
+
   return canvas.toDataURL('image/png');
 }
 
@@ -53,8 +53,8 @@ function countryFlag(code: string): string {
   const upper = code.toUpperCase();
   if (upper.length !== 2) return '';
   return String.fromCodePoint(
-    0x1F1E6 + upper.charCodeAt(0) - 65,
-    0x1F1E6 + upper.charCodeAt(1) - 65
+    0x1f1e6 + upper.charCodeAt(0) - 65,
+    0x1f1e6 + upper.charCodeAt(1) - 65,
   );
 }
 
@@ -89,14 +89,19 @@ export const shareTexts = {
     `${data.cii?.change24h ? `📉 24h: *${data.cii.change24h > 0 ? '+' : ''}${data.cii.change24h}*\n` : ''}` +
     `${data.threats.critical > 0 ? `🚨 Critical: *${data.threats.critical}*\n` : ''}` +
     `${data.threats.high > 0 ? `🔴 High: *${data.threats.high}*\n` : ''}` +
-    `\n🔗 ${generateStoryDeepLink(data.countryCode, 'ciianalysis', data.cii?.score, data.cii?.level)}`
+    `\n🔗 ${generateStoryDeepLink(data.countryCode, 'ciianalysis', data.cii?.score, data.cii?.level)}`,
 };
 
 // Pre-generated share URLs
 export function getShareUrls(data: StoryData): Record<string, string> {
-  const url = generateStoryDeepLink(data.countryCode, 'ciianalysis', data.cii?.score, data.cii?.level);
+  const url = generateStoryDeepLink(
+    data.countryCode,
+    'ciianalysis',
+    data.cii?.score,
+    data.cii?.level,
+  );
   const text = encodeURIComponent(shareTexts.twitter(data));
-  
+
   return {
     twitter: `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(url)}`,
     linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,

@@ -39,13 +39,19 @@ export class SignalModal {
 
     // Remove will-change after entrance animation to free GPU memory
     const modal = this.element.querySelector('.signal-modal') as HTMLElement | null;
-    modal?.addEventListener('animationend', () => {
-      modal.style.willChange = 'auto';
-    }, { once: true });
+    modal?.addEventListener(
+      'animationend',
+      () => {
+        modal.style.willChange = 'auto';
+      },
+      { once: true },
+    );
   }
 
   private initAudio(): void {
-    this.audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleQYjfKapmWswEjCJvuPQfSoXZZ+3qqBJESSP0unGaxMJVYiytrFeLhR6p8znrFUXRW+bs7V3Qx1hn8Xjp1cYPnegprhkMCFmoLi1k0sZTYGlqqlUIA==');
+    this.audio = new Audio(
+      'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleQYjfKapmWswEjCJvuPQfSoXZZ+3qqBJESSP0unGaxMJVYiytrFeLhR6p8znrFUXRW+bs7V3Qx1hn8Xjp1cYPnegprhkMCFmoLi1k0sZTYGlqqlUIA==',
+    );
     this.audio.volume = 0.3;
   }
 
@@ -86,7 +92,7 @@ export class SignalModal {
         const term = (target.dataset.term || '').trim();
         if (!term) return;
         suppressTrendingTerm(term);
-        this.currentSignals = this.currentSignals.filter(signal => {
+        this.currentSignals = this.currentSignals.filter((signal) => {
           const signalTerm = (signal.data as Record<string, unknown>).term;
           return typeof signalTerm !== 'string' || signalTerm.toLowerCase() !== term.toLowerCase();
         });
@@ -210,11 +216,15 @@ export class SignalModal {
         <div class="signal-context">
           ${detailsHtml}
         </div>
-        ${alert.countries.length > 0 ? `
+        ${
+          alert.countries.length > 0
+            ? `
           <div class="signal-topics">
-            ${alert.countries.map(c => `<span class="signal-topic">${escapeHtml(c)}</span>`).join('')}
+            ${alert.countries.map((c) => `<span class="signal-topic">${escapeHtml(c)}</span>`).join('')}
           </div>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
     `;
 
@@ -251,15 +261,20 @@ export class SignalModal {
       military_surge: `🛩️ ${t('modals.signal.militarySurge')}`,
     };
 
-    const html = this.currentSignals.map(signal => {
-      const context = getSignalContext(signal.type as SignalType);
-      // Military surge signals have additional properties in data
-      const data = signal.data as Record<string, unknown>;
-      const newsCorrelation = data?.newsCorrelation as string | null;
-      const focalPoints = data?.focalPointContext as string[] | null;
-      const locationData = { lat: data?.lat as number | undefined, lon: data?.lon as number | undefined, regionName: data?.regionName as string | undefined };
+    const html = this.currentSignals
+      .map((signal) => {
+        const context = getSignalContext(signal.type as SignalType);
+        // Military surge signals have additional properties in data
+        const data = signal.data as Record<string, unknown>;
+        const newsCorrelation = data?.newsCorrelation as string | null;
+        const focalPoints = data?.focalPointContext as string[] | null;
+        const locationData = {
+          lat: data?.lat as number | undefined,
+          lon: data?.lon as number | undefined,
+          regionName: data?.regionName as string | undefined,
+        };
 
-      return `
+        return `
         <div class="signal-item ${escapeHtml(signal.type)}">
           <div class="signal-type">${signalTypeLabels[signal.type] || escapeHtml(signal.type)}</div>
           <div class="signal-title">${escapeHtml(signal.title)}</div>
@@ -268,28 +283,44 @@ export class SignalModal {
             <span class="signal-confidence">${t('modals.signal.confidence')}: ${Math.round(signal.confidence * 100)}%</span>
             <span class="signal-time">${this.formatTime(signal.timestamp)}</span>
           </div>
-          ${signal.data.explanation ? `
+          ${
+            signal.data.explanation
+              ? `
             <div class="signal-explanation">${escapeHtml(signal.data.explanation)}</div>
-          ` : ''}
-          ${focalPoints && focalPoints.length > 0 ? `
+          `
+              : ''
+          }
+          ${
+            focalPoints && focalPoints.length > 0
+              ? `
             <div class="signal-focal-points">
               <div class="focal-points-header">📡 ${t('modals.signal.focalPoints')}</div>
-              ${focalPoints.map(fp => `<div class="focal-point-item">${escapeHtml(fp)}</div>`).join('')}
+              ${focalPoints.map((fp) => `<div class="focal-point-item">${escapeHtml(fp)}</div>`).join('')}
             </div>
-          ` : ''}
-          ${newsCorrelation ? `
+          `
+              : ''
+          }
+          ${
+            newsCorrelation
+              ? `
             <div class="signal-news-correlation">
               <div class="news-correlation-header">📰 ${t('modals.signal.newsCorrelation')}</div>
               <pre class="news-correlation-text">${escapeHtml(newsCorrelation)}</pre>
             </div>
-          ` : ''}
-          ${locationData.lat && locationData.lon ? `
+          `
+              : ''
+          }
+          ${
+            locationData.lat && locationData.lon
+              ? `
             <div class="signal-location">
               <button class="location-link" data-lat="${locationData.lat}" data-lon="${locationData.lon}">
                 📍 ${t('modals.signal.viewOnMap')}: ${locationData.regionName || `${locationData.lat.toFixed(2)}°, ${locationData.lon.toFixed(2)}°`}
               </button>
             </div>
-          ` : ''}
+          `
+              : ''
+          }
           <div class="signal-context">
             <div class="signal-context-item why-matters">
               <span class="context-label">${t('modals.signal.whyItMatters')}</span>
@@ -304,19 +335,28 @@ export class SignalModal {
               <span class="context-value">${escapeHtml(context.confidenceNote)}</span>
             </div>
           </div>
-          ${signal.data.relatedTopics?.length ? `
+          ${
+            signal.data.relatedTopics?.length
+              ? `
             <div class="signal-topics">
-              ${signal.data.relatedTopics.map(t => `<span class="signal-topic">${escapeHtml(t)}</span>`).join('')}
+              ${signal.data.relatedTopics.map((t) => `<span class="signal-topic">${escapeHtml(t)}</span>`).join('')}
             </div>
-          ` : ''}
-          ${signal.type === 'keyword_spike' && typeof data?.term === 'string' ? `
+          `
+              : ''
+          }
+          ${
+            signal.type === 'keyword_spike' && typeof data?.term === 'string'
+              ? `
             <div class="signal-actions">
               <button class="suppress-keyword-btn" data-term="${escapeHtml(data.term)}">${t('modals.signal.suppress')}</button>
             </div>
-          ` : ''}
+          `
+              : ''
+          }
         </div>
       `;
-    }).join('');
+      })
+      .join('');
 
     content.innerHTML = html;
   }

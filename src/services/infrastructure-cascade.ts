@@ -15,24 +15,87 @@ import { PORTS } from '@/config/ports';
 
 // Country name lookup
 const COUNTRY_NAMES: Record<string, string> = {
-  US: 'United States', GB: 'United Kingdom', ES: 'Spain', FR: 'France',
-  DE: 'Germany', IT: 'Italy', PT: 'Portugal', NO: 'Norway', DK: 'Denmark',
-  NL: 'Netherlands', BE: 'Belgium', SE: 'Sweden', FI: 'Finland', IE: 'Ireland',
-  AT: 'Austria', CH: 'Switzerland', GR: 'Greece', CZ: 'Czech Republic',
-  JP: 'Japan', CN: 'China', TW: 'Taiwan', HK: 'Hong Kong', SG: 'Singapore',
-  KR: 'South Korea', AU: 'Australia', NZ: 'New Zealand', IN: 'India', PK: 'Pakistan',
-  AE: 'UAE', SA: 'Saudi Arabia', EG: 'Egypt', KW: 'Kuwait', BH: 'Bahrain',
-  OM: 'Oman', QA: 'Qatar', IR: 'Iran', IQ: 'Iraq', TR: 'Turkey', IL: 'Israel',
-  JO: 'Jordan', LB: 'Lebanon', SY: 'Syria', YE: 'Yemen',
-  NG: 'Nigeria', ZA: 'South Africa', KE: 'Kenya', TZ: 'Tanzania',
-  MZ: 'Mozambique', MG: 'Madagascar', SN: 'Senegal', GH: 'Ghana',
-  CI: 'Ivory Coast', AO: 'Angola', ET: 'Ethiopia', UG: 'Uganda',
-  BR: 'Brazil', AR: 'Argentina', CL: 'Chile',
-  PE: 'Peru', CO: 'Colombia', MX: 'Mexico', PA: 'Panama', VE: 'Venezuela',
-  IS: 'Iceland', FO: 'Faroe Islands', FJ: 'Fiji', ID: 'Indonesia',
-  VN: 'Vietnam', TH: 'Thailand', MY: 'Malaysia', PH: 'Philippines',
-  RU: 'Russia', UA: 'Ukraine', PL: 'Poland', RO: 'Romania', HU: 'Hungary',
-  CA: 'Canada', DJ: 'Djibouti', BD: 'Bangladesh', LK: 'Sri Lanka', MM: 'Myanmar',
+  US: 'United States',
+  GB: 'United Kingdom',
+  ES: 'Spain',
+  FR: 'France',
+  DE: 'Germany',
+  IT: 'Italy',
+  PT: 'Portugal',
+  NO: 'Norway',
+  DK: 'Denmark',
+  NL: 'Netherlands',
+  BE: 'Belgium',
+  SE: 'Sweden',
+  FI: 'Finland',
+  IE: 'Ireland',
+  AT: 'Austria',
+  CH: 'Switzerland',
+  GR: 'Greece',
+  CZ: 'Czech Republic',
+  JP: 'Japan',
+  CN: 'China',
+  TW: 'Taiwan',
+  HK: 'Hong Kong',
+  SG: 'Singapore',
+  KR: 'South Korea',
+  AU: 'Australia',
+  NZ: 'New Zealand',
+  IN: 'India',
+  PK: 'Pakistan',
+  AE: 'UAE',
+  SA: 'Saudi Arabia',
+  EG: 'Egypt',
+  KW: 'Kuwait',
+  BH: 'Bahrain',
+  OM: 'Oman',
+  QA: 'Qatar',
+  IR: 'Iran',
+  IQ: 'Iraq',
+  TR: 'Turkey',
+  IL: 'Israel',
+  JO: 'Jordan',
+  LB: 'Lebanon',
+  SY: 'Syria',
+  YE: 'Yemen',
+  NG: 'Nigeria',
+  ZA: 'South Africa',
+  KE: 'Kenya',
+  TZ: 'Tanzania',
+  MZ: 'Mozambique',
+  MG: 'Madagascar',
+  SN: 'Senegal',
+  GH: 'Ghana',
+  CI: 'Ivory Coast',
+  AO: 'Angola',
+  ET: 'Ethiopia',
+  UG: 'Uganda',
+  BR: 'Brazil',
+  AR: 'Argentina',
+  CL: 'Chile',
+  PE: 'Peru',
+  CO: 'Colombia',
+  MX: 'Mexico',
+  PA: 'Panama',
+  VE: 'Venezuela',
+  IS: 'Iceland',
+  FO: 'Faroe Islands',
+  FJ: 'Fiji',
+  ID: 'Indonesia',
+  VN: 'Vietnam',
+  TH: 'Thailand',
+  MY: 'Malaysia',
+  PH: 'Philippines',
+  RU: 'Russia',
+  UA: 'Ukraine',
+  PL: 'Poland',
+  RO: 'Romania',
+  HU: 'Hungary',
+  CA: 'Canada',
+  DJ: 'Djibouti',
+  BD: 'Bangladesh',
+  LK: 'Sri Lanka',
+  MM: 'Myanmar',
 };
 
 export interface DependencyGraph {
@@ -119,12 +182,12 @@ function addCountriesAsNodes(graph: DependencyGraph): void {
   const countries = new Set<string>();
 
   for (const cable of UNDERSEA_CABLES) {
-    cable.countriesServed?.forEach(c => countries.add(c.country));
-    cable.landingPoints?.forEach(lp => countries.add(lp.country));
+    cable.countriesServed?.forEach((c) => countries.add(c.country));
+    cable.landingPoints?.forEach((lp) => countries.add(lp.country));
   }
 
   for (const pipeline of PIPELINES) {
-    pipeline.countries?.forEach(c => {
+    pipeline.countries?.forEach((c) => {
       const code = c === 'USA' ? 'US' : c === 'Canada' ? 'CA' : c;
       countries.add(code);
     });
@@ -154,7 +217,7 @@ function buildCableCountryEdges(graph: DependencyGraph): void {
   for (const cable of UNDERSEA_CABLES) {
     const cableId = `cable:${cable.id}`;
 
-    cable.countriesServed?.forEach(cs => {
+    cable.countriesServed?.forEach((cs) => {
       const countryId = `country:${cs.country}`;
       addEdge(graph, {
         from: cableId,
@@ -164,12 +227,14 @@ function buildCableCountryEdges(graph: DependencyGraph): void {
         redundancy: cs.isRedundant ? 0.5 : 0,
         metadata: {
           capacityShare: cs.capacityShare,
-          estimatedImpact: cs.isRedundant ? 'Medium - redundancy available' : 'High - limited redundancy',
+          estimatedImpact: cs.isRedundant
+            ? 'Medium - redundancy available'
+            : 'High - limited redundancy',
         },
       });
     });
 
-    cable.landingPoints?.forEach(lp => {
+    cable.landingPoints?.forEach((lp) => {
       const countryId = `country:${lp.country}`;
       addEdge(graph, {
         from: cableId,
@@ -186,7 +251,7 @@ function buildPipelineCountryEdges(graph: DependencyGraph): void {
   for (const pipeline of PIPELINES) {
     const pipelineId = `pipeline:${pipeline.id}`;
 
-    pipeline.countries?.forEach(country => {
+    pipeline.countries?.forEach((country) => {
       const code = country === 'USA' ? 'US' : country === 'Canada' ? 'CA' : country;
       const countryId = `country:${code}`;
 
@@ -206,15 +271,36 @@ function buildPipelineCountryEdges(graph: DependencyGraph): void {
 // Country code normalization for ports
 function normalizeCountryCode(country: string): string {
   const mappings: Record<string, string> = {
-    'USA': 'US', 'China': 'CN', 'China (SAR)': 'CN', 'Taiwan': 'TW',
-    'South Korea': 'KR', 'Netherlands': 'NL', 'Belgium': 'BE',
-    'Malaysia': 'MY', 'Thailand': 'TH', 'Greece': 'GR',
-    'Saudi Arabia': 'SA', 'Iran': 'IR', 'Qatar': 'QA', 'Russia': 'RU',
-    'Egypt': 'EG', 'UK (Gibraltar)': 'GB', 'Djibouti': 'DJ',
-    'Yemen': 'YE', 'Panama': 'PA', 'Spain': 'ES', 'Pakistan': 'PK',
-    'Sri Lanka': 'LK', 'Japan': 'JP', 'UK': 'GB', 'France': 'FR',
-    'Brazil': 'BR', 'India': 'IN', 'Singapore': 'SG', 'Germany': 'DE',
-    'UAE': 'AE',
+    USA: 'US',
+    China: 'CN',
+    'China (SAR)': 'CN',
+    Taiwan: 'TW',
+    'South Korea': 'KR',
+    Netherlands: 'NL',
+    Belgium: 'BE',
+    Malaysia: 'MY',
+    Thailand: 'TH',
+    Greece: 'GR',
+    'Saudi Arabia': 'SA',
+    Iran: 'IR',
+    Qatar: 'QA',
+    Russia: 'RU',
+    Egypt: 'EG',
+    'UK (Gibraltar)': 'GB',
+    Djibouti: 'DJ',
+    Yemen: 'YE',
+    Panama: 'PA',
+    Spain: 'ES',
+    Pakistan: 'PK',
+    'Sri Lanka': 'LK',
+    Japan: 'JP',
+    UK: 'GB',
+    France: 'FR',
+    Brazil: 'BR',
+    India: 'IN',
+    Singapore: 'SG',
+    Germany: 'DE',
+    UAE: 'AE',
   };
   return mappings[country] || country;
 }
@@ -222,12 +308,12 @@ function normalizeCountryCode(country: string): string {
 // Port importance by type for impact calculation
 function getPortImportance(port: Port): number {
   const typeWeight: Record<string, number> = {
-    'oil': 0.9,     // Oil disruption = major
-    'lng': 0.85,    // LNG disruption = major
-    'container': 0.7,
-    'mixed': 0.6,
-    'bulk': 0.5,
-    'naval': 0.4,   // Naval = geopolitical but less economic
+    oil: 0.9, // Oil disruption = major
+    lng: 0.85, // LNG disruption = major
+    container: 0.7,
+    mixed: 0.6,
+    bulk: 0.5,
+    naval: 0.4, // Naval = geopolitical but less economic
   };
   const baseWeight = typeWeight[port.type] || 0.5;
   // Higher rank = more important (rank 1-10 get boost)
@@ -354,7 +440,7 @@ function buildChokepointEdges(graph: DependencyGraph): void {
     const chokepointId = `chokepoint:${waterway.id}`;
 
     // Find ports near this chokepoint
-    const nearbyPorts = PORTS.filter(port => {
+    const nearbyPorts = PORTS.filter((port) => {
       const dist = haversineDistance(waterway.lat, waterway.lon, port.lat, port.lon);
       return dist < 500; // Within 500km
     });
@@ -398,49 +484,54 @@ function buildChokepointEdges(graph: DependencyGraph): void {
   }
 }
 
-function getChokepointDependentCountries(chokepointId: string): { code: string; strength: number; redundancy: number; reason: string }[] {
+function getChokepointDependentCountries(
+  chokepointId: string,
+): { code: string; strength: number; redundancy: number; reason: string }[] {
   // Map using actual IDs from STRATEGIC_WATERWAYS
-  const dependencies: Record<string, { code: string; strength: number; redundancy: number; reason: string }[]> = {
-    'suez': [
+  const dependencies: Record<
+    string,
+    { code: string; strength: number; redundancy: number; reason: string }[]
+  > = {
+    suez: [
       { code: 'DE', strength: 0.6, redundancy: 0.3, reason: 'EU-Asia trade' },
       { code: 'IT', strength: 0.5, redundancy: 0.3, reason: 'Mediterranean' },
       { code: 'GB', strength: 0.5, redundancy: 0.4, reason: 'UK-Asia trade' },
       { code: 'CN', strength: 0.4, redundancy: 0.5, reason: 'China-EU exports' },
     ],
-    'hormuz_strait': [
+    hormuz_strait: [
       { code: 'JP', strength: 0.8, redundancy: 0.2, reason: '80% oil imports' },
       { code: 'KR', strength: 0.7, redundancy: 0.2, reason: '70% oil imports' },
       { code: 'IN', strength: 0.6, redundancy: 0.3, reason: '60% oil imports' },
       { code: 'CN', strength: 0.5, redundancy: 0.4, reason: '40% oil imports' },
     ],
-    'malacca_strait': [
+    malacca_strait: [
       { code: 'CN', strength: 0.7, redundancy: 0.3, reason: '80% oil imports transit' },
       { code: 'JP', strength: 0.6, redundancy: 0.3, reason: 'Trade route' },
       { code: 'KR', strength: 0.6, redundancy: 0.3, reason: 'Trade route' },
     ],
-    'bab_el_mandeb': [
+    bab_el_mandeb: [
       { code: 'DE', strength: 0.5, redundancy: 0.4, reason: 'EU shipping' },
       { code: 'GB', strength: 0.5, redundancy: 0.4, reason: 'UK shipping' },
       { code: 'SA', strength: 0.4, redundancy: 0.5, reason: 'Red Sea access' },
     ],
-    'panama': [
+    panama: [
       { code: 'US', strength: 0.5, redundancy: 0.4, reason: 'Inter-coast shipping' },
       { code: 'CN', strength: 0.4, redundancy: 0.5, reason: 'US East trade' },
     ],
-    'gibraltar': [
+    gibraltar: [
       { code: 'ES', strength: 0.4, redundancy: 0.5, reason: 'Med access' },
       { code: 'IT', strength: 0.3, redundancy: 0.5, reason: 'Atlantic trade' },
     ],
-    'bosphorus': [
+    bosphorus: [
       { code: 'RU', strength: 0.6, redundancy: 0.3, reason: 'Black Sea access' },
       { code: 'UA', strength: 0.6, redundancy: 0.3, reason: 'Grain exports' },
       { code: 'RO', strength: 0.4, redundancy: 0.4, reason: 'Black Sea trade' },
     ],
-    'dardanelles': [
+    dardanelles: [
       { code: 'RU', strength: 0.5, redundancy: 0.3, reason: 'Black Sea access' },
       { code: 'UA', strength: 0.5, redundancy: 0.3, reason: 'Grain exports' },
     ],
-    'taiwan_strait': [
+    taiwan_strait: [
       { code: 'TW', strength: 0.9, redundancy: 0.1, reason: 'Taiwan trade lifeline' },
       { code: 'JP', strength: 0.5, redundancy: 0.4, reason: 'Trade route' },
       { code: 'KR', strength: 0.4, redundancy: 0.4, reason: 'Trade route' },
@@ -454,7 +545,9 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -478,8 +571,8 @@ export function buildDependencyGraph(): DependencyGraph {
   // Build dependency edges
   buildCableCountryEdges(graph);
   buildPipelineCountryEdges(graph);
-  buildPortCountryEdges(graph);      // NEW: Port → Country dependencies
-  buildChokepointEdges(graph);       // NEW: Chokepoint → Port/Country dependencies
+  buildPortCountryEdges(graph); // NEW: Port → Country dependencies
+  buildChokepointEdges(graph); // NEW: Chokepoint → Port/Country dependencies
 
   cachedGraph = graph;
   return graph;
@@ -494,7 +587,7 @@ function categorizeImpact(strength: number): CascadeImpactLevel {
 
 export function calculateCascade(
   sourceId: string,
-  disruptionLevel: number = 1.0
+  disruptionLevel: number = 1.0,
 ): CascadeResult | null {
   const graph = buildDependencyGraph();
   const source = graph.nodes.get(sourceId);
@@ -549,14 +642,19 @@ export function calculateCascade(
         country: code,
         countryName: affectedNode.node.name,
         impactLevel: affectedNode.impactLevel,
-        affectedCapacity: getCapacityForCountry(sourceId, code, graph, affectedNode.dependencyChain),
+        affectedCapacity: getCapacityForCountry(
+          sourceId,
+          code,
+          graph,
+          affectedNode.dependencyChain,
+        ),
       });
     }
   }
 
   countriesAffected.sort((a, b) => {
     const order = { critical: 0, high: 1, medium: 2, low: 3 };
-    return (order[a.impactLevel] - order[b.impactLevel]) || (b.affectedCapacity - a.affectedCapacity);
+    return order[a.impactLevel] - order[b.impactLevel] || b.affectedCapacity - a.affectedCapacity;
   });
 
   const redundancies = findRedundancies(sourceId);
@@ -577,17 +675,17 @@ function getCapacityForCountry(
 ): number {
   if (sourceId.startsWith('cable:')) {
     const cableId = sourceId.replace('cable:', '');
-    const cable = UNDERSEA_CABLES.find(c => c.id === cableId);
-    const countryData = cable?.countriesServed?.find(cs => cs.country === countryCode);
+    const cable = UNDERSEA_CABLES.find((c) => c.id === cableId);
+    const countryData = cable?.countriesServed?.find((cs) => cs.country === countryCode);
     return countryData?.capacityShare || 0;
   }
 
   // Check direct edges from source → country
   const countryId = `country:${countryCode}`;
   const outgoing = graph.outgoing.get(sourceId) || [];
-  const direct = outgoing.filter(e => e.to === countryId);
+  const direct = outgoing.filter((e) => e.to === countryId);
   if (direct.length > 0) {
-    const effective = direct.map(e => e.strength * (1 - (e.redundancy || 0)));
+    const effective = direct.map((e) => e.strength * (1 - (e.redundancy || 0)));
     return Math.max(...effective);
   }
 
@@ -598,7 +696,7 @@ function getCapacityForCountry(
       const from = dependencyChain[i]!;
       const to = dependencyChain[i + 1]!;
       const stepEdges = graph.outgoing.get(from) || [];
-      const edge = stepEdges.find(e => e.to === to);
+      const edge = stepEdges.find((e) => e.to === to);
       if (edge) {
         pathCapacity *= edge.strength * (1 - (edge.redundancy || 0));
       } else {
@@ -616,18 +714,20 @@ function findRedundancies(sourceId: string): CascadeResult['redundancies'] {
   if (!sourceId.startsWith('cable:')) return [];
 
   const cableId = sourceId.replace('cable:', '');
-  const sourceCable = UNDERSEA_CABLES.find(c => c.id === cableId);
+  const sourceCable = UNDERSEA_CABLES.find((c) => c.id === cableId);
   if (!sourceCable) return [];
 
-  const sourceCountries = new Set(sourceCable.countriesServed?.map(c => c.country) || []);
+  const sourceCountries = new Set(sourceCable.countriesServed?.map((c) => c.country) || []);
   const alternatives: CascadeResult['redundancies'] = [];
 
   for (const cable of UNDERSEA_CABLES) {
     if (cable.id === cableId) continue;
 
-    const sharedCountries = cable.countriesServed?.filter(c => sourceCountries.has(c.country)) || [];
+    const sharedCountries =
+      cable.countriesServed?.filter((c) => sourceCountries.has(c.country)) || [];
     if (sharedCountries.length > 0) {
-      const avgCapacity = sharedCountries.reduce((sum, c) => sum + c.capacityShare, 0) / sharedCountries.length;
+      const avgCapacity =
+        sharedCountries.reduce((sum, c) => sum + c.capacityShare, 0) / sharedCountries.length;
       alternatives.push({
         id: cable.id,
         name: cable.name,
@@ -640,20 +740,32 @@ function findRedundancies(sourceId: string): CascadeResult['redundancies'] {
 }
 
 export function getCableById(id: string): UnderseaCable | undefined {
-  return UNDERSEA_CABLES.find(c => c.id === id);
+  return UNDERSEA_CABLES.find((c) => c.id === id);
 }
 
 export function getPipelineById(id: string): Pipeline | undefined {
-  return PIPELINES.find(p => p.id === id);
+  return PIPELINES.find((p) => p.id === id);
 }
 
 export function getPortById(id: string): Port | undefined {
   return PORTS.find((p: Port) => p.id === id);
 }
 
-export function getGraphStats(): { nodes: number; edges: number; cables: number; pipelines: number; ports: number; chokepoints: number; countries: number } {
+export function getGraphStats(): {
+  nodes: number;
+  edges: number;
+  cables: number;
+  pipelines: number;
+  ports: number;
+  chokepoints: number;
+  countries: number;
+} {
   const graph = buildDependencyGraph();
-  let cables = 0, pipelines = 0, ports = 0, chokepoints = 0, countries = 0;
+  let cables = 0,
+    pipelines = 0,
+    ports = 0,
+    chokepoints = 0,
+    countries = 0;
 
   for (const node of graph.nodes.values()) {
     if (node.type === 'cable') cables++;

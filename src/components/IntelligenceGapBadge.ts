@@ -50,7 +50,8 @@ export class IntelligenceFindingsBadge {
     this.badge = document.createElement('button');
     this.badge.className = 'intel-findings-badge';
     this.badge.title = t('components.intelligenceFindings.badgeTitle');
-    this.badge.innerHTML = '<span class="findings-icon">🎯</span><span class="findings-count">0</span>';
+    this.badge.innerHTML =
+      '<span class="findings-icon">🎯</span><span class="findings-count">0</span>';
 
     this.dropdown = document.createElement('div');
     this.dropdown.className = 'intel-findings-dropdown';
@@ -96,7 +97,7 @@ export class IntelligenceFindingsBadge {
       if (!item) return;
       e.stopPropagation();
       const id = item.getAttribute('data-finding-id');
-      const finding = this.findings.find(f => f.id === id);
+      const finding = this.findings.find((f) => f.id === id);
       if (!finding) return;
 
       trackFindingClicked(finding.id, finding.source, finding.type, finding.priority);
@@ -118,7 +119,9 @@ export class IntelligenceFindingsBadge {
   }
 
   private initAudio(): void {
-    this.audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleQYjfKapmWswEjCJvuPQfSoXZZ+3qqBJESSP0unGaxMJVYiytrFeLhR6p8znrFUXRW+bs7V3Qx1hn8Xjp1cYPnegprhkMCFmoLi1k0sZTYGlqqlUIA==');
+    this.audio = new Audio(
+      'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleQYjfKapmWswEjCJvuPQfSoXZZ+3qqBJESSP0unGaxMJVYiytrFeLhR6p8znrFUXRW+bs7V3Qx1hn8Xjp1cYPnegprhkMCFmoLi1k0sZTYGlqqlUIA==',
+    );
     this.audio.volume = 0.3;
   }
 
@@ -232,8 +235,8 @@ export class IntelligenceFindingsBadge {
     this.lastFindingCount = count;
 
     // Update badge status based on priority
-    const hasCritical = this.findings.some(f => f.priority === 'critical');
-    const hasHigh = this.findings.some(f => f.priority === 'high' || f.confidence >= 0.7);
+    const hasCritical = this.findings.some((f) => f.priority === 'critical');
+    const hasHigh = this.findings.some((f) => f.priority === 'high' || f.confidence >= 0.7);
 
     this.badge.classList.remove('status-none', 'status-low', 'status-high');
     if (count === 0) {
@@ -241,13 +244,17 @@ export class IntelligenceFindingsBadge {
       this.badge.title = t('components.intelligenceFindings.none');
     } else if (hasCritical || hasHigh) {
       this.badge.classList.add('status-high');
-      this.badge.title = t('components.intelligenceFindings.reviewRecommended', { count: String(count) });
+      this.badge.title = t('components.intelligenceFindings.reviewRecommended', {
+        count: String(count),
+      });
     } else if (count <= LOW_COUNT_THRESHOLD) {
       this.badge.classList.add('status-low');
       this.badge.title = t('components.intelligenceFindings.count', { count: String(count) });
     } else {
       this.badge.classList.add('status-high');
-      this.badge.title = t('components.intelligenceFindings.reviewRecommended', { count: String(count) });
+      this.badge.title = t('components.intelligenceFindings.reviewRecommended', {
+        count: String(count),
+      });
     }
 
     this.renderDropdown();
@@ -257,19 +264,24 @@ export class IntelligenceFindingsBadge {
     const signals = getRecentSignals();
     const alerts = getRecentAlerts(ALERT_HOURS);
 
-    const signalFindings: UnifiedFinding[] = signals.map(s => ({
+    const signalFindings: UnifiedFinding[] = signals.map((s) => ({
       id: `signal-${s.id}`,
       source: 'signal' as FindingSource,
       type: s.type,
       title: s.title,
       description: s.description,
       confidence: s.confidence,
-      priority: s.confidence >= 0.7 ? 'high' as const : s.confidence >= 0.5 ? 'medium' as const : 'low' as const,
+      priority:
+        s.confidence >= 0.7
+          ? ('high' as const)
+          : s.confidence >= 0.5
+            ? ('medium' as const)
+            : ('low' as const),
       timestamp: s.timestamp,
       original: s,
     }));
 
-    const alertFindings: UnifiedFinding[] = alerts.map(a => ({
+    const alertFindings: UnifiedFinding[] = alerts.map((a) => ({
       id: `alert-${a.id}`,
       source: 'alert' as FindingSource,
       type: a.type,
@@ -330,11 +342,15 @@ export class IntelligenceFindingsBadge {
       return;
     }
 
-    const criticalCount = this.findings.filter(f => f.priority === 'critical').length;
-    const highCount = this.findings.filter(f => f.priority === 'high' || f.confidence >= 70).length;
+    const criticalCount = this.findings.filter((f) => f.priority === 'critical').length;
+    const highCount = this.findings.filter(
+      (f) => f.priority === 'high' || f.confidence >= 70,
+    ).length;
 
     let statusClass = 'moderate';
-    let statusText = t('components.intelligenceFindings.detected', { count: String(this.findings.length) });
+    let statusText = t('components.intelligenceFindings.detected', {
+      count: String(this.findings.length),
+    });
     if (criticalCount > 0) {
       statusClass = 'critical';
       statusText = t('components.intelligenceFindings.critical', { count: String(criticalCount) });
@@ -343,13 +359,15 @@ export class IntelligenceFindingsBadge {
       statusText = t('components.intelligenceFindings.highPriority', { count: String(highCount) });
     }
 
-    const findingsHtml = this.findings.slice(0, MAX_VISIBLE_FINDINGS).map(finding => {
-      const timeAgo = this.formatTimeAgo(finding.timestamp);
-      const icon = this.getTypeIcon(finding.type);
-      const priorityClass = finding.priority;
-      const insight = this.getInsight(finding);
+    const findingsHtml = this.findings
+      .slice(0, MAX_VISIBLE_FINDINGS)
+      .map((finding) => {
+        const timeAgo = this.formatTimeAgo(finding.timestamp);
+        const icon = this.getTypeIcon(finding.type);
+        const priorityClass = finding.priority;
+        const insight = this.getInsight(finding);
 
-      return `
+        return `
         <div class="finding-item ${priorityClass}" data-finding-id="${escapeHtml(finding.id)}">
           <div class="finding-header">
             <span class="finding-type">${icon} ${escapeHtml(finding.title)}</span>
@@ -362,7 +380,8 @@ export class IntelligenceFindingsBadge {
           </div>
         </div>
       `;
-    }).join('');
+      })
+      .join('');
 
     const moreCount = this.findings.length - MAX_VISIBLE_FINDINGS;
     this.dropdown.innerHTML = `
@@ -389,11 +408,14 @@ export class IntelligenceFindingsBadge {
     const alert = finding.original as UnifiedAlert;
     if (alert.type === 'cii_spike') {
       const cii = alert.components.ciiChange;
-      if (cii && cii.change >= 30) return t('components.intelligenceFindings.insights.criticalDestabilization');
-      if (cii && cii.change >= 20) return t('components.intelligenceFindings.insights.significantShift');
+      if (cii && cii.change >= 30)
+        return t('components.intelligenceFindings.insights.criticalDestabilization');
+      if (cii && cii.change >= 20)
+        return t('components.intelligenceFindings.insights.significantShift');
       return t('components.intelligenceFindings.insights.developingSituation');
     }
-    if (alert.type === 'convergence') return t('components.intelligenceFindings.insights.convergence');
+    if (alert.type === 'convergence')
+      return t('components.intelligenceFindings.insights.convergence');
     if (alert.type === 'cascade') return t('components.intelligenceFindings.insights.cascade');
     return t('components.intelligenceFindings.insights.review');
   }
@@ -426,9 +448,17 @@ export class IntelligenceFindingsBadge {
   private formatTimeAgo(date: Date): string {
     const ms = Date.now() - date.getTime();
     if (ms < 60000) return t('components.intelligenceFindings.time.justNow');
-    if (ms < 3600000) return t('components.intelligenceFindings.time.minutesAgo', { count: String(Math.floor(ms / 60000)) });
-    if (ms < 86400000) return t('components.intelligenceFindings.time.hoursAgo', { count: String(Math.floor(ms / 3600000)) });
-    return t('components.intelligenceFindings.time.daysAgo', { count: String(Math.floor(ms / 86400000)) });
+    if (ms < 3600000)
+      return t('components.intelligenceFindings.time.minutesAgo', {
+        count: String(Math.floor(ms / 60000)),
+      });
+    if (ms < 86400000)
+      return t('components.intelligenceFindings.time.hoursAgo', {
+        count: String(Math.floor(ms / 3600000)),
+      });
+    return t('components.intelligenceFindings.time.daysAgo', {
+      count: String(Math.floor(ms / 86400000)),
+    });
   }
 
   private toggleDropdown(): void {
@@ -451,12 +481,13 @@ export class IntelligenceFindingsBadge {
     const overlay = document.createElement('div');
     overlay.className = 'findings-modal-overlay';
 
-    const findingsHtml = this.findings.map(finding => {
-      const timeAgo = this.formatTimeAgo(finding.timestamp);
-      const icon = this.getTypeIcon(finding.type);
-      const insight = this.getInsight(finding);
+    const findingsHtml = this.findings
+      .map((finding) => {
+        const timeAgo = this.formatTimeAgo(finding.timestamp);
+        const icon = this.getTypeIcon(finding.type);
+        const insight = this.getInsight(finding);
 
-      return `
+        return `
         <div class="findings-modal-item ${finding.priority}" data-finding-id="${escapeHtml(finding.id)}">
           <div class="findings-modal-item-header">
             <span class="findings-modal-item-type">${icon} ${escapeHtml(finding.title)}</span>
@@ -469,7 +500,8 @@ export class IntelligenceFindingsBadge {
           </div>
         </div>
       `;
-    }).join('');
+      })
+      .join('');
 
     overlay.innerHTML = `
       <div class="findings-modal">
@@ -484,7 +516,9 @@ export class IntelligenceFindingsBadge {
     `;
 
     // Add click handlers
-    overlay.querySelector('.findings-modal-close')?.addEventListener('click', () => overlay.remove());
+    overlay
+      .querySelector('.findings-modal-close')
+      ?.addEventListener('click', () => overlay.remove());
     overlay.addEventListener('click', (e) => {
       if ((e.target as HTMLElement).classList.contains('findings-modal-overlay')) {
         overlay.remove();
@@ -492,10 +526,10 @@ export class IntelligenceFindingsBadge {
     });
 
     // Handle clicking individual items
-    overlay.querySelectorAll('.findings-modal-item').forEach(item => {
+    overlay.querySelectorAll('.findings-modal-item').forEach((item) => {
       item.addEventListener('click', () => {
         const id = item.getAttribute('data-finding-id');
-        const finding = this.findings.find(f => f.id === id);
+        const finding = this.findings.find((f) => f.id === id);
         if (!finding) return;
 
         trackFindingClicked(finding.id, finding.source, finding.type, finding.priority);

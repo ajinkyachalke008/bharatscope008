@@ -11,7 +11,11 @@ import type {
   SocialUnrestEvent,
   AisDisruptionEvent,
 } from '@/types';
-import { getCountryAtCoordinates, getCountryNameByCode, nameToCountryCode } from './country-geometry';
+import {
+  getCountryAtCoordinates,
+  getCountryNameByCode,
+  nameToCountryCode,
+} from './country-geometry';
 
 export type SignalType =
   | 'internet_outage'
@@ -19,8 +23,8 @@ export type SignalType =
   | 'military_vessel'
   | 'protest'
   | 'ais_disruption'
-  | 'satellite_fire'        // NASA FIRMS thermal anomalies
-  | 'temporal_anomaly'      // Baseline deviation alerts
+  | 'satellite_fire' // NASA FIRMS thermal anomalies
+  | 'temporal_anomaly'; // Baseline deviation alerts
 
 export interface GeoSignal {
   type: SignalType;
@@ -103,7 +107,7 @@ class SignalAggregator {
   private temporalSourceMap = new WeakMap<GeoSignal, string>();
 
   private clearSignalType(type: SignalType): void {
-    this.signals = this.signals.filter(s => s.type !== type);
+    this.signals = this.signals.filter((s) => s.type !== type);
   }
 
   ingestOutages(outages: InternetOutage[]): void {
@@ -232,20 +236,22 @@ class SignalAggregator {
    * Ingest satellite fire detection from NASA FIRMS
    * Source: src/services/wildfires
    */
-  ingestSatelliteFires(fires: Array<{
-    lat: number;
-    lon: number;
-    brightness: number;
-    frp: number;
-    region: string;
-    acq_date: string;
-  }>): void {
+  ingestSatelliteFires(
+    fires: Array<{
+      lat: number;
+      lon: number;
+      brightness: number;
+      frp: number;
+      region: string;
+      acq_date: string;
+    }>,
+  ): void {
     this.clearSignalType('satellite_fire');
-    
+
     for (const fire of fires) {
       const code = this.coordsToCountry(fire.lat, fire.lon) || normalizeCountryCode(fire.region);
       const severity = fire.brightness > 360 ? 'high' : fire.brightness > 320 ? 'medium' : 'low';
-      
+
       this.signals.push({
         type: 'satellite_fire',
         country: code,
@@ -260,27 +266,27 @@ class SignalAggregator {
     this.pruneOld();
   }
 
-
-
-
   /**
    * Ingest temporal baseline anomalies.
    * Deduplicates by message — safe to call from multiple async sources.
    */
-  ingestTemporalAnomalies(anomalies: Array<{
-    type: string;
-    region: string;
-    currentCount: number;
-    expectedCount: number;
-    zScore: number;
-    message: string;
-    severity: 'medium' | 'high' | 'critical';
-  }>): void {
+  ingestTemporalAnomalies(
+    anomalies: Array<{
+      type: string;
+      region: string;
+      currentCount: number;
+      expectedCount: number;
+      zScore: number;
+      message: string;
+      severity: 'medium' | 'high' | 'critical';
+    }>,
+  ): void {
     // Remove existing temporal signals that match incoming source types
-    const incomingSourceTypes = new Set(anomalies.map(a => a.type));
-    this.signals = this.signals.filter(s =>
-      s.type !== 'temporal_anomaly' ||
-      !incomingSourceTypes.has(this.temporalSourceMap.get(s) || '')
+    const incomingSourceTypes = new Set(anomalies.map((a) => a.type));
+    this.signals = this.signals.filter(
+      (s) =>
+        s.type !== 'temporal_anomaly' ||
+        !incomingSourceTypes.has(this.temporalSourceMap.get(s) || ''),
     );
 
     for (const a of anomalies) {
@@ -307,7 +313,7 @@ class SignalAggregator {
 
   private pruneOld(): void {
     const cutoff = Date.now() - this.WINDOW_MS;
-    this.signals = this.signals.filter(s => s.timestamp.getTime() > cutoff);
+    this.signals = this.signals.filter((s) => s.timestamp.getTime() > cutoff);
   }
 
   getCountryClusters(): CountrySignalCluster[] {
@@ -322,8 +328,8 @@ class SignalAggregator {
     const clusters: CountrySignalCluster[] = [];
 
     for (const [country, signals] of byCountry) {
-      const signalTypes = new Set(signals.map(s => s.type));
-      const highCount = signals.filter(s => s.severity === 'high').length;
+      const signalTypes = new Set(signals.map((s) => s.type));
+      const highCount = signals.filter((s) => s.severity === 'high').length;
 
       const typeBonus = signalTypes.size * 20;
       const countBonus = Math.min(30, signals.length * 5);
@@ -349,14 +355,14 @@ class SignalAggregator {
     const convergences: RegionalConvergence[] = [];
 
     for (const [_regionId, def] of Object.entries(REGION_DEFINITIONS)) {
-      const regionClusters = clusters.filter(c => def.countries.includes(c.country));
+      const regionClusters = clusters.filter((c) => def.countries.includes(c.country));
       if (regionClusters.length < 2) continue;
 
       const allTypes = new Set<SignalType>();
       let totalSignals = 0;
 
       for (const cluster of regionClusters) {
-        cluster.signalTypes.forEach(t => allTypes.add(t));
+        cluster.signalTypes.forEach((t) => allTypes.add(t));
         totalSignals += cluster.totalCount;
       }
 
@@ -371,12 +377,12 @@ class SignalAggregator {
           temporal_anomaly: 'baseline anomalies',
         };
 
-        const typeDescriptions = [...allTypes].map(t => typeLabels[t]).join(', ');
-        const countries = regionClusters.map(c => c.countryName).join(', ');
+        const typeDescriptions = [...allTypes].map((t) => typeLabels[t]).join(', ');
+        const countries = regionClusters.map((c) => c.countryName).join(', ');
 
         convergences.push({
           region: def.name,
-          countries: regionClusters.map(c => c.country),
+          countries: regionClusters.map((c) => c.country),
           signalTypes: [...allTypes],
           totalSignals,
           description: `${def.name}: ${typeDescriptions} detected across ${countries}`,
@@ -408,7 +414,9 @@ class SignalAggregator {
       lines.push('Top countries by signal activity:');
       for (const c of clusters) {
         const types = [...c.signalTypes].join(', ');
-        lines.push(`- ${c.countryName}: ${c.totalCount} signals (${types}), convergence score: ${c.convergenceScore}`);
+        lines.push(
+          `- ${c.countryName}: ${c.totalCount} signals (${types}), convergence score: ${c.convergenceScore}`,
+        );
       }
     }
 

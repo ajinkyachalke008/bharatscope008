@@ -13,21 +13,25 @@ export async function fetchOllamaModels(ollamaUrl: string): Promise<string[]> {
       signal: makeTimeout(5000),
     });
     if (res.ok) {
-      const data = await res.json() as { models?: Array<{ name: string }> };
-      const models = (data.models?.map(m => m.name) || []).filter(n => !n.includes('embed'));
+      const data = (await res.json()) as { models?: Array<{ name: string }> };
+      const models = (data.models?.map((m) => m.name) || []).filter((n) => !n.includes('embed'));
       if (models.length > 0) return models;
     }
-  } catch { /* Ollama endpoint not available */ }
+  } catch {
+    /* Ollama endpoint not available */
+  }
 
   try {
     const res = await fetch(new URL('/v1/models', ollamaUrl).toString(), {
       signal: makeTimeout(5000),
     });
     if (res.ok) {
-      const data = await res.json() as { data?: Array<{ id: string }> };
-      return (data.data?.map(m => m.id) || []).filter(n => !n.includes('embed'));
+      const data = (await res.json()) as { data?: Array<{ id: string }> };
+      return (data.data?.map((m) => m.id) || []).filter((n) => !n.includes('embed'));
     }
-  } catch { /* OpenAI endpoint also unavailable */ }
+  } catch {
+    /* OpenAI endpoint also unavailable */
+  }
 
   return [];
 }

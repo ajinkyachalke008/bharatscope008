@@ -34,7 +34,7 @@ export class UcdpEventsPanel extends Panel {
   }
 
   private renderContent(): void {
-    const filtered = this.events.filter(e => e.type_of_violence === this.activeTab);
+    const filtered = this.events.filter((e) => e.type_of_violence === this.activeTab);
     const tabs: { key: UcdpEventType; label: string }[] = [
       { key: 'state-based', label: t('components.ucdpEvents.stateBased') },
       { key: 'non-state', label: t('components.ucdpEvents.nonState') },
@@ -52,9 +52,12 @@ export class UcdpEventsPanel extends Panel {
 
     const totalDeaths = filtered.reduce((sum, e) => sum + e.deaths_best, 0);
 
-    const tabsHtml = tabs.map(t =>
-      `<button class="ucdp-tab ${t.key === this.activeTab ? 'ucdp-tab-active' : ''}" data-tab="${t.key}">${t.label} <span class="ucdp-tab-count">${tabCounts[t.key]}</span></button>`
-    ).join('');
+    const tabsHtml = tabs
+      .map(
+        (t) =>
+          `<button class="ucdp-tab ${t.key === this.activeTab ? 'ucdp-tab-active' : ''}" data-tab="${t.key}">${t.label} <span class="ucdp-tab-count">${tabCounts[t.key]}</span></button>`,
+      )
+      .join('');
 
     const displayed = filtered.slice(0, 50);
     let bodyHtml: string;
@@ -62,22 +65,28 @@ export class UcdpEventsPanel extends Panel {
     if (displayed.length === 0) {
       bodyHtml = `<div class="panel-empty">${t('common.noEventsInCategory')}</div>`;
     } else {
-      const rows = displayed.map(e => {
-        const deathsClass = e.type_of_violence === 'state-based' ? 'ucdp-deaths-state'
-          : e.type_of_violence === 'non-state' ? 'ucdp-deaths-nonstate'
-            : 'ucdp-deaths-onesided';
-        const deathsHtml = e.deaths_best > 0
-          ? `<span class="${deathsClass}">${e.deaths_best}</span> <small class="ucdp-range">(${e.deaths_low}-${e.deaths_high})</small>`
-          : '<span class="ucdp-deaths-zero">0</span>';
-        const actors = `${escapeHtml(e.side_a)} vs ${escapeHtml(e.side_b)}`;
+      const rows = displayed
+        .map((e) => {
+          const deathsClass =
+            e.type_of_violence === 'state-based'
+              ? 'ucdp-deaths-state'
+              : e.type_of_violence === 'non-state'
+                ? 'ucdp-deaths-nonstate'
+                : 'ucdp-deaths-onesided';
+          const deathsHtml =
+            e.deaths_best > 0
+              ? `<span class="${deathsClass}">${e.deaths_best}</span> <small class="ucdp-range">(${e.deaths_low}-${e.deaths_high})</small>`
+              : '<span class="ucdp-deaths-zero">0</span>';
+          const actors = `${escapeHtml(e.side_a)} vs ${escapeHtml(e.side_b)}`;
 
-        return `<tr class="ucdp-row" data-lat="${e.latitude}" data-lon="${e.longitude}">
+          return `<tr class="ucdp-row" data-lat="${e.latitude}" data-lon="${e.longitude}">
           <td class="ucdp-country">${escapeHtml(e.country)}</td>
           <td class="ucdp-deaths">${deathsHtml}</td>
           <td class="ucdp-date">${e.date_start}</td>
           <td class="ucdp-actors">${actors}</td>
         </tr>`;
-      }).join('');
+        })
+        .join('');
 
       bodyHtml = `
         <table class="ucdp-table">
@@ -93,9 +102,10 @@ export class UcdpEventsPanel extends Panel {
         </table>`;
     }
 
-    const moreHtml = filtered.length > 50
-      ? `<div class="panel-more">${t('components.ucdpEvents.moreNotShown', { count: filtered.length - 50 })}</div>`
-      : '';
+    const moreHtml =
+      filtered.length > 50
+        ? `<div class="panel-more">${t('components.ucdpEvents.moreNotShown', { count: filtered.length - 50 })}</div>`
+        : '';
 
     this.setContent(`
       <div class="ucdp-panel-content">
@@ -108,14 +118,14 @@ export class UcdpEventsPanel extends Panel {
       </div>
     `);
 
-    this.content.querySelectorAll('.ucdp-tab').forEach(btn => {
+    this.content.querySelectorAll('.ucdp-tab').forEach((btn) => {
       btn.addEventListener('click', () => {
         this.activeTab = (btn as HTMLElement).dataset.tab as UcdpEventType;
         this.renderContent();
       });
     });
 
-    this.content.querySelectorAll('.ucdp-row').forEach(el => {
+    this.content.querySelectorAll('.ucdp-row').forEach((el) => {
       el.addEventListener('click', () => {
         const lat = Number((el as HTMLElement).dataset.lat);
         const lon = Number((el as HTMLElement).dataset.lon);

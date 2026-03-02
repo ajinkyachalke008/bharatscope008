@@ -39,7 +39,11 @@ export interface MapFire {
 // -- Client --
 
 const client = new WildfireServiceClient('', { fetch: (...args) => globalThis.fetch(...args) });
-const breaker = createCircuitBreaker<ListFireDetectionsResponse>({ name: 'Wildfires', cacheTtlMs: 5 * 60 * 1000, persistCache: true });
+const breaker = createCircuitBreaker<ListFireDetectionsResponse>({
+  name: 'Wildfires',
+  cacheTtlMs: 5 * 60 * 1000,
+  persistCache: true,
+});
 
 const emptyFallback: ListFireDetectionsResponse = { fireDetections: [] };
 
@@ -52,7 +56,12 @@ export async function fetchAllFires(_days?: number): Promise<FetchResult> {
   const detections = response.fireDetections;
 
   if (detections.length === 0) {
-    return { regions: {}, totalCount: 0, skipped: true, reason: 'NASA_FIRMS_API_KEY not configured' };
+    return {
+      regions: {},
+      totalCount: 0,
+      skipped: true,
+      reason: 'NASA_FIRMS_API_KEY not configured',
+    };
   }
 
   const regions: Record<string, FireDetection[]> = {};
@@ -69,7 +78,7 @@ export function computeRegionStats(regions: Record<string, FireDetection[]>): Fi
 
   for (const [region, fires] of Object.entries(regions)) {
     const highIntensity = fires.filter(
-      f => f.brightness > 360 && f.confidence === 'FIRE_CONFIDENCE_HIGH',
+      (f) => f.brightness > 360 && f.confidence === 'FIRE_CONFIDENCE_HIGH',
     );
     stats.push({
       region,
@@ -94,7 +103,7 @@ export function flattenFires(regions: Record<string, FireDetection[]>): FireDete
 }
 
 export function toMapFires(fires: FireDetection[]): MapFire[] {
-  return fires.map(f => ({
+  return fires.map((f) => ({
     lat: f.location?.latitude ?? 0,
     lon: f.location?.longitude ?? 0,
     brightness: f.brightness,
@@ -108,9 +117,13 @@ export function toMapFires(fires: FireDetection[]): MapFire[] {
 
 function confidenceToNumber(c: FireConfidence): number {
   switch (c) {
-    case 'FIRE_CONFIDENCE_HIGH': return 95;
-    case 'FIRE_CONFIDENCE_NOMINAL': return 50;
-    case 'FIRE_CONFIDENCE_LOW': return 20;
-    default: return 0;
+    case 'FIRE_CONFIDENCE_HIGH':
+      return 95;
+    case 'FIRE_CONFIDENCE_NOMINAL':
+      return 50;
+    case 'FIRE_CONFIDENCE_LOW':
+      return 20;
+    default:
+      return 0;
   }
 }

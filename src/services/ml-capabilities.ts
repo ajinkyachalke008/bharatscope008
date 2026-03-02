@@ -31,9 +31,7 @@ export async function detectMLCapabilities(): Promise<MLCapabilities> {
   const hasThreads = checkThreadsSupport();
   const estimatedMemoryMB = estimateAvailableMemory();
 
-  const isSupported = isDesktop &&
-    (hasWebGL || hasWebGPU) &&
-    estimatedMemoryMB >= 100;
+  const isSupported = isDesktop && (hasWebGL || hasWebGPU) && estimatedMemoryMB >= 100;
 
   let recommendedExecutionProvider: 'webgpu' | 'webgl' | 'wasm';
   if (hasWebGPU) {
@@ -44,9 +42,7 @@ export async function detectMLCapabilities(): Promise<MLCapabilities> {
     recommendedExecutionProvider = 'wasm';
   }
 
-  const recommendedThreads = hasThreads
-    ? Math.min(navigator.hardwareConcurrency || 4, 4)
-    : 1;
+  const recommendedThreads = hasThreads ? Math.min(navigator.hardwareConcurrency || 4, 4) : 1;
 
   cachedCapabilities = {
     isSupported,
@@ -77,7 +73,9 @@ function checkWebGLSupport(): boolean {
 async function checkWebGPUSupport(): Promise<boolean> {
   try {
     if (!('gpu' in navigator)) return false;
-    const adapter = await (navigator as Navigator & { gpu?: { requestAdapter(): Promise<unknown> } }).gpu?.requestAdapter();
+    const adapter = await (
+      navigator as Navigator & { gpu?: { requestAdapter(): Promise<unknown> } }
+    ).gpu?.requestAdapter();
     return adapter !== null && adapter !== undefined;
   } catch {
     return false;
@@ -86,11 +84,15 @@ async function checkWebGPUSupport(): Promise<boolean> {
 
 function checkSIMDSupport(): boolean {
   try {
-    return typeof WebAssembly.validate === 'function' &&
-      WebAssembly.validate(new Uint8Array([
-        0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123,
-        3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11
-      ]));
+    return (
+      typeof WebAssembly.validate === 'function' &&
+      WebAssembly.validate(
+        new Uint8Array([
+          0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0,
+          253, 15, 253, 98, 11,
+        ]),
+      )
+    );
   } catch {
     return false;
   }

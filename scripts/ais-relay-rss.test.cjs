@@ -22,17 +22,19 @@ function listen(server, port = 0) {
 
 function fetch(url) {
   return new Promise((resolve, reject) => {
-    http.get(url, (res) => {
-      const chunks = [];
-      res.on('data', (c) => chunks.push(c));
-      res.on('end', () => {
-        resolve({
-          status: res.statusCode,
-          headers: res.headers,
-          body: Buffer.concat(chunks).toString(),
+    http
+      .get(url, (res) => {
+        const chunks = [];
+        res.on('data', (c) => chunks.push(c));
+        res.on('end', () => {
+          resolve({
+            status: res.statusCode,
+            headers: res.headers,
+            body: Buffer.concat(chunks).toString(),
+          });
         });
-      });
-    }).on('error', reject);
+      })
+      .on('error', reject);
   });
 }
 
@@ -55,9 +57,16 @@ function createMockUpstream() {
   return {
     server,
     getHitCount: () => hitCount,
-    resetHitCount: () => { hitCount = 0; },
-    setResponse: (status, body) => { responseStatus = status; responseBody = body || responseBody; },
-    setDelay: (ms) => { responseDelay = ms; },
+    resetHitCount: () => {
+      hitCount = 0;
+    },
+    setResponse: (status, body) => {
+      responseStatus = status;
+      responseBody = body || responseBody;
+    },
+    setDelay: (ms) => {
+      responseDelay = ms;
+    },
   };
 }
 
@@ -80,7 +89,9 @@ function createTestRssProxy(upstreamPort) {
       res.writeHead(statusCode, headers);
       res.end(body);
       return true;
-    } catch { return false; }
+    } catch {
+      return false;
+    }
   }
 
   const server = http.createServer(async (req, res) => {
@@ -95,8 +106,10 @@ function createTestRssProxy(upstreamPort) {
     // Cache check with status-aware TTL
     const rssCached = rssResponseCache.get(feedUrl);
     if (rssCached) {
-      const ttl = (rssCached.statusCode >= 200 && rssCached.statusCode < 300)
-        ? RSS_CACHE_TTL_MS : RSS_NEGATIVE_CACHE_TTL_MS;
+      const ttl =
+        rssCached.statusCode >= 200 && rssCached.statusCode < 300
+          ? RSS_CACHE_TTL_MS
+          : RSS_NEGATIVE_CACHE_TTL_MS;
       if (Date.now() - rssCached.timestamp < ttl) {
         res.writeHead(rssCached.statusCode, {
           'Content-Type': 'application/xml',
@@ -119,40 +132,54 @@ function createTestRssProxy(upstreamPort) {
           });
           return res.end(deduped.data);
         }
-        return safeEnd(res, 502, { 'Content-Type': 'application/json' },
-          JSON.stringify({ error: 'Upstream fetch completed but not cached' }));
+        return safeEnd(
+          res,
+          502,
+          { 'Content-Type': 'application/json' },
+          JSON.stringify({ error: 'Upstream fetch completed but not cached' }),
+        );
       } catch {
-        return safeEnd(res, 502, { 'Content-Type': 'application/json' },
-          JSON.stringify({ error: 'Upstream fetch failed' }));
+        return safeEnd(
+          res,
+          502,
+          { 'Content-Type': 'application/json' },
+          JSON.stringify({ error: 'Upstream fetch failed' }),
+        );
       }
     }
 
     // MISS — fetch upstream
     const fetchPromise = new Promise((resolveInFlight, rejectInFlight) => {
-      const request = http.get(`http://127.0.0.1:${upstreamPort}${new URL(feedUrl).pathname}`, {
-        timeout: 5000,
-      }, (response) => {
-        const chunks = [];
-        response.on('data', (c) => chunks.push(c));
-        response.on('end', () => {
-          const data = Buffer.concat(chunks);
-          // FIFO eviction
-          if (rssResponseCache.size >= RSS_CACHE_MAX_ENTRIES && !rssResponseCache.has(feedUrl)) {
-            const oldest = rssResponseCache.keys().next().value;
-            if (oldest) rssResponseCache.delete(oldest);
-          }
-          rssResponseCache.set(feedUrl, {
-            data, contentType: 'application/xml',
-            statusCode: response.statusCode, timestamp: Date.now(),
+      const request = http.get(
+        `http://127.0.0.1:${upstreamPort}${new URL(feedUrl).pathname}`,
+        {
+          timeout: 5000,
+        },
+        (response) => {
+          const chunks = [];
+          response.on('data', (c) => chunks.push(c));
+          response.on('end', () => {
+            const data = Buffer.concat(chunks);
+            // FIFO eviction
+            if (rssResponseCache.size >= RSS_CACHE_MAX_ENTRIES && !rssResponseCache.has(feedUrl)) {
+              const oldest = rssResponseCache.keys().next().value;
+              if (oldest) rssResponseCache.delete(oldest);
+            }
+            rssResponseCache.set(feedUrl, {
+              data,
+              contentType: 'application/xml',
+              statusCode: response.statusCode,
+              timestamp: Date.now(),
+            });
+            resolveInFlight();
+            res.writeHead(response.statusCode, {
+              'Content-Type': 'application/xml',
+              'X-Cache': 'MISS',
+            });
+            res.end(data);
           });
-          resolveInFlight();
-          res.writeHead(response.statusCode, {
-            'Content-Type': 'application/xml',
-            'X-Cache': 'MISS',
-          });
-          res.end(data);
-        });
-      });
+        },
+      );
 
       request.on('error', (err) => {
         if (rssCached) {
@@ -162,8 +189,12 @@ function createTestRssProxy(upstreamPort) {
           return;
         }
         rejectInFlight(err);
-        safeEnd(res, 502, { 'Content-Type': 'application/json' },
-          JSON.stringify({ error: err.message }));
+        safeEnd(
+          res,
+          502,
+          { 'Content-Type': 'application/json' },
+          JSON.stringify({ error: err.message }),
+        );
       });
 
       request.on('timeout', () => {
@@ -175,8 +206,12 @@ function createTestRssProxy(upstreamPort) {
           return;
         }
         rejectInFlight(new Error('timeout'));
-        safeEnd(res, 504, { 'Content-Type': 'application/json' },
-          JSON.stringify({ error: 'timeout' }));
+        safeEnd(
+          res,
+          504,
+          { 'Content-Type': 'application/json' },
+          JSON.stringify({ error: 'timeout' }),
+        );
       });
     });
 
@@ -209,7 +244,11 @@ test('RSS proxy: negative caching prevents thundering herd on 429', async (t) =>
   const r2 = await fetch(`http://127.0.0.1:${proxyPort}/?url=${encodeURIComponent(feedUrl)}`);
   assert.equal(r2.status, 429);
   assert.equal(r2.headers['x-cache'], 'HIT');
-  assert.equal(upstream.getHitCount(), 1, 'Should not hit upstream again — negative cache should serve');
+  assert.equal(
+    upstream.getHitCount(),
+    1,
+    'Should not hit upstream again — negative cache should serve',
+  );
 
   // Third request — still cached
   const r3 = await fetch(`http://127.0.0.1:${proxyPort}/?url=${encodeURIComponent(feedUrl)}`);
@@ -234,8 +273,8 @@ test('RSS proxy: concurrent requests dedup on in-flight, no cascade on failure',
   // Fire 5 concurrent requests
   const results = await Promise.all(
     Array.from({ length: 5 }, () =>
-      fetch(`http://127.0.0.1:${proxyPort}/?url=${encodeURIComponent(feedUrl)}`)
-    )
+      fetch(`http://127.0.0.1:${proxyPort}/?url=${encodeURIComponent(feedUrl)}`),
+    ),
   );
 
   // Only 1 should be MISS, the rest should be DEDUP (served from negative cache after in-flight resolves)
@@ -244,7 +283,11 @@ test('RSS proxy: concurrent requests dedup on in-flight, no cascade on failure',
 
   assert.equal(misses.length, 1, 'Exactly 1 MISS (the leader)');
   assert.equal(deduped.length, 4, 'Remaining 4 should be DEDUP');
-  assert.equal(upstream.getHitCount(), 1, 'Upstream hit exactly once despite 5 concurrent requests');
+  assert.equal(
+    upstream.getHitCount(),
+    1,
+    'Upstream hit exactly once despite 5 concurrent requests',
+  );
 
   upstream.server.close();
   proxy.server.close();
@@ -283,12 +326,16 @@ test('RSS proxy: FIFO eviction caps cache size', async (t) => {
 
   // Fill cache with 5 unique URLs
   for (let i = 0; i < 5; i++) {
-    await fetch(`http://127.0.0.1:${proxyPort}/?url=${encodeURIComponent(`http://example.com/feed-${i}`)}`);
+    await fetch(
+      `http://127.0.0.1:${proxyPort}/?url=${encodeURIComponent(`http://example.com/feed-${i}`)}`,
+    );
   }
   assert.equal(proxy.cache.size, 5);
 
   // 6th URL should evict oldest
-  await fetch(`http://127.0.0.1:${proxyPort}/?url=${encodeURIComponent(`http://example.com/feed-new`)}`);
+  await fetch(
+    `http://127.0.0.1:${proxyPort}/?url=${encodeURIComponent(`http://example.com/feed-new`)}`,
+  );
   assert.equal(proxy.cache.size, 5, 'Cache should not exceed max entries');
   assert.ok(!proxy.cache.has('http://example.com/feed-0'), 'Oldest entry should be evicted');
   assert.ok(proxy.cache.has('http://example.com/feed-new'), 'New entry should be present');
@@ -324,7 +371,9 @@ test('RSS proxy: stale-on-error resolves in-flight (no hang)', async (t) => {
   const r2Promise = fetch(`http://127.0.0.1:${proxyPort}/?url=${encodeURIComponent(feedUrl)}`);
   const r2 = await Promise.race([
     r2Promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error('Request hung — in-flight not settled')), 3000)),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Request hung — in-flight not settled')), 3000),
+    ),
   ]);
 
   // Should get stale or error, but NOT hang

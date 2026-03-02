@@ -55,10 +55,26 @@ export interface CachedRiskScores {
 // ---- Proto → legacy adapters ----
 
 const TIER1_NAMES: Record<string, string> = {
-  US: 'United States', RU: 'Russia', CN: 'China', UA: 'Ukraine', IR: 'Iran',
-  IL: 'Israel', TW: 'Taiwan', KP: 'North Korea', SA: 'Saudi Arabia', TR: 'Turkey',
-  PL: 'Poland', DE: 'Germany', FR: 'France', GB: 'United Kingdom', IN: 'India',
-  PK: 'Pakistan', SY: 'Syria', YE: 'Yemen', MM: 'Myanmar', VE: 'Venezuela',
+  US: 'United States',
+  RU: 'Russia',
+  CN: 'China',
+  UA: 'Ukraine',
+  IR: 'Iran',
+  IL: 'Israel',
+  TW: 'Taiwan',
+  KP: 'North Korea',
+  SA: 'Saudi Arabia',
+  TR: 'Turkey',
+  PL: 'Poland',
+  DE: 'Germany',
+  FR: 'France',
+  GB: 'United Kingdom',
+  IN: 'India',
+  PK: 'Pakistan',
+  SY: 'Syria',
+  YE: 'Yemen',
+  MM: 'Myanmar',
+  VE: 'Venezuela',
 };
 
 const TREND_REVERSE: Record<string, 'rising' | 'stable' | 'falling'> = {
@@ -95,7 +111,9 @@ function toCachedCII(proto: CiiScore): CachedCIIScore {
       security: proto.components?.militaryActivity ?? 0,
       information: proto.components?.newsActivity ?? 0,
     },
-    lastUpdated: proto.computedAt ? new Date(proto.computedAt).toISOString() : new Date().toISOString(),
+    lastUpdated: proto.computedAt
+      ? new Date(proto.computedAt).toISOString()
+      : new Date().toISOString(),
   };
 }
 
@@ -170,7 +188,9 @@ async function loadPersistentRiskScores(): Promise<CachedRiskScores | null> {
   return entry?.data ?? null;
 }
 
-export async function fetchCachedRiskScores(signal?: AbortSignal): Promise<CachedRiskScores | null> {
+export async function fetchCachedRiskScores(
+  signal?: AbortSignal,
+): Promise<CachedRiskScores | null> {
   if (signal?.aborted) throw createAbortError();
   const now = Date.now();
 
@@ -195,7 +215,7 @@ export async function fetchCachedRiskScores(signal?: AbortSignal): Promise<Cache
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') throw error;
       console.error('[CachedRiskScores] Fetch error:', error);
-      return cachedScores ?? await loadPersistentRiskScores();
+      return cachedScores ?? (await loadPersistentRiskScores());
     } finally {
       fetchPromise = null;
     }

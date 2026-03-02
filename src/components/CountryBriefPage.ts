@@ -29,20 +29,34 @@ interface CountryIntelData {
 
 export class CountryBriefPage {
   private static BRIEF_BOUNDS: Record<string, { n: number; s: number; e: number; w: number }> = {
-    IR: { n: 40, s: 25, e: 63, w: 44 }, IL: { n: 33.3, s: 29.5, e: 35.9, w: 34.3 },
-    SA: { n: 32, s: 16, e: 55, w: 35 }, AE: { n: 26.1, s: 22.6, e: 56.4, w: 51.6 },
-    IQ: { n: 37.4, s: 29.1, e: 48.6, w: 38.8 }, SY: { n: 37.3, s: 32.3, e: 42.4, w: 35.7 },
-    YE: { n: 19, s: 12, e: 54.5, w: 42 }, LB: { n: 34.7, s: 33.1, e: 36.6, w: 35.1 },
-    CN: { n: 53.6, s: 18.2, e: 134.8, w: 73.5 }, TW: { n: 25.3, s: 21.9, e: 122, w: 120 },
-    JP: { n: 45.5, s: 24.2, e: 153.9, w: 122.9 }, KR: { n: 38.6, s: 33.1, e: 131.9, w: 124.6 },
-    KP: { n: 43.0, s: 37.7, e: 130.7, w: 124.2 }, IN: { n: 35.5, s: 6.7, e: 97.4, w: 68.2 },
-    PK: { n: 37, s: 24, e: 77, w: 61 }, AF: { n: 38.5, s: 29.4, e: 74.9, w: 60.5 },
-    UA: { n: 52.4, s: 44.4, e: 40.2, w: 22.1 }, RU: { n: 82, s: 41.2, e: 180, w: 19.6 },
-    BY: { n: 56.2, s: 51.3, e: 32.8, w: 23.2 }, PL: { n: 54.8, s: 49, e: 24.1, w: 14.1 },
-    EG: { n: 31.7, s: 22, e: 36.9, w: 25 }, LY: { n: 33, s: 19.5, e: 25, w: 9.4 },
-    SD: { n: 22, s: 8.7, e: 38.6, w: 21.8 }, US: { n: 49, s: 24.5, e: -66.9, w: -125 },
-    GB: { n: 58.7, s: 49.9, e: 1.8, w: -8.2 }, DE: { n: 55.1, s: 47.3, e: 15.0, w: 5.9 },
-    FR: { n: 51.1, s: 41.3, e: 9.6, w: -5.1 }, TR: { n: 42.1, s: 36, e: 44.8, w: 26 },
+    IR: { n: 40, s: 25, e: 63, w: 44 },
+    IL: { n: 33.3, s: 29.5, e: 35.9, w: 34.3 },
+    SA: { n: 32, s: 16, e: 55, w: 35 },
+    AE: { n: 26.1, s: 22.6, e: 56.4, w: 51.6 },
+    IQ: { n: 37.4, s: 29.1, e: 48.6, w: 38.8 },
+    SY: { n: 37.3, s: 32.3, e: 42.4, w: 35.7 },
+    YE: { n: 19, s: 12, e: 54.5, w: 42 },
+    LB: { n: 34.7, s: 33.1, e: 36.6, w: 35.1 },
+    CN: { n: 53.6, s: 18.2, e: 134.8, w: 73.5 },
+    TW: { n: 25.3, s: 21.9, e: 122, w: 120 },
+    JP: { n: 45.5, s: 24.2, e: 153.9, w: 122.9 },
+    KR: { n: 38.6, s: 33.1, e: 131.9, w: 124.6 },
+    KP: { n: 43.0, s: 37.7, e: 130.7, w: 124.2 },
+    IN: { n: 35.5, s: 6.7, e: 97.4, w: 68.2 },
+    PK: { n: 37, s: 24, e: 77, w: 61 },
+    AF: { n: 38.5, s: 29.4, e: 74.9, w: 60.5 },
+    UA: { n: 52.4, s: 44.4, e: 40.2, w: 22.1 },
+    RU: { n: 82, s: 41.2, e: 180, w: 19.6 },
+    BY: { n: 56.2, s: 51.3, e: 32.8, w: 23.2 },
+    PL: { n: 54.8, s: 49, e: 24.1, w: 14.1 },
+    EG: { n: 31.7, s: 22, e: 36.9, w: 25 },
+    LY: { n: 33, s: 19.5, e: 25, w: 9.4 },
+    SD: { n: 22, s: 8.7, e: 38.6, w: 21.8 },
+    US: { n: 49, s: 24.5, e: -66.9, w: -125 },
+    GB: { n: 58.7, s: 49.9, e: 1.8, w: -8.2 },
+    DE: { n: 55.1, s: 47.3, e: 15.0, w: 5.9 },
+    FR: { n: 51.1, s: 41.3, e: 9.6, w: -5.1 },
+    TR: { n: 42.1, s: 36, e: 44.8, w: 26 },
   };
 
   private static INFRA_ICONS: Record<BriefAssetType, string> = {
@@ -123,7 +137,8 @@ export class CountryBriefPage {
 
   private trendIndicator(trend: string): string {
     const arrow = trend === 'rising' ? '↗' : trend === 'falling' ? '↘' : '→';
-    const cls = trend === 'rising' ? 'trend-up' : trend === 'falling' ? 'trend-down' : 'trend-stable';
+    const cls =
+      trend === 'rising' ? 'trend-up' : trend === 'falling' ? 'trend-down' : 'trend-stable';
     const trendKey = trend as 'rising' | 'falling' | 'stable';
     const trendLabel = t(`countryBrief.trends.${trendKey}`);
     return `<span class="cb-trend ${cls}">${arrow} ${trendLabel}</span>`;
@@ -151,39 +166,86 @@ export class CountryBriefPage {
   private componentBars(components: CountryScore['components']): string {
     const items = [
       { label: t('modals.countryBrief.components.unrest'), value: components.unrest, icon: '📢' },
-      { label: t('modals.countryBrief.components.conflict'), value: components.conflict, icon: '⚔' },
-      { label: t('modals.countryBrief.components.security'), value: components.security, icon: '🛡️' },
-      { label: t('modals.countryBrief.components.information'), value: components.information, icon: '📡' },
+      {
+        label: t('modals.countryBrief.components.conflict'),
+        value: components.conflict,
+        icon: '⚔',
+      },
+      {
+        label: t('modals.countryBrief.components.security'),
+        value: components.security,
+        icon: '🛡️',
+      },
+      {
+        label: t('modals.countryBrief.components.information'),
+        value: components.information,
+        icon: '📡',
+      },
     ];
-    return items.map(({ label, value, icon }) => {
-      const pct = Math.min(100, Math.max(0, value));
-      const color = pct >= 70 ? getCSSColor('--semantic-critical') : pct >= 50 ? getCSSColor('--semantic-high') : pct >= 30 ? getCSSColor('--semantic-elevated') : getCSSColor('--semantic-normal');
-      return `
+    return items
+      .map(({ label, value, icon }) => {
+        const pct = Math.min(100, Math.max(0, value));
+        const color =
+          pct >= 70
+            ? getCSSColor('--semantic-critical')
+            : pct >= 50
+              ? getCSSColor('--semantic-high')
+              : pct >= 30
+                ? getCSSColor('--semantic-elevated')
+                : getCSSColor('--semantic-normal');
+        return `
         <div class="cb-comp-row">
           <span class="cb-comp-icon">${icon}</span>
           <span class="cb-comp-label">${label}</span>
           <div class="cb-comp-bar"><div class="cb-comp-fill" style="width:${pct}%;background:${color}"></div></div>
           <span class="cb-comp-val">${Math.round(value)}</span>
         </div>`;
-    }).join('');
+      })
+      .join('');
   }
 
   private signalChips(signals: CountryBriefSignals): string {
     const chips: string[] = [];
-    if (signals.protests > 0) chips.push(`<span class="signal-chip protest">📢 ${signals.protests} ${t('modals.countryBrief.signals.protests')}</span>`);
-    if (signals.militaryFlights > 0) chips.push(`<span class="signal-chip military">✈️ ${signals.militaryFlights} ${t('modals.countryBrief.signals.militaryAir')}</span>`);
-    if (signals.militaryVessels > 0) chips.push(`<span class="signal-chip military">⚓ ${signals.militaryVessels} ${t('modals.countryBrief.signals.militarySea')}</span>`);
-    if (signals.outages > 0) chips.push(`<span class="signal-chip outage">🌐 ${signals.outages} ${t('modals.countryBrief.signals.outages')}</span>`);
-    if (signals.earthquakes > 0) chips.push(`<span class="signal-chip quake">🌍 ${signals.earthquakes} ${t('modals.countryBrief.signals.earthquakes')}</span>`);
+    if (signals.protests > 0)
+      chips.push(
+        `<span class="signal-chip protest">📢 ${signals.protests} ${t('modals.countryBrief.signals.protests')}</span>`,
+      );
+    if (signals.militaryFlights > 0)
+      chips.push(
+        `<span class="signal-chip military">✈️ ${signals.militaryFlights} ${t('modals.countryBrief.signals.militaryAir')}</span>`,
+      );
+    if (signals.militaryVessels > 0)
+      chips.push(
+        `<span class="signal-chip military">⚓ ${signals.militaryVessels} ${t('modals.countryBrief.signals.militarySea')}</span>`,
+      );
+    if (signals.outages > 0)
+      chips.push(
+        `<span class="signal-chip outage">🌐 ${signals.outages} ${t('modals.countryBrief.signals.outages')}</span>`,
+      );
+    if (signals.earthquakes > 0)
+      chips.push(
+        `<span class="signal-chip quake">🌍 ${signals.earthquakes} ${t('modals.countryBrief.signals.earthquakes')}</span>`,
+      );
     if (signals.displacementOutflow > 0) {
-      const fmt = signals.displacementOutflow >= 1_000_000
-        ? `${(signals.displacementOutflow / 1_000_000).toFixed(1)}M`
-        : `${(signals.displacementOutflow / 1000).toFixed(0)}K`;
-      chips.push(`<span class="signal-chip displacement">🌊 ${fmt} ${t('modals.countryBrief.signals.displaced')}</span>`);
+      const fmt =
+        signals.displacementOutflow >= 1_000_000
+          ? `${(signals.displacementOutflow / 1_000_000).toFixed(1)}M`
+          : `${(signals.displacementOutflow / 1000).toFixed(0)}K`;
+      chips.push(
+        `<span class="signal-chip displacement">🌊 ${fmt} ${t('modals.countryBrief.signals.displaced')}</span>`,
+      );
     }
-    if (signals.climateStress > 0) chips.push(`<span class="signal-chip climate">🌡️ ${t('modals.countryBrief.signals.climate')}</span>`);
-    if (signals.conflictEvents > 0) chips.push(`<span class="signal-chip conflict">⚔️ ${signals.conflictEvents} ${t('modals.countryBrief.signals.conflictEvents')}</span>`);
-    chips.push(`<span class="signal-chip stock-loading">📈 ${t('modals.countryBrief.loadingIndex')}</span>`);
+    if (signals.climateStress > 0)
+      chips.push(
+        `<span class="signal-chip climate">🌡️ ${t('modals.countryBrief.signals.climate')}</span>`,
+      );
+    if (signals.conflictEvents > 0)
+      chips.push(
+        `<span class="signal-chip conflict">⚔️ ${signals.conflictEvents} ${t('modals.countryBrief.signals.conflictEvents')}</span>`,
+      );
+    chips.push(
+      `<span class="signal-chip stock-loading">📈 ${t('modals.countryBrief.loadingIndex')}</span>`,
+    );
     return chips.join('');
   }
 
@@ -224,7 +286,12 @@ export class CountryBriefPage {
     return this.abortController.signal;
   }
 
-  public show(country: string, code: string, score: CountryScore | null, signals: CountryBriefSignals): void {
+  public show(
+    country: string,
+    code: string,
+    score: CountryScore | null,
+    signals: CountryBriefSignals,
+  ): void {
     this.abortController.abort();
     this.abortController = new AbortController();
     this.currentCode = code;
@@ -274,7 +341,9 @@ export class CountryBriefPage {
         <div class="cb-body">
           <div class="cb-grid">
             <div class="cb-col-left">
-              ${score ? `
+              ${
+                score
+                  ? `
                 <section class="cb-section cb-risk-section">
                   <h3 class="cb-section-title">${t('modals.countryBrief.instabilityIndex')}</h3>
                   <div class="cb-risk-content">
@@ -283,14 +352,18 @@ export class CountryBriefPage {
                       ${this.componentBars(score.components)}
                     </div>
                   </div>
-                </section>` : signals.isTier1 ? '' : `
+                </section>`
+                  : signals.isTier1
+                    ? ''
+                    : `
                 <section class="cb-section cb-risk-section">
                   <h3 class="cb-section-title">${t('modals.countryBrief.instabilityIndex')}</h3>
                   <div class="cb-not-tracked">
                     <span class="cb-not-tracked-icon">📊</span>
                     <span>${t('modals.countryBrief.notTracked', { country: escapeHtml(country) })}</span>
                   </div>
-                </section>`}
+                </section>`
+              }
 
               <section class="cb-section cb-brief-section">
                 <h3 class="cb-section-title">${t('modals.countryBrief.intelBrief')}</h3>
@@ -357,7 +430,7 @@ export class CountryBriefPage {
       e.stopPropagation();
       exportMenu?.classList.toggle('hidden');
     });
-    this.overlay.querySelectorAll('.cb-export-option').forEach(opt => {
+    this.overlay.querySelectorAll('.cb-export-option').forEach((opt) => {
       opt.addEventListener('click', () => {
         const format = (opt as HTMLElement).dataset.format;
         if (format === 'image') {
@@ -373,7 +446,8 @@ export class CountryBriefPage {
       });
     });
     // Remove previous overlay-level listeners to prevent accumulation
-    if (this.boundExportMenuClose) this.overlay.removeEventListener('click', this.boundExportMenuClose);
+    if (this.boundExportMenuClose)
+      this.overlay.removeEventListener('click', this.boundExportMenuClose);
     if (this.boundCitationClick) this.overlay.removeEventListener('click', this.boundCitationClick);
 
     this.boundExportMenuClose = () => exportMenu?.classList.add('hidden');
@@ -427,13 +501,17 @@ export class CountryBriefPage {
       return;
     }
 
-    section.innerHTML = markets.slice(0, 3).map(m => {
-      const pct = Math.round(m.yesPrice);
-      const noPct = 100 - pct;
-      const vol = m.volume ? `$${(m.volume / 1000).toFixed(0)}k vol` : '';
-      const safeUrl = sanitizeUrl(m.url || '');
-      const link = safeUrl ? ` <a href="${safeUrl}" target="_blank" rel="noopener" class="cb-market-link">↗</a>` : '';
-      return `
+    section.innerHTML = markets
+      .slice(0, 3)
+      .map((m) => {
+        const pct = Math.round(m.yesPrice);
+        const noPct = 100 - pct;
+        const vol = m.volume ? `$${(m.volume / 1000).toFixed(0)}k vol` : '';
+        const safeUrl = sanitizeUrl(m.url || '');
+        const link = safeUrl
+          ? ` <a href="${safeUrl}" target="_blank" rel="noopener" class="cb-market-link">↗</a>`
+          : '';
+        return `
         <div class="cb-market-item">
           <div class="cb-market-title">${escapeHtml(m.title.slice(0, 100))}${link}</div>
           <div class="market-bar">
@@ -442,7 +520,8 @@ export class CountryBriefPage {
           </div>
           ${vol ? `<div class="market-vol">${vol}</div>` : ''}
         </div>`;
-    }).join('');
+      })
+      .join('');
   }
 
   public updateStock(data: StockIndexData): void {
@@ -472,26 +551,31 @@ export class CountryBriefPage {
     this.currentHeadlines = items;
     section.style.display = '';
 
-    content.innerHTML = items.map((item, i) => {
-      const safeUrl = sanitizeUrl(item.link);
-      const threatColor = item.threat?.level === 'critical' ? getCSSColor('--threat-critical')
-        : item.threat?.level === 'high' ? getCSSColor('--threat-high')
-        : item.threat?.level === 'medium' ? getCSSColor('--threat-medium')
-        : getCSSColor('--threat-info');
-      const timeAgo = this.timeAgo(item.pubDate);
-      const cardBody = `
+    content.innerHTML = items
+      .map((item, i) => {
+        const safeUrl = sanitizeUrl(item.link);
+        const threatColor =
+          item.threat?.level === 'critical'
+            ? getCSSColor('--threat-critical')
+            : item.threat?.level === 'high'
+              ? getCSSColor('--threat-high')
+              : item.threat?.level === 'medium'
+                ? getCSSColor('--threat-medium')
+                : getCSSColor('--threat-info');
+        const timeAgo = this.timeAgo(item.pubDate);
+        const cardBody = `
         <span class="cb-news-threat" style="background:${threatColor}"></span>
         <div class="cb-news-body">
           <div class="cb-news-title">${escapeHtml(item.title)}</div>
           <div class="cb-news-meta">${escapeHtml(item.source)} · ${timeAgo}</div>
         </div>`;
-      if (safeUrl) {
-        return `<a href="${safeUrl}" target="_blank" rel="noopener" class="cb-news-card" id="cb-news-${i + 1}">${cardBody}</a>`;
-      }
-      return `<div class="cb-news-card" id="cb-news-${i + 1}">${cardBody}</div>`;
-    }).join('');
+        if (safeUrl) {
+          return `<a href="${safeUrl}" target="_blank" rel="noopener" class="cb-news-card" id="cb-news-${i + 1}">${cardBody}</a>`;
+        }
+        return `<div class="cb-news-card" id="cb-news-${i + 1}">${cardBody}</div>`;
+      })
+      .join('');
   }
-
 
   public updateInfrastructure(countryCode: string): void {
     const bounds = CountryBriefPage.BRIEF_BOUNDS[countryCode];
@@ -500,10 +584,18 @@ export class CountryBriefPage {
     const centroidLat = (bounds.n + bounds.s) / 2;
     const centroidLon = (bounds.e + bounds.w) / 2;
 
-    const assets = getNearbyInfrastructure(centroidLat, centroidLon, ['pipeline', 'cable', 'datacenter', 'base', 'nuclear']);
+    const assets = getNearbyInfrastructure(centroidLat, centroidLon, [
+      'pipeline',
+      'cable',
+      'datacenter',
+      'base',
+      'nuclear',
+    ]);
 
-    const nearbyPorts = PORTS
-      .map((p: Port) => ({ port: p, dist: haversineDistanceKm(centroidLat, centroidLon, p.lat, p.lon) }))
+    const nearbyPorts = PORTS.map((p: Port) => ({
+      port: p,
+      dist: haversineDistanceKm(centroidLat, centroidLon, p.lat, p.lon),
+    }))
       .filter(({ dist }) => dist <= 600)
       .sort((a, b) => a.dist - b.dist)
       .slice(0, 5);
@@ -515,7 +607,10 @@ export class CountryBriefPage {
       grouped.set(a.type, list);
     }
     if (nearbyPorts.length > 0) {
-      grouped.set('port', nearbyPorts.map(({ port, dist }) => ({ name: port.name, distanceKm: dist })));
+      grouped.set(
+        'port',
+        nearbyPorts.map(({ port, dist }) => ({ name: port.name, distanceKm: dist })),
+      );
     }
 
     if (grouped.size === 0) return;
@@ -612,7 +707,7 @@ export class CountryBriefPage {
     }
     if (this.currentBrief) data.brief = this.currentBrief;
     if (this.currentHeadlines.length > 0) {
-      data.headlines = this.currentHeadlines.map(h => ({
+      data.headlines = this.currentHeadlines.map((h) => ({
         title: h.title,
         source: h.source,
         link: h.link,
@@ -632,10 +727,14 @@ export class CountryBriefPage {
     iframe.style.cssText = 'position:fixed;left:-9999px;width:0;height:0;border:none';
     document.body.appendChild(iframe);
     const doc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (!doc) { document.body.removeChild(iframe); return; }
+    if (!doc) {
+      document.body.removeChild(iframe);
+      return;
+    }
 
     const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
-      .map(el => el.outerHTML).join('\n');
+      .map((el) => el.outerHTML)
+      .join('\n');
 
     doc.open();
     doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8">${styles}
@@ -655,7 +754,9 @@ export class CountryBriefPage {
     iframe.contentWindow!.onafterprint = () => document.body.removeChild(iframe);
     setTimeout(() => {
       iframe.contentWindow!.print();
-      setTimeout(() => { if (iframe.parentNode) document.body.removeChild(iframe); }, 5000);
+      setTimeout(() => {
+        if (iframe.parentNode) document.body.removeChild(iframe);
+      }, 5000);
     }, 300);
   }
 

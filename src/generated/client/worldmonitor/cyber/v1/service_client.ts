@@ -49,13 +49,33 @@ export interface PaginationResponse {
   totalCount: number;
 }
 
-export type CriticalityLevel = "CRITICALITY_LEVEL_UNSPECIFIED" | "CRITICALITY_LEVEL_LOW" | "CRITICALITY_LEVEL_MEDIUM" | "CRITICALITY_LEVEL_HIGH" | "CRITICALITY_LEVEL_CRITICAL";
+export type CriticalityLevel =
+  | 'CRITICALITY_LEVEL_UNSPECIFIED'
+  | 'CRITICALITY_LEVEL_LOW'
+  | 'CRITICALITY_LEVEL_MEDIUM'
+  | 'CRITICALITY_LEVEL_HIGH'
+  | 'CRITICALITY_LEVEL_CRITICAL';
 
-export type CyberThreatIndicatorType = "CYBER_THREAT_INDICATOR_TYPE_UNSPECIFIED" | "CYBER_THREAT_INDICATOR_TYPE_IP" | "CYBER_THREAT_INDICATOR_TYPE_DOMAIN" | "CYBER_THREAT_INDICATOR_TYPE_URL";
+export type CyberThreatIndicatorType =
+  | 'CYBER_THREAT_INDICATOR_TYPE_UNSPECIFIED'
+  | 'CYBER_THREAT_INDICATOR_TYPE_IP'
+  | 'CYBER_THREAT_INDICATOR_TYPE_DOMAIN'
+  | 'CYBER_THREAT_INDICATOR_TYPE_URL';
 
-export type CyberThreatSource = "CYBER_THREAT_SOURCE_UNSPECIFIED" | "CYBER_THREAT_SOURCE_FEODO" | "CYBER_THREAT_SOURCE_URLHAUS" | "CYBER_THREAT_SOURCE_C2INTEL" | "CYBER_THREAT_SOURCE_OTX" | "CYBER_THREAT_SOURCE_ABUSEIPDB";
+export type CyberThreatSource =
+  | 'CYBER_THREAT_SOURCE_UNSPECIFIED'
+  | 'CYBER_THREAT_SOURCE_FEODO'
+  | 'CYBER_THREAT_SOURCE_URLHAUS'
+  | 'CYBER_THREAT_SOURCE_C2INTEL'
+  | 'CYBER_THREAT_SOURCE_OTX'
+  | 'CYBER_THREAT_SOURCE_ABUSEIPDB';
 
-export type CyberThreatType = "CYBER_THREAT_TYPE_UNSPECIFIED" | "CYBER_THREAT_TYPE_C2_SERVER" | "CYBER_THREAT_TYPE_MALWARE_HOST" | "CYBER_THREAT_TYPE_PHISHING" | "CYBER_THREAT_TYPE_MALICIOUS_URL";
+export type CyberThreatType =
+  | 'CYBER_THREAT_TYPE_UNSPECIFIED'
+  | 'CYBER_THREAT_TYPE_C2_SERVER'
+  | 'CYBER_THREAT_TYPE_MALWARE_HOST'
+  | 'CYBER_THREAT_TYPE_PHISHING'
+  | 'CYBER_THREAT_TYPE_MALICIOUS_URL';
 
 export interface FieldViolation {
   field: string;
@@ -66,8 +86,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -78,7 +98,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -100,23 +120,26 @@ export class CyberServiceClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string, options?: CyberServiceClientOptions) {
-    this.baseURL = baseURL.replace(/\/+$/, "");
+    this.baseURL = baseURL.replace(/\/+$/, '');
     this.fetchFn = options?.fetch ?? globalThis.fetch;
     this.defaultHeaders = { ...options?.defaultHeaders };
   }
 
-  async listCyberThreats(req: ListCyberThreatsRequest, options?: CyberServiceCallOptions): Promise<ListCyberThreatsResponse> {
-    let path = "/api/cyber/v1/list-cyber-threats";
+  async listCyberThreats(
+    req: ListCyberThreatsRequest,
+    options?: CyberServiceCallOptions,
+  ): Promise<ListCyberThreatsResponse> {
+    const path = '/api/cyber/v1/list-cyber-threats';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -126,7 +149,7 @@ export class CyberServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as ListCyberThreatsResponse;
+    return (await resp.json()) as ListCyberThreatsResponse;
   }
 
   private async handleError(resp: Response): Promise<never> {
@@ -144,4 +167,3 @@ export class CyberServiceClient {
     throw new ApiError(resp.status, `Request failed with status ${resp.status}`, body);
   }
 }
-

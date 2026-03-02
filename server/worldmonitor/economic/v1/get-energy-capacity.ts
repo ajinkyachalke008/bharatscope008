@@ -69,7 +69,7 @@ async function fetchCapacityForSource(
 
   if (!response.ok) return new Map();
 
-  const data = await response.json() as {
+  const data = (await response.json()) as {
     response?: { data?: EiaCapabilityRow[] };
   };
 
@@ -82,7 +82,8 @@ async function fetchCapacityForSource(
     if (row.period == null || row.capability == null) continue;
     const year = parseInt(row.period, 10);
     if (isNaN(year)) continue;
-    const mw = typeof row.capability === 'number' ? row.capability : parseFloat(String(row.capability));
+    const mw =
+      typeof row.capability === 'number' ? row.capability : parseFloat(String(row.capability));
     if (!Number.isFinite(mw)) continue;
     yearTotals.set(year, (yearTotals.get(year) ?? 0) + mw);
   }
@@ -94,17 +95,14 @@ async function fetchCapacityForSource(
  * Fetch coal capacity with fallback to specific sub-type codes.
  * EIA capability endpoint may use BIT/SUB/LIG/RC instead of aggregate COL.
  */
-async function fetchCoalCapacity(
-  apiKey: string,
-  startYear: number,
-): Promise<Map<number, number>> {
+async function fetchCoalCapacity(apiKey: string, startYear: number): Promise<Map<number, number>> {
   // Try aggregate COL first
   const colResult = await fetchCapacityForSource('COL', apiKey, startYear);
   if (colResult.size > 0) return colResult;
 
   // Fallback: fetch individual coal sub-types and merge
   const subResults = await Promise.all(
-    COAL_SUBTYPES.map(code => fetchCapacityForSource(code, apiKey, startYear)),
+    COAL_SUBTYPES.map((code) => fetchCapacityForSource(code, apiKey, startYear)),
   );
 
   const merged = new Map<number, number>();
@@ -130,49 +128,58 @@ export async function getEnergyCapacity(
     const startYear = currentYear - years;
 
     // Determine which sources to fetch
-    const requestedSources = req.energySources.length > 0
-      ? EIA_CAPACITY_SOURCES.filter(s => req.energySources.includes(s.code))
-      : EIA_CAPACITY_SOURCES;
+    const requestedSources =
+      req.energySources.length > 0
+        ? EIA_CAPACITY_SOURCES.filter((s) => req.energySources.includes(s.code))
+        : EIA_CAPACITY_SOURCES;
 
     if (requestedSources.length === 0) return { series: [] };
 
     // Build cache key from sorted source list + years
-    const sourceKey = requestedSources.map(s => s.code).sort().join(',');
+    const sourceKey = requestedSources
+      .map((s) => s.code)
+      .sort()
+      .join(',');
     const cacheKey = `${REDIS_CACHE_KEY}:${sourceKey}:${years}`;
 
-    const result = await cachedFetchJson<GetEnergyCapacityResponse>(cacheKey, REDIS_CACHE_TTL, async () => {
-      // Fetch capacity for each source
-      const seriesResults: EnergyCapacitySeries[] = [];
+    const result = await cachedFetchJson<GetEnergyCapacityResponse>(
+      cacheKey,
+      REDIS_CACHE_TTL,
+      async () => {
+        // Fetch capacity for each source
+        const seriesResults: EnergyCapacitySeries[] = [];
 
-      for (const source of requestedSources) {
-        try {
-          const yearTotals = source.code === 'COL'
-            ? await fetchCoalCapacity(apiKey, startYear)
-            : await fetchCapacityForSource(source.code, apiKey, startYear);
+        for (const source of requestedSources) {
+          try {
+            const yearTotals =
+              source.code === 'COL'
+                ? await fetchCoalCapacity(apiKey, startYear)
+                : await fetchCapacityForSource(source.code, apiKey, startYear);
 
-          // Convert to sorted array (oldest first)
-          const dataPoints: EnergyCapacityYear[] = Array.from(yearTotals.entries())
-            .sort(([a], [b]) => a - b)
-            .map(([year, mw]) => ({ year, capacityMw: mw }));
+            // Convert to sorted array (oldest first)
+            const dataPoints: EnergyCapacityYear[] = Array.from(yearTotals.entries())
+              .sort(([a], [b]) => a - b)
+              .map(([year, mw]) => ({ year, capacityMw: mw }));
 
-          seriesResults.push({
-            energySource: source.code,
-            name: source.name,
-            data: dataPoints,
-          });
-        } catch {
-          // Individual source failure: include empty series
-          seriesResults.push({
-            energySource: source.code,
-            name: source.name,
-            data: [],
-          });
+            seriesResults.push({
+              energySource: source.code,
+              name: source.name,
+              data: dataPoints,
+            });
+          } catch {
+            // Individual source failure: include empty series
+            seriesResults.push({
+              energySource: source.code,
+              name: source.name,
+              data: [],
+            });
+          }
         }
-      }
 
-      const hasData = seriesResults.some(s => s.data.length > 0);
-      return hasData ? { series: seriesResults } : null;
-    });
+        const hasData = seriesResults.some((s) => s.data.length > 0);
+        return hasData ? { series: seriesResults } : null;
+      },
+    );
 
     return result || { series: [] };
   } catch {

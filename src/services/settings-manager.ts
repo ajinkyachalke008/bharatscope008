@@ -35,7 +35,10 @@ export class SettingsManager {
     });
     const modelSelect = container.querySelector<HTMLSelectElement>('select[data-model-select]');
     const modelManual = container.querySelector<HTMLInputElement>('input[data-model-manual]');
-    const modelValue = (modelManual && !modelManual.classList.contains('hidden-input') ? modelManual.value.trim() : modelSelect?.value) || '';
+    const modelValue =
+      (modelManual && !modelManual.classList.contains('hidden-input')
+        ? modelManual.value.trim()
+        : modelSelect?.value) || '';
     if (modelValue && !this.pendingSecrets.has('OLLAMA_MODEL')) {
       this.pendingSecrets.set('OLLAMA_MODEL', modelValue);
       this.validatedKeys.set('OLLAMA_MODEL', true);
@@ -51,7 +54,7 @@ export class SettingsManager {
     for (const feature of RUNTIME_FEATURES) {
       if (!isFeatureEnabled(feature.id)) continue;
       const secrets = getEffectiveSecrets(feature);
-      const hasPending = secrets.some(k => this.pendingSecrets.has(k));
+      const hasPending = secrets.some((k) => this.pendingSecrets.has(k));
       if (!hasPending) continue;
       for (const key of secrets) {
         if (!getSecretState(key).valid && !this.pendingSecrets.has(key)) {
@@ -73,7 +76,9 @@ export class SettingsManager {
 
   async verifyPendingSecrets(): Promise<string[]> {
     const errors: string[] = [];
-    const context = Object.fromEntries(this.pendingSecrets.entries()) as Partial<Record<RuntimeSecretKey, string>>;
+    const context = Object.fromEntries(this.pendingSecrets.entries()) as Partial<
+      Record<RuntimeSecretKey, string>
+    >;
 
     const toVerifyRemotely: Array<[RuntimeSecretKey, string]> = [];
     for (const [key, value] of this.pendingSecrets) {
@@ -89,14 +94,24 @@ export class SettingsManager {
 
     if (toVerifyRemotely.length > 0) {
       const results = await Promise.race([
-        Promise.all(toVerifyRemotely.map(async ([key, value]) => {
-          const result = await verifySecretWithApi(key, value, context);
-          return { key, result };
-        })),
-        new Promise<Array<{ key: RuntimeSecretKey; result: { valid: boolean; message?: string } }>>(resolve =>
-          setTimeout(() => resolve(toVerifyRemotely.map(([key]) => ({
-            key, result: { valid: true, message: 'Saved (verification timed out)' },
-          }))), 15000)
+        Promise.all(
+          toVerifyRemotely.map(async ([key, value]) => {
+            const result = await verifySecretWithApi(key, value, context);
+            return { key, result };
+          }),
+        ),
+        new Promise<Array<{ key: RuntimeSecretKey; result: { valid: boolean; message?: string } }>>(
+          (resolve) =>
+            setTimeout(
+              () =>
+                resolve(
+                  toVerifyRemotely.map(([key]) => ({
+                    key,
+                    result: { valid: true, message: 'Saved (verification timed out)' },
+                  })),
+                ),
+              15000,
+            ),
         ),
       ]);
       for (const { key, result: verifyResult } of results) {

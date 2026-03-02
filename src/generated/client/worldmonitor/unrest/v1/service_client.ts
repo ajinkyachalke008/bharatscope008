@@ -71,13 +71,31 @@ export interface PaginationResponse {
   totalCount: number;
 }
 
-export type SeverityLevel = "SEVERITY_LEVEL_UNSPECIFIED" | "SEVERITY_LEVEL_LOW" | "SEVERITY_LEVEL_MEDIUM" | "SEVERITY_LEVEL_HIGH";
+export type SeverityLevel =
+  | 'SEVERITY_LEVEL_UNSPECIFIED'
+  | 'SEVERITY_LEVEL_LOW'
+  | 'SEVERITY_LEVEL_MEDIUM'
+  | 'SEVERITY_LEVEL_HIGH';
 
-export type ConfidenceLevel = "CONFIDENCE_LEVEL_UNSPECIFIED" | "CONFIDENCE_LEVEL_LOW" | "CONFIDENCE_LEVEL_MEDIUM" | "CONFIDENCE_LEVEL_HIGH";
+export type ConfidenceLevel =
+  | 'CONFIDENCE_LEVEL_UNSPECIFIED'
+  | 'CONFIDENCE_LEVEL_LOW'
+  | 'CONFIDENCE_LEVEL_MEDIUM'
+  | 'CONFIDENCE_LEVEL_HIGH';
 
-export type UnrestEventType = "UNREST_EVENT_TYPE_UNSPECIFIED" | "UNREST_EVENT_TYPE_PROTEST" | "UNREST_EVENT_TYPE_RIOT" | "UNREST_EVENT_TYPE_STRIKE" | "UNREST_EVENT_TYPE_DEMONSTRATION" | "UNREST_EVENT_TYPE_CIVIL_UNREST";
+export type UnrestEventType =
+  | 'UNREST_EVENT_TYPE_UNSPECIFIED'
+  | 'UNREST_EVENT_TYPE_PROTEST'
+  | 'UNREST_EVENT_TYPE_RIOT'
+  | 'UNREST_EVENT_TYPE_STRIKE'
+  | 'UNREST_EVENT_TYPE_DEMONSTRATION'
+  | 'UNREST_EVENT_TYPE_CIVIL_UNREST';
 
-export type UnrestSourceType = "UNREST_SOURCE_TYPE_UNSPECIFIED" | "UNREST_SOURCE_TYPE_ACLED" | "UNREST_SOURCE_TYPE_GDELT" | "UNREST_SOURCE_TYPE_RSS";
+export type UnrestSourceType =
+  | 'UNREST_SOURCE_TYPE_UNSPECIFIED'
+  | 'UNREST_SOURCE_TYPE_ACLED'
+  | 'UNREST_SOURCE_TYPE_GDELT'
+  | 'UNREST_SOURCE_TYPE_RSS';
 
 export interface FieldViolation {
   field: string;
@@ -88,8 +106,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -100,7 +118,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -122,23 +140,26 @@ export class UnrestServiceClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string, options?: UnrestServiceClientOptions) {
-    this.baseURL = baseURL.replace(/\/+$/, "");
+    this.baseURL = baseURL.replace(/\/+$/, '');
     this.fetchFn = options?.fetch ?? globalThis.fetch;
     this.defaultHeaders = { ...options?.defaultHeaders };
   }
 
-  async listUnrestEvents(req: ListUnrestEventsRequest, options?: UnrestServiceCallOptions): Promise<ListUnrestEventsResponse> {
-    let path = "/api/unrest/v1/list-unrest-events";
+  async listUnrestEvents(
+    req: ListUnrestEventsRequest,
+    options?: UnrestServiceCallOptions,
+  ): Promise<ListUnrestEventsResponse> {
+    const path = '/api/unrest/v1/list-unrest-events';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -148,7 +169,7 @@ export class UnrestServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as ListUnrestEventsResponse;
+    return (await resp.json()) as ListUnrestEventsResponse;
   }
 
   private async handleError(resp: Response): Promise<never> {
@@ -166,4 +187,3 @@ export class UnrestServiceClient {
     throw new ApiError(resp.status, `Request failed with status ${resp.status}`, body);
   }
 }
-

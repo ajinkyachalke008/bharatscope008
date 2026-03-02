@@ -24,7 +24,23 @@ const REDIS_CACHE_KEY = 'trade:restrictions:v1';
 const REDIS_CACHE_TTL = 21600; // 6h — WTO data is annual, rarely changes
 
 /** Major economies to query for tariff data. */
-const MAJOR_REPORTERS = ['840', '156', '276', '392', '826', '356', '076', '643', '410', '036', '124', '484', '250', '380', '528'];
+const MAJOR_REPORTERS = [
+  '840',
+  '156',
+  '276',
+  '392',
+  '826',
+  '356',
+  '076',
+  '643',
+  '410',
+  '036',
+  '124',
+  '484',
+  '250',
+  '380',
+  '528',
+];
 
 /**
  * Transform a raw WTO tariff row into a TradeRestriction (tariff-as-barrier view).
@@ -40,10 +56,13 @@ function toRestriction(row: any): TradeRestriction | null {
 
   return {
     id: `${reporterCode}-${year}-${row.IndicatorCode ?? ''}`,
-    reportingCountry: WTO_MEMBER_CODES[reporterCode] ?? String(row.ReportingEconomy ?? row.reportingEconomy ?? ''),
+    reportingCountry:
+      WTO_MEMBER_CODES[reporterCode] ?? String(row.ReportingEconomy ?? row.reportingEconomy ?? ''),
     affectedCountry: 'All trading partners',
     productSector: indicator.includes('agricultural')
-      ? (indicator.includes('non-') ? 'Non-agricultural products' : 'Agricultural products')
+      ? indicator.includes('non-')
+        ? 'Non-agricultural products'
+        : 'Agricultural products'
       : 'All products',
     measureType: 'MFN Applied Tariff',
     description: `Average tariff rate: ${value.toFixed(1)}%`,
@@ -72,7 +91,7 @@ async function fetchRestrictions(
   const data = await wtoFetch('/data', params);
   if (!data) return { restrictions: [], ok: false };
 
-  const dataset: any[] = Array.isArray(data) ? data : data?.Dataset ?? data?.dataset ?? [];
+  const dataset: any[] = Array.isArray(data) ? data : (data?.Dataset ?? data?.dataset ?? []);
 
   // Keep only the most recent year per country
   const latestByCountry = new Map<string, any>();
@@ -117,7 +136,9 @@ export async function getTradeRestrictions(
       },
     );
 
-    return result ?? { restrictions: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true };
+    return (
+      result ?? { restrictions: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true }
+    );
   } catch {
     return {
       restrictions: [],

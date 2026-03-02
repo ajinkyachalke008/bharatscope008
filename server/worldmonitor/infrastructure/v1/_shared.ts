@@ -14,7 +14,12 @@ export const Z_THRESHOLD_MEDIUM = 2.0;
 export const Z_THRESHOLD_HIGH = 3.0;
 
 export const VALID_BASELINE_TYPES = [
-  'military_flights', 'vessels', 'protests', 'news', 'ais_gaps', 'satellite_fires',
+  'military_flights',
+  'vessels',
+  'protests',
+  'news',
+  'ais_gaps',
+  'satellite_fires',
 ];
 
 // ========================================================================
@@ -28,7 +33,12 @@ export interface BaselineEntry {
   lastUpdated: string;
 }
 
-export function makeBaselineKey(type: string, region: string, weekday: number, month: number): string {
+export function makeBaselineKey(
+  type: string,
+  region: string,
+  weekday: number,
+  month: number,
+): string {
   return `baseline:${type}:${region}:${weekday}:${month}`;
 }
 
@@ -60,7 +70,7 @@ export async function mgetJson(keys: string[]): Promise<(unknown | null)[]> {
     });
     if (!resp.ok) return keys.map(() => null);
     const data = (await resp.json()) as { result?: (string | null)[] };
-    return (data.result || []).map(v => v ? JSON.parse(v) : null);
+    return (data.result || []).map((v) => (v ? JSON.parse(v) : null));
   } catch {
     return keys.map(() => null);
   }

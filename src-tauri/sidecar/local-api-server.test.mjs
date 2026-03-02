@@ -35,25 +35,32 @@ async function postJsonViaHttp(url, payload) {
   const target = new URL(url);
   const body = JSON.stringify(payload);
   return new Promise((resolve, reject) => {
-    const req = httpRequest({
-      hostname: target.hostname,
-      port: Number(target.port || 80),
-      path: `${target.pathname}${target.search}`,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': String(Buffer.byteLength(body)),
+    const req = httpRequest(
+      {
+        hostname: target.hostname,
+        port: Number(target.port || 80),
+        path: `${target.pathname}${target.search}`,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': String(Buffer.byteLength(body)),
+        },
       },
-    }, (res) => {
-      const chunks = [];
-      res.on('data', (chunk) => chunks.push(chunk));
-      res.on('end', () => {
-        const text = Buffer.concat(chunks).toString('utf8');
-        let json = null;
-        try { json = JSON.parse(text); } catch { /* non-json response */ }
-        resolve({ status: res.statusCode || 0, text, json });
-      });
-    });
+      (res) => {
+        const chunks = [];
+        res.on('data', (chunk) => chunks.push(chunk));
+        res.on('end', () => {
+          const text = Buffer.concat(chunks).toString('utf8');
+          let json = null;
+          try {
+            json = JSON.parse(text);
+          } catch {
+            /* non-json response */
+          }
+          resolve({ status: res.statusCode || 0, text, json });
+        });
+      },
+    );
     req.on('error', reject);
     req.write(body);
     req.end();
@@ -95,11 +102,13 @@ async function setupRemoteServer() {
     hits.push(url.pathname);
     origins.push(req.headers.origin || null);
     res.writeHead(200, { 'content-type': 'application/json' });
-    res.end(JSON.stringify({
-      source: 'remote',
-      path: url.pathname,
-      origin: req.headers.origin || null,
-    }));
+    res.end(
+      JSON.stringify({
+        source: 'remote',
+        path: url.pathname,
+        origin: req.headers.origin || null,
+      }),
+    );
   });
 
   const port = await listen(server);
@@ -125,7 +134,7 @@ async function setupApiDir(files) {
       const absolute = path.join(apiDir, relativePath);
       await mkdir(path.dirname(absolute), { recursive: true });
       await writeFile(absolute, source, 'utf8');
-    })
+    }),
   );
 
   return {
@@ -146,7 +155,7 @@ async function setupResourceDirWithUpApi(files) {
       const absolute = path.join(apiDir, relativePath);
       await mkdir(path.dirname(absolute), { recursive: true });
       await writeFile(absolute, source, 'utf8');
-    })
+    }),
   );
 
   return {
@@ -542,7 +551,10 @@ test('responds to OPTIONS preflight with CORS headers', async () => {
   try {
     const response = await fetch(`http://127.0.0.1:${port}/api/data`, { method: 'OPTIONS' });
     assert.equal(response.status, 204);
-    assert.equal(response.headers.get('access-control-allow-methods'), 'GET, POST, PUT, DELETE, OPTIONS');
+    assert.equal(
+      response.headers.get('access-control-allow-methods'),
+      'GET, POST, PUT, DELETE, OPTIONS',
+    );
   } finally {
     await app.close();
     await localApi.cleanup();
@@ -976,7 +988,7 @@ test('auth-required behavior unchanged — rejects unauthenticated requests when
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer secret-token-123',
+        Authorization: 'Bearer secret-token-123',
       },
       body: JSON.stringify({ key: 'OLLAMA_API_URL', value: 'http://127.0.0.1:11434' }),
     });
@@ -992,7 +1004,6 @@ test('auth-required behavior unchanged — rejects unauthenticated requests when
     await localApi.cleanup();
   }
 });
-
 
 test('prefers Brotli compression for payloads larger than 1KB when supported by the client', async () => {
   const remote = await setupRemoteServer();
@@ -1098,7 +1109,7 @@ test('rejects unauthenticated requests to /api/local-status when token is set', 
 
     // With token should succeed
     const authed = await fetch(`http://127.0.0.1:${port}/api/local-status`, {
-      headers: { 'Authorization': 'Bearer security-test-token' },
+      headers: { Authorization: 'Bearer security-test-token' },
     });
     assert.equal(authed.status, 200);
   } finally {
@@ -1177,7 +1188,9 @@ test('rejects unauthenticated requests to /api/rss-proxy when token is set', asy
   const { port } = await app.start();
 
   try {
-    const response = await fetch(`http://127.0.0.1:${port}/api/rss-proxy?url=https://example.com/rss`);
+    const response = await fetch(
+      `http://127.0.0.1:${port}/api/rss-proxy?url=https://example.com/rss`,
+    );
     assert.equal(response.status, 401);
   } finally {
     if (originalToken !== undefined) {
@@ -1229,7 +1242,9 @@ test('rss-proxy blocks requests to localhost (SSRF protection)', async () => {
   const { port } = await app.start();
 
   try {
-    const response = await fetch(`http://127.0.0.1:${port}/api/rss-proxy?url=http://127.0.0.1:3000`);
+    const response = await fetch(
+      `http://127.0.0.1:${port}/api/rss-proxy?url=http://127.0.0.1:3000`,
+    );
     assert.equal(response.status, 403);
     const body = await response.json();
     assert.ok(body.error.includes('private') || body.error.includes('localhost'));
@@ -1299,7 +1314,9 @@ test('rss-proxy blocks URLs with credentials (SSRF protection)', async () => {
   const { port } = await app.start();
 
   try {
-    const response = await fetch(`http://127.0.0.1:${port}/api/rss-proxy?url=http://user:pass@example.com/rss`);
+    const response = await fetch(
+      `http://127.0.0.1:${port}/api/rss-proxy?url=http://user:pass@example.com/rss`,
+    );
     assert.equal(response.status, 403);
     const body = await response.json();
     assert.ok(body.error.includes('credentials'));
@@ -1338,7 +1355,7 @@ test('traffic log strips query strings from entries to protect privacy', async (
     const logBody = await logResponse.json();
 
     // Verify query strings are stripped
-    const entry = logBody.entries.find(e => e.path.includes('test-endpoint'));
+    const entry = logBody.entries.find((e) => e.path.includes('test-endpoint'));
     assert.ok(entry, 'Traffic log should contain the test-endpoint entry');
     assert.equal(entry.path, '/api/test-endpoint');
     assert.ok(!entry.path.includes('secret='), 'Query string should be stripped from traffic log');

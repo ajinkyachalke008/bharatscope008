@@ -52,7 +52,7 @@ export function getHeatmapClass(change: number): string {
 
 export function debounce<T extends (...args: unknown[]) => void>(
   fn: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => void {
   let timeoutId: ReturnType<typeof setTimeout>;
   return (...args: Parameters<T>) => {
@@ -63,7 +63,7 @@ export function debounce<T extends (...args: unknown[]) => void>(
 
 export function throttle<T extends (...args: unknown[]) => void>(
   fn: T,
-  limit: number
+  limit: number,
 ): (...args: Parameters<T>) => void {
   // Time-based throttling for non-visual work where a fixed minimum interval is desired.
   let inThrottle = false;
@@ -71,12 +71,16 @@ export function throttle<T extends (...args: unknown[]) => void>(
     if (!inThrottle) {
       fn(...args);
       inThrottle = true;
-      setTimeout(() => { inThrottle = false; }, limit);
+      setTimeout(() => {
+        inThrottle = false;
+      }, limit);
     }
   };
 }
 
-export function rafSchedule<T extends (...args: unknown[]) => void>(fn: T): (...args: Parameters<T>) => void {
+export function rafSchedule<T extends (...args: unknown[]) => void>(
+  fn: T,
+): (...args: Parameters<T>) => void {
   // Frame-synchronized scheduling for visual updates; batches repeated calls into one render frame.
   let scheduled = false;
   let lastArgs: Parameters<T> | null = null;
@@ -101,7 +105,11 @@ export function loadFromStorage<T>(key: string, defaultValue: T): T {
     if (stored) {
       const parsed = JSON.parse(stored) as T;
       // Merge with defaults for object types to handle new properties
-      if (typeof defaultValue === 'object' && defaultValue !== null && !Array.isArray(defaultValue)) {
+      if (
+        typeof defaultValue === 'object' &&
+        defaultValue !== null &&
+        !Array.isArray(defaultValue)
+      ) {
         return { ...defaultValue, ...parsed };
       }
       return parsed;
@@ -167,7 +175,12 @@ export { proxyUrl, fetchWithProxy } from './proxy';
 export { exportToJSON, exportToCSV, ExportPanel } from './export';
 export { buildMapUrl, parseMapUrlState } from './urlState';
 export type { ParsedMapUrlState } from './urlState';
-export { CircuitBreaker, createCircuitBreaker, getCircuitBreakerStatus, getCircuitBreakerCooldownInfo } from './circuit-breaker';
+export {
+  CircuitBreaker,
+  createCircuitBreaker,
+  getCircuitBreakerStatus,
+  getCircuitBreakerCooldownInfo,
+} from './circuit-breaker';
 export type { CircuitBreakerOptions } from './circuit-breaker';
 export * from './analysis-constants';
 export { getCSSColor, invalidateColorCache } from './theme-colors';

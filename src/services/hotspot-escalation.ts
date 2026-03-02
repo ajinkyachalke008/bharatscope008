@@ -43,13 +43,17 @@ const HISTORY_WINDOW_MS = 24 * 60 * 60 * 1000;
 const MAX_HISTORY_POINTS = 48;
 
 let ciiGetter: ((code: string) => number | null) | null = null;
-let geoAlertGetter: ((lat: number, lon: number, radiusKm: number) => { score: number; types: number } | null) | null = null;
+let geoAlertGetter:
+  | ((lat: number, lon: number, radiusKm: number) => { score: number; types: number } | null)
+  | null = null;
 
 export function setCIIGetter(fn: (code: string) => number | null): void {
   ciiGetter = fn;
 }
 
-export function setGeoAlertGetter(fn: (lat: number, lon: number, radiusKm: number) => { score: number; types: number } | null): void {
+export function setGeoAlertGetter(
+  fn: (lat: number, lon: number, radiusKm: number) => { score: number; types: number } | null,
+): void {
   geoAlertGetter = fn;
 }
 
@@ -63,7 +67,9 @@ function getCIIForHotspot(hotspotId: string): number | null {
   const countryCodes = getHotspotCountries(hotspotId);
   if (countryCodes.length === 0) return null;
 
-  const scores = countryCodes.map(code => ciiGetter!(code)).filter((s): s is number => s !== null);
+  const scores = countryCodes
+    .map((code) => ciiGetter!(code))
+    .filter((s): s is number => s !== null);
   return scores.length > 0 ? Math.max(...scores) : null;
 }
 
@@ -106,9 +112,11 @@ function blendScores(staticBaseline: number, dynamicScore: number): number {
   return staticBaseline * 0.3 + dynamicScore * 0.7;
 }
 
-function pruneHistory(history: Array<{ timestamp: number; score: number }>): Array<{ timestamp: number; score: number }> {
+function pruneHistory(
+  history: Array<{ timestamp: number; score: number }>,
+): Array<{ timestamp: number; score: number }> {
   const cutoff = Date.now() - HISTORY_WINDOW_MS;
-  const pruned = history.filter(h => h.timestamp >= cutoff);
+  const pruned = history.filter((h) => h.timestamp >= cutoff);
   if (pruned.length > MAX_HISTORY_POINTS) {
     return pruned.slice(-MAX_HISTORY_POINTS);
   }
@@ -118,7 +126,10 @@ function pruneHistory(history: Array<{ timestamp: number; score: number }>): Arr
 function detectTrend(history: Array<{ timestamp: number; score: number }>): EscalationTrend {
   if (history.length < 3) return 'stable';
 
-  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+  let sumX = 0,
+    sumY = 0,
+    sumXY = 0,
+    sumX2 = 0;
   let validCount = 0;
 
   for (let i = 0; i < history.length; i++) {
@@ -145,9 +156,9 @@ function detectTrend(history: Array<{ timestamp: number; score: number }>): Esca
 
 export function calculateDynamicScore(
   hotspotId: string,
-  inputs: EscalationInputs
+  inputs: EscalationInputs,
 ): DynamicEscalationScore {
-  const hotspot = INTEL_HOTSPOTS.find(h => h.id === hotspotId);
+  const hotspot = INTEL_HOTSPOTS.find((h) => h.id === hotspotId);
   if (!hotspot) {
     throw new Error(`Hotspot not found: ${hotspotId}`);
   }
@@ -157,7 +168,11 @@ export function calculateDynamicScore(
   const now = Date.now();
 
   const components = {
-    newsActivity: normalizeNewsActivity(inputs.newsMatches, inputs.hasBreaking, inputs.newsVelocity),
+    newsActivity: normalizeNewsActivity(
+      inputs.newsMatches,
+      inputs.hasBreaking,
+      inputs.newsVelocity,
+    ),
     ciiContribution: normalizeCII(inputs.ciiScore),
     geoConvergence: normalizeGeo(inputs.geoAlertScore, inputs.geoAlertTypes),
     militaryActivity: normalizeMilitary(inputs.flightsNearby, inputs.vesselsNearby),
@@ -203,7 +218,11 @@ export interface EscalationSignalReason {
   threshold?: number;
 }
 
-export function shouldEmitSignal(hotspotId: string, oldScore: number | null, newScore: number): EscalationSignalReason | null {
+export function shouldEmitSignal(
+  hotspotId: string,
+  oldScore: number | null,
+  newScore: number,
+): EscalationSignalReason | null {
   const lastSignal = lastSignalTime.get(hotspotId) ?? 0;
   if (Date.now() - lastSignal < SIGNAL_COOLDOWN_MS) return null;
 
@@ -234,7 +253,9 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -242,7 +263,7 @@ export function countMilitaryNearHotspot(
   hotspot: Hotspot,
   flights: MilitaryFlight[],
   vessels: MilitaryVessel[],
-  radiusKm: number = 200
+  radiusKm: number = 200,
 ): { flights: number; vessels: number } {
   let flightCount = 0;
   let vesselCount = 0;
@@ -262,7 +283,10 @@ export function countMilitaryNearHotspot(
   return { flights: flightCount, vessels: vesselCount };
 }
 
-let militaryData: { flights: MilitaryFlight[]; vessels: MilitaryVessel[] } = { flights: [], vessels: [] };
+let militaryData: { flights: MilitaryFlight[]; vessels: MilitaryVessel[] } = {
+  flights: [],
+  vessels: [],
+};
 
 export function setMilitaryData(flights: MilitaryFlight[], vessels: MilitaryVessel[]): void {
   militaryData = { flights, vessels };
@@ -272,9 +296,9 @@ export function updateHotspotEscalation(
   hotspotId: string,
   newsMatches: number,
   hasBreaking: boolean,
-  newsVelocity: number
+  newsVelocity: number,
 ): DynamicEscalationScore | null {
-  const hotspot = INTEL_HOTSPOTS.find(h => h.id === hotspotId);
+  const hotspot = INTEL_HOTSPOTS.find((h) => h.id === hotspotId);
   if (!hotspot) return null;
 
   const ciiScore = getCIIForHotspot(hotspotId);
@@ -295,14 +319,16 @@ export function updateHotspotEscalation(
   return calculateDynamicScore(hotspotId, inputs);
 }
 
-export function getEscalationChange24h(hotspotId: string): { change: number; start: number; end: number } | null {
+export function getEscalationChange24h(
+  hotspotId: string,
+): { change: number; start: number; end: number } | null {
   const score = scores.get(hotspotId);
   if (!score || score.history.length < 2) return null;
 
   const now = Date.now();
   const h24Ago = now - HISTORY_WINDOW_MS;
 
-  const oldestInWindow = score.history.find(h => h.timestamp >= h24Ago);
+  const oldestInWindow = score.history.find((h) => h.timestamp >= h24Ago);
   const newest = score.history[score.history.length - 1];
 
   if (!oldestInWindow || !newest) return null;

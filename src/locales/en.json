@@ -1350,6 +1350,8 @@
       }
     },
     "liveNews": {
+      "title": "LIVE NEWS",
+      "indiaNews": "India News",
       "retry": "Retry",
       "notLive": "{{name}} is not currently live",
       "cannotEmbed": "{{name}} cannot be embedded in this app (YouTube {{code}})",
@@ -1377,6 +1379,10 @@
       "regionAsia": "Asia",
       "regionMiddleEast": "Middle East",
       "regionAfrica": "Africa",
+      "regionOceania": "Oceania",
+      "regionIndiaEnglish": "🇮🇳 India (English)",
+      "regionIndiaHindi": "🇮🇳 India (Hindi)",
+      "regionIndiaRegional": "🇮🇳 India (Regional)",
       "invalidHandle": "Enter a valid YouTube handle (e.g. @ChannelName)",
       "channelNotFound": "YouTube channel not found",
       "verifying": "Verifying…"

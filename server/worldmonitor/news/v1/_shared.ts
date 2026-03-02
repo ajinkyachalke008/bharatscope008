@@ -59,7 +59,10 @@ export function buildArticlePrompts(
   const intelSection = opts.geoContext ? `\n\n${opts.geoContext}` : '';
   const isTechVariant = opts.variant === 'tech';
   const dateContext = `Current date: ${new Date().toISOString().split('T')[0]}.${isTechVariant ? '' : ' Provide geopolitical context appropriate for the current date.'}`;
-  const langInstruction = opts.lang && opts.lang !== 'en' ? `\nIMPORTANT: Output the summary in ${opts.lang.toUpperCase()} language.` : '';
+  const langInstruction =
+    opts.lang && opts.lang !== 'en'
+      ? `\nIMPORTANT: Output the summary in ${opts.lang.toUpperCase()} language.`
+      : '';
 
   let systemPrompt: string;
   let userPrompt: string;
@@ -176,7 +179,7 @@ export function getProviderCredentials(provider: string): ProviderCredentials | 
       apiUrl: 'https://api.groq.com/openai/v1/chat/completions',
       model: 'llama-3.1-8b-instant',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
     };
@@ -189,7 +192,7 @@ export function getProviderCredentials(provider: string): ProviderCredentials | 
       apiUrl: 'https://openrouter.ai/api/v1/chat/completions',
       model: 'openrouter/free',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://worldmonitor.app',
         'X-Title': 'WorldMonitor',

@@ -49,13 +49,15 @@ export class ETFFlowsPanel extends Panel {
   private async fetchData(): Promise<void> {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        const client = new MarketServiceClient('', { fetch: (...args) => globalThis.fetch(...args) });
+        const client = new MarketServiceClient('', {
+          fetch: (...args) => globalThis.fetch(...args),
+        });
         this.data = await client.listEtfFlows({});
         this.error = null;
 
         if (this.data && this.data.etfs.length === 0 && !this.data.rateLimited && attempt < 2) {
           this.showRetrying();
-          await new Promise(r => setTimeout(r, 20_000));
+          await new Promise((r) => setTimeout(r, 20_000));
           continue;
         }
         break;
@@ -63,7 +65,7 @@ export class ETFFlowsPanel extends Panel {
         if (this.isAbortError(err)) return;
         if (attempt < 2) {
           this.showRetrying();
-          await new Promise(r => setTimeout(r, 20_000));
+          await new Promise((r) => setTimeout(r, 20_000));
           continue;
         }
         this.error = err instanceof Error ? err.message : 'Failed to fetch';
@@ -86,15 +88,30 @@ export class ETFFlowsPanel extends Panel {
 
     const d = this.data;
     if (!d.etfs.length) {
-      const msg = d.rateLimited ? t('components.etfFlows.rateLimited') : t('components.etfFlows.unavailable');
+      const msg = d.rateLimited
+        ? t('components.etfFlows.rateLimited')
+        : t('components.etfFlows.unavailable');
       this.setContent(`<div class="panel-loading-text">${msg}</div>`);
       return;
     }
 
-    const s = d.summary || { etfCount: 0, totalVolume: 0, totalEstFlow: 0, netDirection: 'NEUTRAL', inflowCount: 0, outflowCount: 0 };
-    const dirClass = s.netDirection.includes('INFLOW') ? 'flow-inflow' : s.netDirection.includes('OUTFLOW') ? 'flow-outflow' : 'flow-neutral';
+    const s = d.summary || {
+      etfCount: 0,
+      totalVolume: 0,
+      totalEstFlow: 0,
+      netDirection: 'NEUTRAL',
+      inflowCount: 0,
+      outflowCount: 0,
+    };
+    const dirClass = s.netDirection.includes('INFLOW')
+      ? 'flow-inflow'
+      : s.netDirection.includes('OUTFLOW')
+        ? 'flow-outflow'
+        : 'flow-neutral';
 
-    const rows = d.etfs.map(etf => `
+    const rows = d.etfs
+      .map(
+        (etf) => `
       <tr class="etf-row ${flowClass(etf.direction)}">
         <td class="etf-ticker">${escapeHtml(etf.ticker)}</td>
         <td class="etf-issuer">${escapeHtml(etf.issuer)}</td>
@@ -102,7 +119,9 @@ export class ETFFlowsPanel extends Panel {
         <td class="etf-volume">${formatVolume(etf.volume)}</td>
         <td class="etf-change ${changeClass(etf.priceChange)}">${etf.priceChange > 0 ? '+' : ''}${etf.priceChange.toFixed(2)}%</td>
       </tr>
-    `).join('');
+    `,
+      )
+      .join('');
 
     const html = `
       <div class="etf-flows-container">

@@ -8,7 +8,40 @@ interface CommandResult {
   score: number;
 }
 
-export type SearchResultType = 'country' | 'news' | 'hotspot' | 'market' | 'prediction' | 'conflict' | 'base' | 'pipeline' | 'cable' | 'datacenter' | 'earthquake' | 'outage' | 'nuclear' | 'irradiator' | 'techcompany' | 'ailab' | 'startup' | 'techevent' | 'techhq' | 'accelerator' | 'exchange' | 'financialcenter' | 'centralbank' | 'commodityhub';
+export type SearchResultType =
+  | 'country'
+  | 'news'
+  | 'hotspot'
+  | 'market'
+  | 'prediction'
+  | 'conflict'
+  | 'base'
+  | 'pipeline'
+  | 'cable'
+  | 'datacenter'
+  | 'earthquake'
+  | 'outage'
+  | 'nuclear'
+  | 'irradiator'
+  | 'techcompany'
+  | 'ailab'
+  | 'startup'
+  | 'techevent'
+  | 'techhq'
+  | 'accelerator'
+  | 'exchange'
+  | 'financialcenter'
+  | 'centralbank'
+  | 'commodityhub'
+  | 'indiawebcam'
+  | 'indiarailwaystation'
+  | 'indiaairport'
+  | 'indianuclear'
+  | 'indiapowerplant'
+  | 'indiadam'
+  | 'indiatelecom'
+  | 'indiahsr'
+  | 'indiacorridor';
 
 export interface SearchResult {
   type: SearchResultType;
@@ -57,7 +90,7 @@ export class SearchModal {
   }
 
   public registerSource(type: SearchResultType, items: SearchableSource['items']): void {
-    const existingIndex = this.sources.findIndex(s => s.type === type);
+    const existingIndex = this.sources.findIndex((s) => s.type === type);
     if (existingIndex >= 0) {
       this.sources[existingIndex] = { type, items };
     } else {
@@ -188,10 +221,35 @@ export class SearchModal {
     }
 
     const priority: SearchResultType[] = [
-      'news', 'prediction', 'market', 'earthquake', 'outage',
-      'conflict', 'hotspot', 'country',
-      'base', 'pipeline', 'cable', 'datacenter', 'nuclear', 'irradiator',
-      'techcompany', 'ailab', 'startup', 'techevent', 'techhq', 'accelerator'
+      'news',
+      'prediction',
+      'market',
+      'earthquake',
+      'outage',
+      'conflict',
+      'hotspot',
+      'country',
+      'base',
+      'pipeline',
+      'cable',
+      'datacenter',
+      'nuclear',
+      'irradiator',
+      'techcompany',
+      'ailab',
+      'startup',
+      'techevent',
+      'techhq',
+      'accelerator',
+      'indiawebcam',
+      'indiarailwaystation',
+      'indiaairport',
+      'indianuclear',
+      'indiapowerplant',
+      'indiadam',
+      'indiatelecom',
+      'indiahsr',
+      'indiacorridor',
     ];
 
     this.results = [];
@@ -306,6 +364,15 @@ export class SearchModal {
       financialcenter: '\u{1F4B0}',
       centralbank: '\u{1F3E6}',
       commodityhub: '\u{1F4E6}',
+      indiawebcam: '\u{1F4F9}',
+      indiarailwaystation: '\u{1F689}',
+      indiaairport: '\u2708\uFE0F',
+      indianuclear: '\u2622\uFE0F',
+      indiapowerplant: '\u26A1',
+      indiadam: '\u{1F30A}',
+      indiatelecom: '\u{1F4E1}',
+      indiahsr: '\u{1F684}',
+      indiacorridor: '\u{1F6E3}\uFE0F',
     };
 
     let html = '';
@@ -442,10 +509,10 @@ export class SearchModal {
   private saveRecentSearch(term: string): void {
     if (!term || term.length < 2) return;
 
-    this.recentSearches = [
-      term,
-      ...this.recentSearches.filter(t => t !== term)
-    ].slice(0, MAX_RECENT);
+    this.recentSearches = [term, ...this.recentSearches.filter((t) => t !== term)].slice(
+      0,
+      MAX_RECENT,
+    );
 
     try {
       localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(this.recentSearches));

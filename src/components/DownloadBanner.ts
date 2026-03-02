@@ -31,7 +31,15 @@ function dismiss(panel: HTMLElement, fromDownload = false): void {
   panel.addEventListener('transitionend', () => panel.remove(), { once: true });
 }
 
-type Platform = 'macos-arm64' | 'macos-x64' | 'macos' | 'windows' | 'linux' | 'linux-x64' | 'linux-arm64' | 'unknown';
+type Platform =
+  | 'macos-arm64'
+  | 'macos-x64'
+  | 'macos'
+  | 'windows'
+  | 'linux'
+  | 'linux-x64'
+  | 'linux-arm64'
+  | 'unknown';
 
 function detectPlatform(): Platform {
   const ua = navigator.userAgent;
@@ -50,44 +58,78 @@ function detectPlatform(): Platform {
           if (/Intel/i.test(renderer)) return 'macos-x64';
         }
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     // Can't determine architecture — show both Mac options
     return 'macos';
   }
   return 'unknown';
 }
 
-interface DlButton { cls: string; href: string; label: string }
+interface DlButton {
+  cls: string;
+  href: string;
+  label: string;
+}
 
 function allButtons(): DlButton[] {
   return [
-    { cls: 'mac', href: '/api/download?platform=macos-arm64', label: `\uF8FF ${t('modals.downloadBanner.macSilicon')}` },
-    { cls: 'mac', href: '/api/download?platform=macos-x64', label: `\uF8FF ${t('modals.downloadBanner.macIntel')}` },
-    { cls: 'win', href: '/api/download?platform=windows-exe', label: `\u229E ${t('modals.downloadBanner.windows')}` },
-    { cls: 'linux', href: '/api/download?platform=linux-appimage', label: `\u{1F427} ${t('modals.downloadBanner.linux')} (x64)` },
-    { cls: 'linux', href: '/api/download?platform=linux-appimage-arm64', label: `\u{1F427} ${t('modals.downloadBanner.linux')} (ARM64)` },
+    {
+      cls: 'mac',
+      href: '/api/download?platform=macos-arm64',
+      label: `\uF8FF ${t('modals.downloadBanner.macSilicon')}`,
+    },
+    {
+      cls: 'mac',
+      href: '/api/download?platform=macos-x64',
+      label: `\uF8FF ${t('modals.downloadBanner.macIntel')}`,
+    },
+    {
+      cls: 'win',
+      href: '/api/download?platform=windows-exe',
+      label: `\u229E ${t('modals.downloadBanner.windows')}`,
+    },
+    {
+      cls: 'linux',
+      href: '/api/download?platform=linux-appimage',
+      label: `\u{1F427} ${t('modals.downloadBanner.linux')} (x64)`,
+    },
+    {
+      cls: 'linux',
+      href: '/api/download?platform=linux-appimage-arm64',
+      label: `\u{1F427} ${t('modals.downloadBanner.linux')} (ARM64)`,
+    },
   ];
 }
 
 function buttonsForPlatform(p: Platform): DlButton[] {
   const buttons = allButtons();
   switch (p) {
-    case 'macos-arm64': return buttons.filter(b => b.href.includes('macos-arm64'));
-    case 'macos-x64': return buttons.filter(b => b.href.includes('macos-x64'));
-    case 'macos': return buttons.filter(b => b.cls === 'mac');
-    case 'windows': return buttons.filter(b => b.cls === 'win');
-    case 'linux': return buttons.filter(b => b.cls === 'linux');
-    case 'linux-x64': return buttons.filter(b => b.href.includes('linux-appimage') && !b.href.includes('arm64'));
-    case 'linux-arm64': return buttons.filter(b => b.href.includes('linux-appimage-arm64'));
-    default: return buttons;
+    case 'macos-arm64':
+      return buttons.filter((b) => b.href.includes('macos-arm64'));
+    case 'macos-x64':
+      return buttons.filter((b) => b.href.includes('macos-x64'));
+    case 'macos':
+      return buttons.filter((b) => b.cls === 'mac');
+    case 'windows':
+      return buttons.filter((b) => b.cls === 'win');
+    case 'linux':
+      return buttons.filter((b) => b.cls === 'linux');
+    case 'linux-x64':
+      return buttons.filter((b) => b.href.includes('linux-appimage') && !b.href.includes('arm64'));
+    case 'linux-arm64':
+      return buttons.filter((b) => b.href.includes('linux-appimage-arm64'));
+    default:
+      return buttons;
   }
 }
 
 function renderButtons(container: HTMLElement, buttons: DlButton[], panel: HTMLElement): void {
   container.innerHTML = buttons
-    .map(b => `<a class="wm-dl-btn ${b.cls}" href="${b.href}">${b.label}</a>`)
+    .map((b) => `<a class="wm-dl-btn ${b.cls}" href="${b.href}">${b.label}</a>`)
     .join('');
-  container.querySelectorAll<HTMLAnchorElement>('.wm-dl-btn').forEach(btn => {
+  container.querySelectorAll<HTMLAnchorElement>('.wm-dl-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       const platform = new URL(btn.href, location.origin).searchParams.get('platform') || 'unknown';
       trackDownloadClicked(platform);

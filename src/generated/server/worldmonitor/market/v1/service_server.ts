@@ -100,8 +100,7 @@ export interface Stablecoin {
   image: string;
 }
 
-export interface ListEtfFlowsRequest {
-}
+export interface ListEtfFlowsRequest {}
 
 export interface ListEtfFlowsResponse {
   timestamp: string;
@@ -155,8 +154,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -167,7 +166,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -191,13 +190,31 @@ export interface RouteDescriptor {
 }
 
 export interface MarketServiceHandler {
-  listMarketQuotes(ctx: ServerContext, req: ListMarketQuotesRequest): Promise<ListMarketQuotesResponse>;
-  listCryptoQuotes(ctx: ServerContext, req: ListCryptoQuotesRequest): Promise<ListCryptoQuotesResponse>;
-  listCommodityQuotes(ctx: ServerContext, req: ListCommodityQuotesRequest): Promise<ListCommodityQuotesResponse>;
-  getSectorSummary(ctx: ServerContext, req: GetSectorSummaryRequest): Promise<GetSectorSummaryResponse>;
-  listStablecoinMarkets(ctx: ServerContext, req: ListStablecoinMarketsRequest): Promise<ListStablecoinMarketsResponse>;
+  listMarketQuotes(
+    ctx: ServerContext,
+    req: ListMarketQuotesRequest,
+  ): Promise<ListMarketQuotesResponse>;
+  listCryptoQuotes(
+    ctx: ServerContext,
+    req: ListCryptoQuotesRequest,
+  ): Promise<ListCryptoQuotesResponse>;
+  listCommodityQuotes(
+    ctx: ServerContext,
+    req: ListCommodityQuotesRequest,
+  ): Promise<ListCommodityQuotesResponse>;
+  getSectorSummary(
+    ctx: ServerContext,
+    req: GetSectorSummaryRequest,
+  ): Promise<GetSectorSummaryResponse>;
+  listStablecoinMarkets(
+    ctx: ServerContext,
+    req: ListStablecoinMarketsRequest,
+  ): Promise<ListStablecoinMarketsResponse>;
   listEtfFlows(ctx: ServerContext, req: ListEtfFlowsRequest): Promise<ListEtfFlowsResponse>;
-  getCountryStockIndex(ctx: ServerContext, req: GetCountryStockIndexRequest): Promise<GetCountryStockIndexResponse>;
+  getCountryStockIndex(
+    ctx: ServerContext,
+    req: GetCountryStockIndexRequest,
+  ): Promise<GetCountryStockIndexResponse>;
 }
 
 export function createMarketServiceRoutes(
@@ -206,14 +223,14 @@ export function createMarketServiceRoutes(
 ): RouteDescriptor[] {
   return [
     {
-      method: "POST",
-      path: "/api/market/v1/list-market-quotes",
+      method: 'POST',
+      path: '/api/market/v1/list-market-quotes',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as ListMarketQuotesRequest;
+          const body = (await req.json()) as ListMarketQuotesRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("listMarketQuotes", body);
+            const bodyViolations = options.validateRequest('listMarketQuotes', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -228,13 +245,13 @@ export function createMarketServiceRoutes(
           const result = await handler.listMarketQuotes(ctx, body);
           return new Response(JSON.stringify(result as ListMarketQuotesResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -243,20 +260,20 @@ export function createMarketServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/market/v1/list-crypto-quotes",
+      method: 'POST',
+      path: '/api/market/v1/list-crypto-quotes',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as ListCryptoQuotesRequest;
+          const body = (await req.json()) as ListCryptoQuotesRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("listCryptoQuotes", body);
+            const bodyViolations = options.validateRequest('listCryptoQuotes', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -271,13 +288,13 @@ export function createMarketServiceRoutes(
           const result = await handler.listCryptoQuotes(ctx, body);
           return new Response(JSON.stringify(result as ListCryptoQuotesResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -286,20 +303,20 @@ export function createMarketServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/market/v1/list-commodity-quotes",
+      method: 'POST',
+      path: '/api/market/v1/list-commodity-quotes',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as ListCommodityQuotesRequest;
+          const body = (await req.json()) as ListCommodityQuotesRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("listCommodityQuotes", body);
+            const bodyViolations = options.validateRequest('listCommodityQuotes', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -314,13 +331,13 @@ export function createMarketServiceRoutes(
           const result = await handler.listCommodityQuotes(ctx, body);
           return new Response(JSON.stringify(result as ListCommodityQuotesResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -329,20 +346,20 @@ export function createMarketServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/market/v1/get-sector-summary",
+      method: 'POST',
+      path: '/api/market/v1/get-sector-summary',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetSectorSummaryRequest;
+          const body = (await req.json()) as GetSectorSummaryRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getSectorSummary", body);
+            const bodyViolations = options.validateRequest('getSectorSummary', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -357,13 +374,13 @@ export function createMarketServiceRoutes(
           const result = await handler.getSectorSummary(ctx, body);
           return new Response(JSON.stringify(result as GetSectorSummaryResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -372,20 +389,20 @@ export function createMarketServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/market/v1/list-stablecoin-markets",
+      method: 'POST',
+      path: '/api/market/v1/list-stablecoin-markets',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as ListStablecoinMarketsRequest;
+          const body = (await req.json()) as ListStablecoinMarketsRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("listStablecoinMarkets", body);
+            const bodyViolations = options.validateRequest('listStablecoinMarkets', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -400,13 +417,13 @@ export function createMarketServiceRoutes(
           const result = await handler.listStablecoinMarkets(ctx, body);
           return new Response(JSON.stringify(result as ListStablecoinMarketsResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -415,20 +432,20 @@ export function createMarketServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/market/v1/list-etf-flows",
+      method: 'POST',
+      path: '/api/market/v1/list-etf-flows',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as ListEtfFlowsRequest;
+          const body = (await req.json()) as ListEtfFlowsRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("listEtfFlows", body);
+            const bodyViolations = options.validateRequest('listEtfFlows', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -443,13 +460,13 @@ export function createMarketServiceRoutes(
           const result = await handler.listEtfFlows(ctx, body);
           return new Response(JSON.stringify(result as ListEtfFlowsResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -458,20 +475,20 @@ export function createMarketServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/market/v1/get-country-stock-index",
+      method: 'POST',
+      path: '/api/market/v1/get-country-stock-index',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetCountryStockIndexRequest;
+          const body = (await req.json()) as GetCountryStockIndexRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getCountryStockIndex", body);
+            const bodyViolations = options.validateRequest('getCountryStockIndex', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -486,13 +503,13 @@ export function createMarketServiceRoutes(
           const result = await handler.getCountryStockIndex(ctx, body);
           return new Response(JSON.stringify(result as GetCountryStockIndexResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -501,11 +518,10 @@ export function createMarketServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
   ];
 }
-

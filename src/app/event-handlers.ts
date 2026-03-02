@@ -27,11 +27,7 @@ import {
   INTEL_SOURCES,
   DEFAULT_PANELS,
 } from '@/config';
-import {
-  saveSnapshot,
-  initAisStream,
-  disconnectAisStream,
-} from '@/services';
+import { saveSnapshot, initAisStream, disconnectAisStream } from '@/services';
 import {
   trackPanelView,
   trackVariantSwitch,
@@ -55,6 +51,7 @@ export interface EventHandlerCallbacks {
   loadDataForLayer: (layer: string) => void;
   waitForAisData: () => void;
   syncDataFreshnessWithLayers: () => void;
+  onRegionChange: (region: MapView) => void;
 }
 
 export class EventHandlerManager implements AppModule {
@@ -107,14 +104,16 @@ export class EventHandlerManager implements AppModule {
 
   private toggleTvMode(): void {
     const panelKeys = Object.keys(DEFAULT_PANELS).filter(
-      key => this.ctx.panelSettings[key]?.enabled !== false
+      (key) => this.ctx.panelSettings[key]?.enabled !== false,
     );
     if (!this.ctx.tvMode) {
       this.ctx.tvMode = new TvModeController({
         panelKeys,
         onPanelChange: () => {
-          document.getElementById('tvModeBtn')?.classList.toggle('active', this.ctx.tvMode?.active ?? false);
-        }
+          document
+            .getElementById('tvModeBtn')
+            ?.classList.toggle('active', this.ctx.tvMode?.active ?? false);
+        },
       });
     } else {
       this.ctx.tvMode.updatePanelKeys(panelKeys);
@@ -145,7 +144,7 @@ export class EventHandlerManager implements AppModule {
       this.idleTimeoutId = null;
     }
     if (this.boundIdleResetHandler) {
-      ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'].forEach(event => {
+      ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'].forEach((event) => {
         document.removeEventListener(event, this.boundIdleResetHandler!);
       });
       this.boundIdleResetHandler = null;
@@ -189,12 +188,18 @@ export class EventHandlerManager implements AppModule {
           this.ctx.panelSettings = JSON.parse(e.newValue) as Record<string, PanelConfig>;
           this.applyPanelSettings();
           this.ctx.unifiedSettings?.refreshPanelToggles();
-        } catch (_) {}
+        } catch (_) { }
       }
       if (e.key === STORAGE_KEYS.liveChannels && e.newValue) {
         const panel = this.ctx.panels['live-news'];
-        if (panel && typeof (panel as unknown as { refreshChannelsFromStorage?: () => void }).refreshChannelsFromStorage === 'function') {
-          (panel as unknown as { refreshChannelsFromStorage: () => void }).refreshChannelsFromStorage();
+        if (
+          panel &&
+          typeof (panel as unknown as { refreshChannelsFromStorage?: () => void })
+            .refreshChannelsFromStorage === 'function'
+        ) {
+          (
+            panel as unknown as { refreshChannelsFromStorage: () => void }
+          ).refreshChannelsFromStorage();
         }
       }
     });
@@ -208,7 +213,7 @@ export class EventHandlerManager implements AppModule {
 
     const isLocalDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
     if (this.ctx.isDesktopApp || isLocalDev) {
-      this.ctx.container.querySelectorAll<HTMLAnchorElement>('.variant-option').forEach(link => {
+      this.ctx.container.querySelectorAll<HTMLAnchorElement>('.variant-option').forEach((link) => {
         link.addEventListener('click', (e) => {
           const variant = link.dataset.variant;
           if (variant && variant !== SITE_VARIANT) {
@@ -233,8 +238,12 @@ export class EventHandlerManager implements AppModule {
 
     const regionSelect = document.getElementById('regionSelect') as HTMLSelectElement;
     regionSelect?.addEventListener('change', () => {
-      this.ctx.map?.setView(regionSelect.value as MapView);
-      trackMapViewChange(regionSelect.value);
+      const view = regionSelect.value as MapView;
+      this.ctx.activeRegion = view;
+      saveToStorage(STORAGE_KEYS.activeRegion, view);
+      this.ctx.map?.setView(view);
+      trackMapViewChange(view);
+      this.callbacks.onRegionChange(view);
     });
 
     this.boundResizeHandler = () => {
@@ -284,7 +293,9 @@ export class EventHandlerManager implements AppModule {
           void invokeTauri<void>('open_url', { url: url.toString() }).catch(() => {
             window.open(url.toString(), '_blank');
           });
-        } catch { /* malformed URL -- let browser handle */ }
+        } catch {
+          /* malformed URL -- let browser handle */
+        }
       };
       document.addEventListener('click', this.boundDesktopExternalLinkHandler, true);
     }
@@ -299,7 +310,7 @@ export class EventHandlerManager implements AppModule {
       this.resetIdleTimer();
     };
 
-    ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'].forEach(event => {
+    ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'].forEach((event) => {
       document.addEventListener(event, this.boundIdleResetHandler!, { passive: true });
     });
 
@@ -351,7 +362,9 @@ export class EventHandlerManager implements AppModule {
       center,
       timeRange: state.timeRange,
       layers: state.layers,
-      country: this.ctx.countryBriefPage?.isVisible() ? (this.ctx.countryBriefPage.getCode() ?? undefined) : undefined,
+      country: this.ctx.countryBriefPage?.isVisible()
+        ? (this.ctx.countryBriefPage.getCode() ?? undefined)
+        : undefined,
     });
   }
 
@@ -383,13 +396,19 @@ export class EventHandlerManager implements AppModule {
 
   toggleFullscreen(): void {
     if (document.fullscreenElement) {
-      try { void document.exitFullscreen()?.catch(() => {}); } catch {}
+      try {
+        void document.exitFullscreen()?.catch(() => { });
+      } catch { }
     } else {
       const el = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => void };
       if (el.requestFullscreen) {
-        try { void el.requestFullscreen()?.catch(() => {}); } catch {}
+        try {
+          void el.requestFullscreen()?.catch(() => { });
+        } catch { }
       } else if (el.webkitRequestFullscreen) {
-        try { el.webkitRequestFullscreen(); } catch {}
+        try {
+          el.webkitRequestFullscreen();
+        } catch { }
       }
     }
   }
@@ -407,7 +426,14 @@ export class EventHandlerManager implements AppModule {
     const el = document.getElementById('headerClock');
     if (!el) return;
     const tick = () => {
-      el.textContent = new Date().toUTCString().replace('GMT', 'UTC');
+      const now = new Date();
+      if (this.ctx.activeRegion === 'india') {
+        // India Standard Time (IST) is UTC +5:30
+        const istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+        el.textContent = `${istTime.getUTCHours().toString().padStart(2, '0')}:${istTime.getUTCMinutes().toString().padStart(2, '0')}:${istTime.getUTCSeconds().toString().padStart(2, '0')} IST`;
+      } else {
+        el.textContent = now.toUTCString().replace('GMT', 'UTC');
+      }
     };
     tick();
     this.clockIntervalId = setInterval(tick, 1000);
@@ -481,7 +507,8 @@ export class EventHandlerManager implements AppModule {
         saveToStorage(STORAGE_KEYS.disabledFeeds, Array.from(this.ctx.disabledSources));
       },
       getAllSourceNames: () => this.getAllSourceNames(),
-      getLocalizedPanelName: (key: string, fallback: string) => this.getLocalizedPanelName(key, fallback),
+      getLocalizedPanelName: (key: string, fallback: string) =>
+        this.getLocalizedPanelName(key, fallback),
       isDesktopApp: this.ctx.isDesktopApp,
     });
 
@@ -514,7 +541,7 @@ export class EventHandlerManager implements AppModule {
       if (this.ctx.isPlaybackMode || this.ctx.isDestroyed) return;
 
       const marketPrices: Record<string, number> = {};
-      this.ctx.latestMarkets.forEach(m => {
+      this.ctx.latestMarkets.forEach((m) => {
         if (m.price !== null) marketPrices[m.symbol] = m.price;
       });
 
@@ -522,16 +549,19 @@ export class EventHandlerManager implements AppModule {
         timestamp: Date.now(),
         events: this.ctx.latestClusters,
         marketPrices,
-        predictions: this.ctx.latestPredictions.map(p => ({
+        predictions: this.ctx.latestPredictions.map((p) => ({
           title: p.title,
-          yesPrice: p.yesPrice
+          yesPrice: p.yesPrice,
         })),
-        hotspotLevels: this.ctx.map?.getHotspotLevels() ?? {}
+        hotspotLevels: this.ctx.map?.getHotspotLevels() ?? {},
       });
     };
 
     void saveCurrentSnapshot().catch((e) => console.warn('[Snapshot] save failed:', e));
-    this.snapshotIntervalId = setInterval(() => void saveCurrentSnapshot().catch((e) => console.warn('[Snapshot] save failed:', e)), 15 * 60 * 1000);
+    this.snapshotIntervalId = setInterval(
+      () => void saveCurrentSnapshot().catch((e) => console.warn('[Snapshot] save failed:', e)),
+      15 * 60 * 1000,
+    );
   }
 
   restoreSnapshot(snapshot: DashboardSnapshot): void {
@@ -589,17 +619,20 @@ export class EventHandlerManager implements AppModule {
 
   setupPanelViewTracking(): void {
     const viewedPanels = new Set<string>();
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.3) {
-          const id = (entry.target as HTMLElement).dataset.panel;
-          if (id && !viewedPanels.has(id)) {
-            viewedPanels.add(id);
-            trackPanelView(id);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.3) {
+            const id = (entry.target as HTMLElement).dataset.panel;
+            if (id && !viewedPanels.has(id)) {
+              viewedPanels.add(id);
+              trackPanelView(id);
+            }
           }
         }
-      }
-    }, { threshold: 0.3 });
+      },
+      { threshold: 0.3 },
+    );
 
     const grid = document.getElementById('panelsGrid');
     if (grid) {
@@ -618,7 +651,10 @@ export class EventHandlerManager implements AppModule {
     el.textContent = msg;
     document.body.appendChild(el);
     requestAnimationFrame(() => el.classList.add('visible'));
-    setTimeout(() => { el.classList.remove('visible'); setTimeout(() => el.remove(), 300); }, 3000);
+    setTimeout(() => {
+      el.classList.remove('visible');
+      setTimeout(() => el.remove(), 300);
+    }, 3000);
   }
 
   shouldShowIntelligenceNotifications(): boolean {
@@ -708,10 +744,10 @@ export class EventHandlerManager implements AppModule {
 
   getAllSourceNames(): string[] {
     const sources = new Set<string>();
-    Object.values(FEEDS).forEach(feeds => {
-      if (feeds) feeds.forEach(f => sources.add(f.name));
+    Object.values(FEEDS).forEach((feeds) => {
+      if (feeds) feeds.forEach((f) => sources.add(f.name));
     });
-    INTEL_SOURCES.forEach(f => sources.add(f.name));
+    INTEL_SOURCES.forEach((f) => sources.add(f.name));
     return Array.from(sources).sort((a, b) => a.localeCompare(b));
   }
 

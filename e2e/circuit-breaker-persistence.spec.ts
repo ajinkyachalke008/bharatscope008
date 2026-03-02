@@ -7,13 +7,13 @@ import { expect, test } from '@playwright/test';
  * exercises the persistence path via IndexedDB, and cleans up after itself.
  */
 test.describe('circuit breaker persistent cache', () => {
-
   test('recordSuccess persists data to IndexedDB', async ({ page }) => {
     await page.goto('/tests/runtime-harness.html');
 
     const result = await page.evaluate(async () => {
       const { CircuitBreaker } = await import('/src/utils/circuit-breaker.ts');
-      const { getPersistentCache, deletePersistentCache } = await import('/src/services/persistent-cache.ts');
+      const { getPersistentCache, deletePersistentCache } =
+        await import('/src/services/persistent-cache.ts');
 
       const name = `test-persist-${Date.now()}`;
       const breaker = new CircuitBreaker<{ value: number }>({
@@ -52,7 +52,8 @@ test.describe('circuit breaker persistent cache', () => {
 
     const result = await page.evaluate(async () => {
       const { CircuitBreaker } = await import('/src/utils/circuit-breaker.ts');
-      const { setPersistentCache, deletePersistentCache } = await import('/src/services/persistent-cache.ts');
+      const { setPersistentCache, deletePersistentCache } =
+        await import('/src/services/persistent-cache.ts');
 
       const name = `test-hydrate-${Date.now()}`;
       const cacheKey = `breaker:${name}`;
@@ -68,10 +69,13 @@ test.describe('circuit breaker persistent cache', () => {
       });
 
       try {
-        const result = await breaker.execute(async () => {
-          fetchCalled = true;
-          return { value: -1 };
-        }, { value: 0 });
+        const result = await breaker.execute(
+          async () => {
+            fetchCalled = true;
+            return { value: -1 };
+          },
+          { value: 0 },
+        );
 
         return {
           result: result.value,
@@ -134,10 +138,13 @@ test.describe('circuit breaker persistent cache', () => {
       });
 
       try {
-        const result = await breaker.execute(async () => {
-          fetchCalled = true;
-          return { value: 222 };
-        }, { value: 0 });
+        const result = await breaker.execute(
+          async () => {
+            fetchCalled = true;
+            return { value: 222 };
+          },
+          { value: 0 },
+        );
 
         // Wait for fire-and-forget write
         await new Promise((r) => setTimeout(r, 200));
@@ -202,10 +209,13 @@ test.describe('circuit breaker persistent cache', () => {
       });
 
       try {
-        const result = await breaker.execute(async () => {
-          fetchCalled = true;
-          return { value: 444 };
-        }, { value: 0 });
+        const result = await breaker.execute(
+          async () => {
+            fetchCalled = true;
+            return { value: 444 };
+          },
+          { value: 0 },
+        );
 
         return {
           result: result.value,
@@ -228,7 +238,8 @@ test.describe('circuit breaker persistent cache', () => {
 
     const result = await page.evaluate(async () => {
       const { CircuitBreaker } = await import('/src/utils/circuit-breaker.ts');
-      const { getPersistentCache, deletePersistentCache } = await import('/src/services/persistent-cache.ts');
+      const { getPersistentCache, deletePersistentCache } =
+        await import('/src/services/persistent-cache.ts');
 
       const name = `test-clear-${Date.now()}`;
       const cacheKey = `breaker:${name}`;
@@ -270,7 +281,8 @@ test.describe('circuit breaker persistent cache', () => {
 
     const result = await page.evaluate(async () => {
       const { CircuitBreaker } = await import('/src/utils/circuit-breaker.ts');
-      const { getPersistentCache, deletePersistentCache } = await import('/src/services/persistent-cache.ts');
+      const { getPersistentCache, deletePersistentCache } =
+        await import('/src/services/persistent-cache.ts');
 
       const name = `test-disabled-${Date.now()}`;
       const cacheKey = `breaker:${name}`;
@@ -303,7 +315,8 @@ test.describe('circuit breaker persistent cache', () => {
 
     const result = await page.evaluate(async () => {
       const { CircuitBreaker } = await import('/src/utils/circuit-breaker.ts');
-      const { setPersistentCache, deletePersistentCache } = await import('/src/services/persistent-cache.ts');
+      const { setPersistentCache, deletePersistentCache } =
+        await import('/src/services/persistent-cache.ts');
 
       const name = `test-fallback-${Date.now()}`;
       const cacheKey = `breaker:${name}`;
@@ -339,9 +352,12 @@ test.describe('circuit breaker persistent cache', () => {
 
       try {
         // Fetch fails — should fall back to stale persistent data via getCachedOrDefault
-        const result = await breaker.execute(async () => {
-          throw new Error('Network failure');
-        }, { value: 0 });
+        const result = await breaker.execute(
+          async () => {
+            throw new Error('Network failure');
+          },
+          { value: 0 },
+        );
 
         return {
           result: result.value,

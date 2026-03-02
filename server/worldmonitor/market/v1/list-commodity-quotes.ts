@@ -29,19 +29,30 @@ export async function listCommodityQuotes(
   const redisKey = redisCacheKey(symbols);
 
   try {
-  const result = await cachedFetchJson<ListCommodityQuotesResponse>(redisKey, REDIS_CACHE_TTL, async () => {
-    const batch = await fetchYahooQuotesBatch(symbols);
-    const quotes: CommodityQuote[] = [];
-    for (const s of symbols) {
-      const yahoo = batch.results.get(s);
-      if (yahoo) {
-        quotes.push({ symbol: s, name: s, display: s, price: yahoo.price, change: yahoo.change, sparkline: yahoo.sparkline });
-      }
-    }
-    return quotes.length > 0 ? { quotes } : null;
-  });
+    const result = await cachedFetchJson<ListCommodityQuotesResponse>(
+      redisKey,
+      REDIS_CACHE_TTL,
+      async () => {
+        const batch = await fetchYahooQuotesBatch(symbols);
+        const quotes: CommodityQuote[] = [];
+        for (const s of symbols) {
+          const yahoo = batch.results.get(s);
+          if (yahoo) {
+            quotes.push({
+              symbol: s,
+              name: s,
+              display: s,
+              price: yahoo.price,
+              change: yahoo.change,
+              sparkline: yahoo.sparkline,
+            });
+          }
+        }
+        return quotes.length > 0 ? { quotes } : null;
+      },
+    );
 
-  return result || { quotes: [] };
+    return result || { quotes: [] };
   } catch {
     return { quotes: [] };
   }

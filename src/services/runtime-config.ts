@@ -95,7 +95,8 @@ export const RUNTIME_FEATURES: RuntimeFeatureDefinition[] = [
   {
     id: 'aiOllama',
     name: 'Ollama local summarization',
-    description: 'Local LLM provider via OpenAI-compatible endpoint (Ollama or LM Studio, desktop-first).',
+    description:
+      'Local LLM provider via OpenAI-compatible endpoint (Ollama or LM Studio, desktop-first).',
     requiredSecrets: ['OLLAMA_API_URL', 'OLLAMA_MODEL'],
     fallback: 'Falls back to Groq, then OpenRouter, then local browser model.',
   },
@@ -209,7 +210,8 @@ export const RUNTIME_FEATURES: RuntimeFeatureDefinition[] = [
   {
     id: 'supplyChain',
     name: 'Supply Chain Intelligence',
-    description: 'Shipping rates via FRED Baltic Dry Index. Chokepoints and minerals use public data.',
+    description:
+      'Shipping rates via FRED Baltic Dry Index. Chokepoints and minerals use public data.',
     requiredSecrets: ['FRED_API_KEY'],
     fallback: 'Chokepoints and minerals always available; shipping requires FRED key.',
   },
@@ -242,7 +244,10 @@ export interface SecretVerificationResult {
   message: string;
 }
 
-export function validateSecret(key: RuntimeSecretKey, value: string): { valid: boolean; hint?: string } {
+export function validateSecret(
+  key: RuntimeSecretKey,
+  value: string,
+): { valid: boolean; hint?: string } {
   const trimmed = value.trim();
   if (!trimmed) return { valid: false, hint: 'Value is required' };
 
@@ -265,7 +270,8 @@ export function validateSecret(key: RuntimeSecretKey, value: string): { valid: b
   }
 
   if (key === 'WORLDMONITOR_API_KEY') {
-    if (trimmed.length < 16) return { valid: false, hint: 'API key must be at least 16 characters' };
+    if (trimmed.length < 16)
+      return { valid: false, hint: 'API key must be at least 16 characters' };
     return { valid: true };
   }
 
@@ -273,7 +279,9 @@ export function validateSecret(key: RuntimeSecretKey, value: string): { valid: b
 }
 
 let secretsReadyResolve!: () => void;
-export const secretsReady = new Promise<void>(r => { secretsReadyResolve = r; });
+export const secretsReady = new Promise<void>((r) => {
+  secretsReadyResolve = r;
+});
 
 if (!isDesktopRuntime()) secretsReadyResolve();
 
@@ -293,7 +301,9 @@ function notifyConfigChanged(): void {
 function seedSecretsFromEnvironment(): void {
   if (isDesktopRuntime()) return;
 
-  const keys = new Set<RuntimeSecretKey>(RUNTIME_FEATURES.flatMap(feature => feature.requiredSecrets));
+  const keys = new Set<RuntimeSecretKey>(
+    RUNTIME_FEATURES.flatMap((feature) => feature.requiredSecrets),
+  );
   for (const key of keys) {
     const value = readEnvSecret(key);
     if (value) {
@@ -315,7 +325,9 @@ if (typeof window !== 'undefined') {
         const parsed = JSON.parse(e.newValue) as Partial<Record<RuntimeFeatureId, boolean>>;
         Object.assign(runtimeConfig.featureToggles, parsed);
         notifyConfigChanged();
-      } catch { /* ignore malformed JSON */ }
+      } catch {
+        /* ignore malformed JSON */
+      }
     }
   });
 }
@@ -336,7 +348,11 @@ export function isFeatureEnabled(featureId: RuntimeFeatureId): boolean {
   return runtimeConfig.featureToggles[featureId] !== false;
 }
 
-export function getSecretState(key: RuntimeSecretKey): { present: boolean; valid: boolean; source: 'env' | 'vault' | 'missing' } {
+export function getSecretState(key: RuntimeSecretKey): {
+  present: boolean;
+  valid: boolean;
+  source: 'env' | 'vault' | 'missing';
+} {
   const state = runtimeConfig.secrets[key];
   if (!state) return { present: false, valid: false, source: 'missing' };
   return { present: true, valid: validateSecret(key, state.value).valid, source: state.source };
@@ -351,14 +367,16 @@ export function isFeatureAvailable(featureId: RuntimeFeatureId): boolean {
     return true;
   }
 
-  const feature = RUNTIME_FEATURES.find(item => item.id === featureId);
+  const feature = RUNTIME_FEATURES.find((item) => item.id === featureId);
   if (!feature) return false;
   const secrets = feature.desktopRequiredSecrets ?? feature.requiredSecrets;
-  return secrets.every(secretKey => getSecretState(secretKey).valid);
+  return secrets.every((secretKey) => getSecretState(secretKey).valid);
 }
 
 export function getEffectiveSecrets(feature: RuntimeFeatureDefinition): RuntimeSecretKey[] {
-  return (isDesktopRuntime() && feature.desktopRequiredSecrets) ? feature.desktopRequiredSecrets : feature.requiredSecrets;
+  return isDesktopRuntime() && feature.desktopRequiredSecrets
+    ? feature.desktopRequiredSecrets
+    : feature.requiredSecrets;
 }
 
 export function setFeatureToggle(featureId: RuntimeFeatureId, enabled: boolean): void {
@@ -394,7 +412,9 @@ export async function setSecretValue(key: RuntimeSecretKey, value: string): Prom
   // The `storage` event fires in all same-origin windows except the one that wrote.
   try {
     localStorage.setItem('wm-secrets-updated', String(Date.now()));
-  } catch { /* localStorage may be unavailable */ }
+  } catch {
+    /* localStorage may be unavailable */
+  }
 
   notifyConfigChanged();
 }
@@ -429,8 +449,12 @@ async function pushSecretToSidecar(key: string, value: string): Promise<void> {
     let detail = '';
     try {
       detail = await response.text();
-    } catch { /* ignore non-readable body */ }
-    throw new Error(`Sidecar secret sync failed (${response.status})${detail ? `: ${detail.slice(0, 200)}` : ''}`);
+    } catch {
+      /* ignore non-readable body */
+    }
+    throw new Error(
+      `Sidecar secret sync failed (${response.status})${detail ? `: ${detail.slice(0, 200)}` : ''}`,
+    );
   }
 }
 
@@ -467,16 +491,19 @@ export async function verifySecretWithApi(
     let payload: unknown = null;
     try {
       payload = await response.json();
-    } catch { /* non-JSON response */ }
+    } catch {
+      /* non-JSON response */
+    }
 
     if (!response.ok) {
-      const message = payload && typeof payload === 'object'
-        ? String(
-          (payload as Record<string, unknown>).message
-          || (payload as Record<string, unknown>).error
-          || 'Secret validation failed'
-        )
-        : `Secret validation failed (${response.status})`;
+      const message =
+        payload && typeof payload === 'object'
+          ? String(
+              (payload as Record<string, unknown>).message ||
+                (payload as Record<string, unknown>).error ||
+                'Secret validation failed',
+            )
+          : `Secret validation failed (${response.status})`;
       return { valid: false, message };
     }
 
@@ -485,7 +512,9 @@ export async function verifySecretWithApi(
     }
 
     const valid = Boolean((payload as Record<string, unknown>).valid);
-    const message = String((payload as Record<string, unknown>).message || (valid ? 'Verified' : 'Verification failed'));
+    const message = String(
+      (payload as Record<string, unknown>).message || (valid ? 'Verified' : 'Verification failed'),
+    );
     return { valid, message };
   } catch (error) {
     // Network errors reaching the sidecar should NOT block saving.
@@ -504,14 +533,16 @@ export async function loadDesktopSecrets(): Promise<void> {
     const allSecrets = await invokeTauri<Record<string, string>>('get_all_secrets');
 
     const syncResults = await Promise.allSettled(
-      Object.entries(allSecrets).filter(([, value]) => value && value.trim().length > 0).map(async ([key, value]) => {
-        runtimeConfig.secrets[key as RuntimeSecretKey] = { value, source: 'vault' };
-        try {
-          await pushSecretToSidecar(key as RuntimeSecretKey, value);
-        } catch (error) {
-          console.warn(`[runtime-config] Failed to sync ${key} to sidecar`, error);
-        }
-      })
+      Object.entries(allSecrets)
+        .filter(([, value]) => value && value.trim().length > 0)
+        .map(async ([key, value]) => {
+          runtimeConfig.secrets[key as RuntimeSecretKey] = { value, source: 'vault' };
+          try {
+            await pushSecretToSidecar(key as RuntimeSecretKey, value);
+          } catch (error) {
+            console.warn(`[runtime-config] Failed to sync ${key} to sidecar`, error);
+          }
+        }),
     );
 
     const failures = syncResults.filter((r) => r.status === 'rejected');

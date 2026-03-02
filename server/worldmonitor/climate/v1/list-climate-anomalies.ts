@@ -46,10 +46,7 @@ const ZONES: { name: string; lat: number; lon: number }[] = [
  * Classify anomaly severity based on temperature and precipitation deltas.
  * Matches legacy thresholds exactly.
  */
-function classifySeverity(
-  tempDelta: number,
-  precipDelta: number,
-): AnomalySeverity {
+function classifySeverity(tempDelta: number, precipDelta: number): AnomalySeverity {
   const absTemp = Math.abs(tempDelta);
   const absPrecip = Math.abs(precipDelta);
   if (absTemp >= 5 || absPrecip >= 80) return 'ANOMALY_SEVERITY_EXTREME';
@@ -91,7 +88,10 @@ async function fetchZone(
 ): Promise<ClimateAnomaly | null> {
   const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${zone.lat}&longitude=${zone.lon}&start_date=${startDate}&end_date=${endDate}&daily=temperature_2m_mean,precipitation_sum&timezone=UTC`;
 
-  const response = await fetch(url, { headers: { 'User-Agent': CHROME_UA }, signal: AbortSignal.timeout(20_000) });
+  const response = await fetch(url, {
+    headers: { 'User-Agent': CHROME_UA },
+    signal: AbortSignal.timeout(20_000),
+  });
   if (!response.ok) {
     throw new Error(`Open-Meteo ${response.status} for ${zone.name}`);
   }
@@ -121,8 +121,7 @@ async function fetchZone(
 
   // Compute deltas rounded to 1 decimal place
   const tempDelta = Math.round((avg(recentTemps) - avg(baselineTemps)) * 10) / 10;
-  const precipDelta =
-    Math.round((avg(recentPrecips) - avg(baselinePrecips)) * 10) / 10;
+  const precipDelta = Math.round((avg(recentPrecips) - avg(baselinePrecips)) * 10) / 10;
 
   return {
     zone: zone.name,
@@ -144,9 +143,7 @@ export const listClimateAnomalies: ClimateServiceHandler['listClimateAnomalies']
     REDIS_CACHE_TTL,
     async () => {
       const endDate = new Date().toISOString().slice(0, 10);
-      const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .slice(0, 10);
+      const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
       const results = await Promise.allSettled(
         ZONES.map((zone) => fetchZone(zone, startDate, endDate)),

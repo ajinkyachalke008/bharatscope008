@@ -72,14 +72,20 @@ test('WMSCapabilitiesLoader parses core typed fields from XML capabilities', () 
 
   assert.equal(parsed.layers.length, 1);
   const rootLayer = parsed.layers[0];
-  assert.deepEqual(rootLayer.geographicBoundingBox, [[-180, -90], [180, 90]]);
+  assert.deepEqual(rootLayer.geographicBoundingBox, [
+    [-180, -90],
+    [180, 90],
+  ]);
 
   const alertsLayer = rootLayer.layers[0];
   assert.equal(alertsLayer.name, 'alerts');
   assert.equal(alertsLayer.queryable, true);
   assert.deepEqual(alertsLayer.boundingBoxes[0], {
     crs: 'EPSG:4326',
-    boundingBox: [[-10, -20], [30, 40]],
+    boundingBox: [
+      [-10, -20],
+      [30, 40],
+    ],
   });
   assert.deepEqual(alertsLayer.dimensions[0], {
     name: 'time',
@@ -104,13 +110,15 @@ test('WMSErrorLoader extracts namespaced error text and honors throw options', (
 
   assert.throws(
     () => WMSErrorLoader.parseTextSync(namespacedErrorXml, { wms: { throwOnError: true } }),
-    /WMS Service error: Bad layer/
+    /WMS Service error: Bad layer/,
   );
 });
 
 test('WMS feature info parsing remains stable for single and repeated FIELDS nodes', () => {
-  const singleFieldsXml = '<?xml version="1.0"?><FeatureInfoResponse><FIELDS id="1" label="one"/></FeatureInfoResponse>';
-  const manyFieldsXml = '<?xml version="1.0"?><FeatureInfoResponse><FIELDS id="1"/><FIELDS id="2"/></FeatureInfoResponse>';
+  const singleFieldsXml =
+    '<?xml version="1.0"?><FeatureInfoResponse><FIELDS id="1" label="one"/></FeatureInfoResponse>';
+  const manyFieldsXml =
+    '<?xml version="1.0"?><FeatureInfoResponse><FIELDS id="1"/><FIELDS id="2"/></FeatureInfoResponse>';
 
   const single = _WMSFeatureInfoLoader.parseTextSync(singleFieldsXml);
   const many = _WMSFeatureInfoLoader.parseTextSync(manyFieldsXml);

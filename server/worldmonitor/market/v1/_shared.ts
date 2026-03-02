@@ -12,11 +12,12 @@ import { CHROME_UA, yahooGate } from '../../../_shared/constants';
 
 export const UPSTREAM_TIMEOUT_MS = 10_000;
 
-const delay = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
+const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
-export async function fetchYahooQuotesBatch(
-  symbols: string[],
-): Promise<{ results: Map<string, { price: number; change: number; sparkline: number[] }>; rateLimited: boolean }> {
+export async function fetchYahooQuotesBatch(symbols: string[]): Promise<{
+  results: Map<string, { price: number; change: number; sparkline: number[] }>;
+  rateLimited: boolean;
+}> {
   const results = new Map<string, { price: number; change: number; sparkline: number[] }>();
   let rateLimitHits = 0;
   for (let i = 0; i < symbols.length; i++) {
@@ -33,8 +34,15 @@ export async function fetchYahooQuotesBatch(
 
 // Yahoo-only symbols: indices and futures not on Finnhub free tier
 export const YAHOO_ONLY_SYMBOLS = new Set([
-  '^GSPC', '^DJI', '^IXIC', '^VIX',
-  'GC=F', 'CL=F', 'NG=F', 'SI=F', 'HG=F',
+  '^GSPC',
+  '^DJI',
+  '^IXIC',
+  '^VIX',
+  'GC=F',
+  'CL=F',
+  'NG=F',
+  'SI=F',
+  'HG=F',
 ]);
 
 // Known crypto IDs and their metadata
@@ -87,7 +95,16 @@ export async function fetchFinnhubQuote(
     });
     if (!resp.ok) return null;
 
-    const data = await resp.json() as { c: number; d: number; dp: number; h: number; l: number; o: number; pc: number; t: number };
+    const data = (await resp.json()) as {
+      c: number;
+      d: number;
+      dp: number;
+      h: number;
+      l: number;
+      o: number;
+      pc: number;
+      t: number;
+    };
     if (data.c === 0 && data.h === 0 && data.l === 0) return null;
 
     return { symbol, price: data.c, changePercent: data.dp };
@@ -164,12 +181,14 @@ export async function fetchYahooQuote(
 // CoinGecko fetcher
 // ========================================================================
 
-export async function fetchCoinGeckoMarkets(
-  ids: string[],
-): Promise<CoinGeckoMarketItem[]> {
+export async function fetchCoinGeckoMarkets(ids: string[]): Promise<CoinGeckoMarketItem[]> {
   const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids.join(',')}&order=market_cap_desc&sparkline=true&price_change_percentage=24h`;
   const resp = await fetch(url, {
-    headers: { Accept: 'application/json', 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36' },
+    headers: {
+      Accept: 'application/json',
+      'User-Agent':
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+    },
     signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
   });
   if (!resp.ok) {

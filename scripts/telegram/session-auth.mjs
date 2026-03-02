@@ -20,17 +20,23 @@ const apiId = parseInt(String(process.env.TELEGRAM_API_ID || ''), 10);
 const apiHash = String(process.env.TELEGRAM_API_HASH || '');
 
 if (!apiId || !apiHash) {
-  console.error('Missing TELEGRAM_API_ID or TELEGRAM_API_HASH. Get them from https://my.telegram.org/apps');
+  console.error(
+    'Missing TELEGRAM_API_ID or TELEGRAM_API_HASH. Get them from https://my.telegram.org/apps',
+  );
   process.exit(1);
 }
 
 const rl = readline.createInterface({ input, output });
 
 try {
-  const phoneNumber = (await rl.question('Phone number (with country code, e.g. +971...): ')).trim();
+  const phoneNumber = (
+    await rl.question('Phone number (with country code, e.g. +971...): ')
+  ).trim();
   const password = (await rl.question('2FA password (press enter if none): ')).trim();
 
-  const client = new TelegramClient(new StringSession(''), apiId, apiHash, { connectionRetries: 3 });
+  const client = new TelegramClient(new StringSession(''), apiId, apiHash, {
+    connectionRetries: 3,
+  });
 
   await client.start({
     phoneNumber: async () => phoneNumber,

@@ -1,7 +1,13 @@
 import { Panel } from './Panel';
 import { escapeHtml } from '@/utils/sanitize';
 import type { GivingSummary, PlatformGiving, CategoryBreakdown } from '@/services/giving';
-import { formatCurrency, formatPercent, getActivityColor, getTrendIcon, getTrendColor } from '@/services/giving';
+import {
+  formatCurrency,
+  formatPercent,
+  getActivityColor,
+  getTrendIcon,
+  getTrendColor,
+} from '@/services/giving';
 import { t } from '@/services/i18n';
 
 type GivingTab = 'platforms' | 'categories' | 'crypto' | 'institutional';
@@ -65,7 +71,7 @@ export class GivingPanel extends Panel {
     };
     const tabsHtml = `
       <div class="giving-tabs">
-        ${tabs.map(tab => `<button class="giving-tab ${this.activeTab === tab ? 'giving-tab-active' : ''}" data-tab="${tab}">${tabLabels[tab]}</button>`).join('')}
+        ${tabs.map((tab) => `<button class="giving-tab ${this.activeTab === tab ? 'giving-tab-active' : ''}" data-tab="${tab}">${tabLabels[tab]}</button>`).join('')}
       </div>
     `;
 
@@ -96,7 +102,7 @@ export class GivingPanel extends Panel {
     `;
 
     // Attach tab click listeners
-    this.content.querySelectorAll('.giving-tab').forEach(btn => {
+    this.content.querySelectorAll('.giving-tab').forEach((btn) => {
       btn.addEventListener('click', () => {
         this.activeTab = (btn as HTMLElement).dataset.tab as GivingTab;
         this.renderContent();
@@ -109,19 +115,25 @@ export class GivingPanel extends Panel {
       return `<div class="panel-empty">${t('common.noDataShort')}</div>`;
     }
 
-    const rows = platforms.map(p => {
-      const freshnessCls = p.dataFreshness === 'live' ? 'giving-fresh-live'
-        : p.dataFreshness === 'daily' ? 'giving-fresh-daily'
-          : p.dataFreshness === 'weekly' ? 'giving-fresh-weekly'
-            : 'giving-fresh-annual';
+    const rows = platforms
+      .map((p) => {
+        const freshnessCls =
+          p.dataFreshness === 'live'
+            ? 'giving-fresh-live'
+            : p.dataFreshness === 'daily'
+              ? 'giving-fresh-daily'
+              : p.dataFreshness === 'weekly'
+                ? 'giving-fresh-weekly'
+                : 'giving-fresh-annual';
 
-      return `<tr class="giving-row">
+        return `<tr class="giving-row">
         <td class="giving-platform-name">${escapeHtml(p.platform)}</td>
         <td class="giving-platform-vol">${formatCurrency(p.dailyVolumeUsd)}</td>
         <td class="giving-platform-vel">${p.donationVelocity > 0 ? `${p.donationVelocity.toFixed(0)}/hr` : '\u2014'}</td>
         <td class="giving-platform-fresh"><span class="giving-fresh-badge ${freshnessCls}">${escapeHtml(p.dataFreshness)}</span></td>
       </tr>`;
-    }).join('');
+      })
+      .join('');
 
     return `
       <table class="giving-table">
@@ -142,11 +154,14 @@ export class GivingPanel extends Panel {
       return `<div class="panel-empty">${t('common.noDataShort')}</div>`;
     }
 
-    const rows = categories.map(c => {
-      const barWidth = Math.round(c.share * 100);
-      const trendingBadge = c.trending ? `<span class="giving-trending-badge">${t('components.giving.trending')}</span>` : '';
+    const rows = categories
+      .map((c) => {
+        const barWidth = Math.round(c.share * 100);
+        const trendingBadge = c.trending
+          ? `<span class="giving-trending-badge">${t('components.giving.trending')}</span>`
+          : '';
 
-      return `<tr class="giving-row">
+        return `<tr class="giving-row">
         <td class="giving-cat-name">${escapeHtml(c.category)} ${trendingBadge}</td>
         <td class="giving-cat-share">
           <div class="giving-share-bar">
@@ -155,7 +170,8 @@ export class GivingPanel extends Panel {
           <span class="giving-share-label">${formatPercent(c.share)}</span>
         </td>
       </tr>`;
-    }).join('');
+      })
+      .join('');
 
     return `
       <table class="giving-table giving-cat-table">
@@ -194,7 +210,7 @@ export class GivingPanel extends Panel {
         <div class="giving-crypto-receivers">
           <div class="giving-section-title">${t('components.giving.topReceivers')}</div>
           <ul class="giving-receiver-list">
-            ${c.topReceivers.map(r => `<li>${escapeHtml(r)}</li>`).join('')}
+            ${c.topReceivers.map((r) => `<li>${escapeHtml(r)}</li>`).join('')}
           </ul>
         </div>
       </div>`;

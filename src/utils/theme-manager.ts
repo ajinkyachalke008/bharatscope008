@@ -43,7 +43,14 @@ export function setTheme(theme: Theme): void {
   const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
   if (meta) {
     const variant = document.documentElement.dataset.variant;
-    meta.content = theme === 'dark' ? (variant === 'happy' ? '#1A2332' : '#0a0f0a') : (variant === 'happy' ? '#FAFAF5' : '#f8f9fa');
+    meta.content =
+      theme === 'dark'
+        ? variant === 'happy'
+          ? '#1A2332'
+          : '#0a0f0a'
+        : variant === 'happy'
+          ? '#FAFAF5'
+          : '#f8f9fa';
   }
   window.dispatchEvent(new CustomEvent('theme-changed', { detail: { theme } }));
 }
@@ -61,7 +68,11 @@ export function applyStoredTheme(): void {
 
   // Check raw localStorage to distinguish "no preference" from "explicitly chose dark"
   let raw: string | null = null;
-  try { raw = localStorage.getItem(STORAGE_KEY); } catch { /* noop */ }
+  try {
+    raw = localStorage.getItem(STORAGE_KEY);
+  } catch {
+    /* noop */
+  }
   const hasExplicitPreference = raw === 'dark' || raw === 'light';
 
   let effective: Theme;

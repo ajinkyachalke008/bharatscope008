@@ -39,20 +39,22 @@ export class ClimateAnomalyPanel extends Panel {
       return (severityOrder[a.severity] || 2) - (severityOrder[b.severity] || 2);
     });
 
-    const rows = sorted.map(a => {
-      const icon = getSeverityIcon(a);
-      const tempClass = a.tempDelta > 0 ? 'climate-warm' : 'climate-cold';
-      const precipClass = a.precipDelta > 0 ? 'climate-wet' : 'climate-dry';
-      const sevClass = `severity-${a.severity}`;
-      const rowClass = a.severity === 'extreme' ? ' climate-extreme-row' : '';
+    const rows = sorted
+      .map((a) => {
+        const icon = getSeverityIcon(a);
+        const tempClass = a.tempDelta > 0 ? 'climate-warm' : 'climate-cold';
+        const precipClass = a.precipDelta > 0 ? 'climate-wet' : 'climate-dry';
+        const sevClass = `severity-${a.severity}`;
+        const rowClass = a.severity === 'extreme' ? ' climate-extreme-row' : '';
 
-      return `<tr class="climate-row${rowClass}" data-lat="${a.lat}" data-lon="${a.lon}">
+        return `<tr class="climate-row${rowClass}" data-lat="${a.lat}" data-lon="${a.lon}">
         <td class="climate-zone"><span class="climate-icon">${icon}</span>${escapeHtml(a.zone)}</td>
         <td class="climate-num ${tempClass}">${formatDelta(a.tempDelta, '°C')}</td>
         <td class="climate-num ${precipClass}">${formatDelta(a.precipDelta, 'mm')}</td>
         <td><span class="climate-badge ${sevClass}">${t(`components.climate.severity.${a.severity}`)}</span></td>
       </tr>`;
-    }).join('');
+      })
+      .join('');
 
     this.setContent(`
       <div class="climate-panel-content">
@@ -70,7 +72,7 @@ export class ClimateAnomalyPanel extends Panel {
       </div>
     `);
 
-    this.content.querySelectorAll('.climate-row').forEach(el => {
+    this.content.querySelectorAll('.climate-row').forEach((el) => {
       el.addEventListener('click', () => {
         const lat = Number((el as HTMLElement).dataset.lat);
         const lon = Number((el as HTMLElement).dataset.lon);

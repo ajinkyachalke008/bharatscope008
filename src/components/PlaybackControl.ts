@@ -61,7 +61,7 @@ export class PlaybackControl {
       this.loadSnapshot(idx);
     });
 
-    this.element.querySelectorAll('.playback-btn').forEach(btn => {
+    this.element.querySelectorAll('.playback-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         const action = (btn as HTMLElement).dataset.action;
         this.handleAction(action!);

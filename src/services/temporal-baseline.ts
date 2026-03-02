@@ -22,7 +22,9 @@ export interface TemporalAnomaly {
   severity: 'medium' | 'high' | 'critical';
 }
 
-const client = new InfrastructureServiceClient('', { fetch: (...args) => globalThis.fetch(...args) });
+const client = new InfrastructureServiceClient('', {
+  fetch: (...args) => globalThis.fetch(...args),
+});
 
 const TYPE_LABELS: Record<TemporalEventType, string> = {
   military_flights: 'Military flights',
@@ -33,9 +35,30 @@ const TYPE_LABELS: Record<TemporalEventType, string> = {
   satellite_fires: 'Satellite fire detections',
 };
 
-const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const MONTH_NAMES = ['', 'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'];
+const WEEKDAY_NAMES = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+];
+const MONTH_NAMES = [
+  '',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
 
 function formatAnomalyMessage(
   type: TemporalEventType,
@@ -59,7 +82,7 @@ function getSeverity(zScore: number): 'medium' | 'high' | 'critical' {
 
 // Fire-and-forget baseline update
 export async function reportMetrics(
-  updates: Array<{ type: TemporalEventType; region: string; count: number }>
+  updates: Array<{ type: TemporalEventType; region: string; count: number }>,
 ): Promise<void> {
   try {
     await client.recordBaselineSnapshot({ updates });
@@ -85,7 +108,13 @@ export async function checkAnomaly(
       expectedCount: Math.round(data.baseline?.mean ?? 0),
       zScore: data.anomaly.zScore,
       severity: getSeverity(data.anomaly.zScore),
-      message: formatAnomalyMessage(type, region, count, data.baseline?.mean ?? 0, data.anomaly.multiplier),
+      message: formatAnomalyMessage(
+        type,
+        region,
+        count,
+        data.baseline?.mean ?? 0,
+        data.anomaly.multiplier,
+      ),
     };
   } catch (e) {
     console.warn('[TemporalBaseline] Check failed:', e);
@@ -95,19 +124,19 @@ export async function checkAnomaly(
 
 // Batch: report metrics AND check for anomalies in one flow
 export async function updateAndCheck(
-  metrics: Array<{ type: TemporalEventType; region: string; count: number }>
+  metrics: Array<{ type: TemporalEventType; region: string; count: number }>,
 ): Promise<TemporalAnomaly[]> {
   // Fire-and-forget the update
   reportMetrics(metrics).catch(() => {});
 
   // Check anomalies in parallel
   const results = await Promise.allSettled(
-    metrics.map(m => checkAnomaly(m.type, m.region, m.count))
+    metrics.map((m) => checkAnomaly(m.type, m.region, m.count)),
   );
 
   return results
     .filter((r): r is PromiseFulfilledResult<TemporalAnomaly | null> => r.status === 'fulfilled')
-    .map(r => r.value)
+    .map((r) => r.value)
     .filter((a): a is TemporalAnomaly => a !== null)
     .sort((a, b) => b.zScore - a.zScore);
 }

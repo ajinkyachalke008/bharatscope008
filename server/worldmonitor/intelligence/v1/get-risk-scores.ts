@@ -17,15 +17,49 @@ import { fetchAcledCached } from '../../../_shared/acled';
 // ========================================================================
 
 const BASELINE_RISK: Record<string, number> = {
-  US: 5, RU: 35, CN: 25, UA: 50, IR: 40, IL: 45, TW: 30, KP: 45,
-  SA: 20, TR: 25, PL: 10, DE: 5, FR: 10, GB: 5, IN: 20, PK: 35,
-  SY: 50, YE: 50, MM: 45, VE: 40,
+  US: 5,
+  RU: 35,
+  CN: 25,
+  UA: 50,
+  IR: 40,
+  IL: 45,
+  TW: 30,
+  KP: 45,
+  SA: 20,
+  TR: 25,
+  PL: 10,
+  DE: 5,
+  FR: 10,
+  GB: 5,
+  IN: 20,
+  PK: 35,
+  SY: 50,
+  YE: 50,
+  MM: 45,
+  VE: 40,
 };
 
 const EVENT_MULTIPLIER: Record<string, number> = {
-  US: 0.3, RU: 2.0, CN: 2.5, UA: 0.8, IR: 2.0, IL: 0.7, TW: 1.5, KP: 3.0,
-  SA: 2.0, TR: 1.2, PL: 0.8, DE: 0.5, FR: 0.6, GB: 0.5, IN: 0.8, PK: 1.5,
-  SY: 0.7, YE: 0.7, MM: 1.8, VE: 1.8,
+  US: 0.3,
+  RU: 2.0,
+  CN: 2.5,
+  UA: 0.8,
+  IR: 2.0,
+  IL: 0.7,
+  TW: 1.5,
+  KP: 3.0,
+  SA: 2.0,
+  TR: 1.2,
+  PL: 0.8,
+  DE: 0.5,
+  FR: 0.6,
+  GB: 0.5,
+  IN: 0.8,
+  PK: 1.5,
+  SY: 0.7,
+  YE: 0.7,
+  MM: 1.8,
+  VE: 1.8,
 };
 
 const COUNTRY_KEYWORDS: Record<string, string[]> = {
@@ -99,7 +133,10 @@ function computeCIIScores(protests: AcledEvent[]): CiiScore[] {
     const unrest = Math.min(100, Math.round((events.protests + events.riots * 2) * multiplier * 2));
     const security = Math.min(100, baseline + events.riots * multiplier * 5);
     const information = Math.min(100, (events.protests + events.riots) * multiplier * 3);
-    const composite = Math.min(100, Math.round(baseline + (unrest * 0.4 + security * 0.35 + information * 0.25) * 0.5));
+    const composite = Math.min(
+      100,
+      Math.round(baseline + (unrest * 0.4 + security * 0.35 + information * 0.25) * 0.5),
+    );
 
     scores.push({
       region: code,
@@ -174,7 +211,9 @@ export async function getRiskScores(
       },
     );
     if (result) return result;
-  } catch { /* upstream failed — fall through to stale */ }
+  } catch {
+    /* upstream failed — fall through to stale */
+  }
 
   const stale = (await getCachedJson(RISK_STALE_CACHE_KEY)) as GetRiskScoresResponse | null;
   if (stale) return stale;

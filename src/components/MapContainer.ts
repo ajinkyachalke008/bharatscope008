@@ -38,7 +38,16 @@ import type { SpeciesRecovery } from '@/services/conservation-data';
 import type { RenewableInstallation } from '@/services/renewable-installations';
 
 export type TimeRange = '1h' | '6h' | '24h' | '48h' | '7d' | 'all';
-export type MapView = 'global' | 'america' | 'mena' | 'eu' | 'asia' | 'latam' | 'africa' | 'oceania';
+export type MapView =
+  | 'global'
+  | 'america'
+  | 'mena'
+  | 'eu'
+  | 'asia'
+  | 'india'
+  | 'latam'
+  | 'africa'
+  | 'oceania';
 
 export interface MapContainerState {
   zoom: number;
@@ -140,6 +149,15 @@ export class MapContainer {
     if (this.useDeckGL) {
       this.deckGLMap?.setView(view as DeckMapView);
     } else {
+      this.svgMap?.setView(view);
+    }
+  }
+
+  public fitToRegion(view: MapView): void {
+    if (this.useDeckGL) {
+      this.deckGLMap?.fitToRegion(view as DeckMapView);
+    } else {
+      // SVG map uses setView for region jumping as it doesn't support complex transitions
       this.svgMap?.setView(view);
     }
   }
@@ -264,7 +282,10 @@ export class MapContainer {
     }
   }
 
-  public setMilitaryFlights(flights: MilitaryFlight[], clusters: MilitaryFlightCluster[] = []): void {
+  public setMilitaryFlights(
+    flights: MilitaryFlight[],
+    clusters: MilitaryFlightCluster[] = [],
+  ): void {
     if (this.useDeckGL) {
       this.deckGLMap?.setMilitaryFlights(flights, clusters);
     } else {
@@ -272,7 +293,10 @@ export class MapContainer {
     }
   }
 
-  public setMilitaryVessels(vessels: MilitaryVessel[], clusters: MilitaryVesselCluster[] = []): void {
+  public setMilitaryVessels(
+    vessels: MilitaryVessel[],
+    clusters: MilitaryVesselCluster[] = [],
+  ): void {
     if (this.useDeckGL) {
       this.deckGLMap?.setMilitaryVessels(vessels, clusters);
     } else {
@@ -288,7 +312,18 @@ export class MapContainer {
     }
   }
 
-  public setFires(fires: Array<{ lat: number; lon: number; brightness: number; frp: number; confidence: number; region: string; acq_date: string; daynight: string }>): void {
+  public setFires(
+    fires: Array<{
+      lat: number;
+      lon: number;
+      brightness: number;
+      frp: number;
+      confidence: number;
+      region: string;
+      acq_date: string;
+      daynight: string;
+    }>,
+  ): void {
     if (this.useDeckGL) {
       this.deckGLMap?.setFires(fires);
     } else {
@@ -330,7 +365,9 @@ export class MapContainer {
     }
   }
 
-  public setNewsLocations(data: Array<{ lat: number; lon: number; title: string; threatLevel: string; timestamp?: Date }>): void {
+  public setNewsLocations(
+    data: Array<{ lat: number; lon: number; title: string; threatLevel: string; timestamp?: Date }>,
+  ): void {
     if (this.useDeckGL) {
       this.deckGLMap?.setNewsLocations(data);
     } else {
@@ -421,7 +458,9 @@ export class MapContainer {
     }
   }
 
-  public setOnLayerChange(callback: (layer: keyof MapLayers, enabled: boolean, source: 'user' | 'programmatic') => void): void {
+  public setOnLayerChange(
+    callback: (layer: keyof MapLayers, enabled: boolean, source: 'user' | 'programmatic') => void,
+  ): void {
     if (this.useDeckGL) {
       this.deckGLMap?.setOnLayerChange(callback);
     } else {

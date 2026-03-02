@@ -5,7 +5,7 @@
  */
 
 const TV_INTERVAL_KEY = 'tv-mode-interval';
-const MIN_INTERVAL = 30_000;  // 30 seconds
+const MIN_INTERVAL = 30_000; // 30 seconds
 const MAX_INTERVAL = 120_000; // 2 minutes
 const DEFAULT_INTERVAL = 60_000; // 1 minute
 
@@ -33,7 +33,7 @@ export class TvModeController {
     const stored = localStorage.getItem(TV_INTERVAL_KEY);
     const parsed = stored ? parseInt(stored, 10) : NaN;
     this.intervalMs = clampInterval(
-      Number.isFinite(parsed) ? parsed : (opts.intervalMs ?? DEFAULT_INTERVAL)
+      Number.isFinite(parsed) ? parsed : (opts.intervalMs ?? DEFAULT_INTERVAL),
     );
   }
 
@@ -48,9 +48,17 @@ export class TvModeController {
     // Request fullscreen
     const el = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => void };
     if (el.requestFullscreen) {
-      try { void el.requestFullscreen()?.catch(() => {}); } catch { /* noop */ }
+      try {
+        void el.requestFullscreen()?.catch(() => {});
+      } catch {
+        /* noop */
+      }
     } else if (el.webkitRequestFullscreen) {
-      try { el.webkitRequestFullscreen(); } catch { /* noop */ }
+      try {
+        el.webkitRequestFullscreen();
+      } catch {
+        /* noop */
+      }
     }
 
     // Show first panel
@@ -76,7 +84,11 @@ export class TvModeController {
 
     // Exit fullscreen if active
     if (document.fullscreenElement) {
-      try { void document.exitFullscreen()?.catch(() => {}); } catch { /* noop */ }
+      try {
+        void document.exitFullscreen()?.catch(() => {});
+      } catch {
+        /* noop */
+      }
     }
 
     // Stop cycling
@@ -156,7 +168,7 @@ export class TvModeController {
       if (mapSection) {
         mapSection.style.display = '';
       }
-      allPanels.forEach(p => {
+      allPanels.forEach((p) => {
         p.classList.add('tv-hidden');
         p.classList.remove('tv-active');
       });
@@ -189,7 +201,7 @@ export class TvModeController {
     const mapSection = document.getElementById('mapSection');
 
     if (panelsGrid) {
-      panelsGrid.querySelectorAll<HTMLElement>('.panel').forEach(p => {
+      panelsGrid.querySelectorAll<HTMLElement>('.panel').forEach((p) => {
         p.classList.remove('tv-hidden', 'tv-active');
       });
     }

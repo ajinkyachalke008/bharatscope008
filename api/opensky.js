@@ -79,12 +79,15 @@ export default async function handler(req) {
     });
   } catch (error) {
     const isTimeout = error?.name === 'AbortError';
-    return new Response(JSON.stringify({
-      error: isTimeout ? 'Relay timeout' : 'Relay request failed',
-      details: error?.message || String(error),
-    }), {
-      status: isTimeout ? 504 : 502,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
-    });
+    return new Response(
+      JSON.stringify({
+        error: isTimeout ? 'Relay timeout' : 'Relay request failed',
+        details: error?.message || String(error),
+      }),
+      {
+        status: isTimeout ? 504 : 502,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      },
+    );
   }
 }

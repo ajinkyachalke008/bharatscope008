@@ -108,8 +108,7 @@ export interface RecordBaselineSnapshotResponse {
   error: string;
 }
 
-export interface GetCableHealthRequest {
-}
+export interface GetCableHealthRequest {}
 
 export interface GetCableHealthResponse {
   generatedAt: number;
@@ -130,11 +129,25 @@ export interface CableHealthEvidence {
   ts: number;
 }
 
-export type CableHealthStatus = "CABLE_HEALTH_STATUS_UNSPECIFIED" | "CABLE_HEALTH_STATUS_OK" | "CABLE_HEALTH_STATUS_DEGRADED" | "CABLE_HEALTH_STATUS_FAULT";
+export type CableHealthStatus =
+  | 'CABLE_HEALTH_STATUS_UNSPECIFIED'
+  | 'CABLE_HEALTH_STATUS_OK'
+  | 'CABLE_HEALTH_STATUS_DEGRADED'
+  | 'CABLE_HEALTH_STATUS_FAULT';
 
-export type OutageSeverity = "OUTAGE_SEVERITY_UNSPECIFIED" | "OUTAGE_SEVERITY_PARTIAL" | "OUTAGE_SEVERITY_MAJOR" | "OUTAGE_SEVERITY_TOTAL";
+export type OutageSeverity =
+  | 'OUTAGE_SEVERITY_UNSPECIFIED'
+  | 'OUTAGE_SEVERITY_PARTIAL'
+  | 'OUTAGE_SEVERITY_MAJOR'
+  | 'OUTAGE_SEVERITY_TOTAL';
 
-export type ServiceOperationalStatus = "SERVICE_OPERATIONAL_STATUS_UNSPECIFIED" | "SERVICE_OPERATIONAL_STATUS_OPERATIONAL" | "SERVICE_OPERATIONAL_STATUS_DEGRADED" | "SERVICE_OPERATIONAL_STATUS_PARTIAL_OUTAGE" | "SERVICE_OPERATIONAL_STATUS_MAJOR_OUTAGE" | "SERVICE_OPERATIONAL_STATUS_MAINTENANCE";
+export type ServiceOperationalStatus =
+  | 'SERVICE_OPERATIONAL_STATUS_UNSPECIFIED'
+  | 'SERVICE_OPERATIONAL_STATUS_OPERATIONAL'
+  | 'SERVICE_OPERATIONAL_STATUS_DEGRADED'
+  | 'SERVICE_OPERATIONAL_STATUS_PARTIAL_OUTAGE'
+  | 'SERVICE_OPERATIONAL_STATUS_MAJOR_OUTAGE'
+  | 'SERVICE_OPERATIONAL_STATUS_MAINTENANCE';
 
 export interface FieldViolation {
   field: string;
@@ -145,8 +158,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -157,7 +170,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -179,23 +192,26 @@ export class InfrastructureServiceClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string, options?: InfrastructureServiceClientOptions) {
-    this.baseURL = baseURL.replace(/\/+$/, "");
+    this.baseURL = baseURL.replace(/\/+$/, '');
     this.fetchFn = options?.fetch ?? globalThis.fetch;
     this.defaultHeaders = { ...options?.defaultHeaders };
   }
 
-  async listInternetOutages(req: ListInternetOutagesRequest, options?: InfrastructureServiceCallOptions): Promise<ListInternetOutagesResponse> {
-    let path = "/api/infrastructure/v1/list-internet-outages";
+  async listInternetOutages(
+    req: ListInternetOutagesRequest,
+    options?: InfrastructureServiceCallOptions,
+  ): Promise<ListInternetOutagesResponse> {
+    const path = '/api/infrastructure/v1/list-internet-outages';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -205,21 +221,24 @@ export class InfrastructureServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as ListInternetOutagesResponse;
+    return (await resp.json()) as ListInternetOutagesResponse;
   }
 
-  async listServiceStatuses(req: ListServiceStatusesRequest, options?: InfrastructureServiceCallOptions): Promise<ListServiceStatusesResponse> {
-    let path = "/api/infrastructure/v1/list-service-statuses";
+  async listServiceStatuses(
+    req: ListServiceStatusesRequest,
+    options?: InfrastructureServiceCallOptions,
+  ): Promise<ListServiceStatusesResponse> {
+    const path = '/api/infrastructure/v1/list-service-statuses';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -229,21 +248,24 @@ export class InfrastructureServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as ListServiceStatusesResponse;
+    return (await resp.json()) as ListServiceStatusesResponse;
   }
 
-  async getTemporalBaseline(req: GetTemporalBaselineRequest, options?: InfrastructureServiceCallOptions): Promise<GetTemporalBaselineResponse> {
-    let path = "/api/infrastructure/v1/get-temporal-baseline";
+  async getTemporalBaseline(
+    req: GetTemporalBaselineRequest,
+    options?: InfrastructureServiceCallOptions,
+  ): Promise<GetTemporalBaselineResponse> {
+    const path = '/api/infrastructure/v1/get-temporal-baseline';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -253,21 +275,24 @@ export class InfrastructureServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetTemporalBaselineResponse;
+    return (await resp.json()) as GetTemporalBaselineResponse;
   }
 
-  async recordBaselineSnapshot(req: RecordBaselineSnapshotRequest, options?: InfrastructureServiceCallOptions): Promise<RecordBaselineSnapshotResponse> {
-    let path = "/api/infrastructure/v1/record-baseline-snapshot";
+  async recordBaselineSnapshot(
+    req: RecordBaselineSnapshotRequest,
+    options?: InfrastructureServiceCallOptions,
+  ): Promise<RecordBaselineSnapshotResponse> {
+    const path = '/api/infrastructure/v1/record-baseline-snapshot';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -277,21 +302,24 @@ export class InfrastructureServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as RecordBaselineSnapshotResponse;
+    return (await resp.json()) as RecordBaselineSnapshotResponse;
   }
 
-  async getCableHealth(req: GetCableHealthRequest, options?: InfrastructureServiceCallOptions): Promise<GetCableHealthResponse> {
-    let path = "/api/infrastructure/v1/get-cable-health";
+  async getCableHealth(
+    req: GetCableHealthRequest,
+    options?: InfrastructureServiceCallOptions,
+  ): Promise<GetCableHealthResponse> {
+    const path = '/api/infrastructure/v1/get-cable-health';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -301,7 +329,7 @@ export class InfrastructureServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetCableHealthResponse;
+    return (await resp.json()) as GetCableHealthResponse;
   }
 
   private async handleError(resp: Response): Promise<never> {
@@ -319,4 +347,3 @@ export class InfrastructureServiceClient {
     throw new ApiError(resp.status, `Request failed with status ${resp.status}`, body);
   }
 }
-

@@ -66,15 +66,15 @@ describe('gulf-fdi dataset integrity', () => {
     for (const investment of GULF_INVESTMENTS) {
       assert.ok(
         VALID_COUNTRIES.has(investment.investingCountry),
-        `Invalid investingCountry: ${investment.investingCountry} (${investment.id})`
+        `Invalid investingCountry: ${investment.investingCountry} (${investment.id})`,
       );
       assert.ok(
         VALID_SECTORS.has(investment.sector),
-        `Invalid sector: ${investment.sector} (${investment.id})`
+        `Invalid sector: ${investment.sector} (${investment.id})`,
       );
       assert.ok(
         VALID_STATUSES.has(investment.status),
-        `Invalid status: ${investment.status} (${investment.id})`
+        `Invalid status: ${investment.status} (${investment.id})`,
       );
     }
   });
@@ -83,11 +83,11 @@ describe('gulf-fdi dataset integrity', () => {
     for (const investment of GULF_INVESTMENTS) {
       assert.ok(
         Number.isFinite(investment.lat) && investment.lat >= -90 && investment.lat <= 90,
-        `Invalid lat for ${investment.id}: ${investment.lat}`
+        `Invalid lat for ${investment.id}: ${investment.lat}`,
       );
       assert.ok(
         Number.isFinite(investment.lon) && investment.lon >= -180 && investment.lon <= 180,
-        `Invalid lon for ${investment.id}: ${investment.lon}`
+        `Invalid lon for ${investment.id}: ${investment.lon}`,
       );
     }
   });
@@ -97,15 +97,15 @@ describe('gulf-fdi dataset integrity', () => {
       if (investment.investmentUSD != null) {
         assert.ok(
           Number.isFinite(investment.investmentUSD) && investment.investmentUSD > 0,
-          `Invalid investmentUSD for ${investment.id}: ${investment.investmentUSD}`
+          `Invalid investmentUSD for ${investment.id}: ${investment.investmentUSD}`,
         );
       }
       if (investment.stakePercent != null) {
         assert.ok(
-          Number.isFinite(investment.stakePercent)
-            && investment.stakePercent >= 0
-            && investment.stakePercent <= 100,
-          `Invalid stakePercent for ${investment.id}: ${investment.stakePercent}`
+          Number.isFinite(investment.stakePercent) &&
+            investment.stakePercent >= 0 &&
+            investment.stakePercent <= 100,
+          `Invalid stakePercent for ${investment.id}: ${investment.stakePercent}`,
         );
       }
     }
@@ -115,31 +115,31 @@ describe('gulf-fdi dataset integrity', () => {
     for (const investment of GULF_INVESTMENTS) {
       if (investment.yearAnnounced != null) {
         assert.ok(
-          Number.isInteger(investment.yearAnnounced)
-            && investment.yearAnnounced >= 1990
-            && investment.yearAnnounced <= 2100,
-          `Invalid yearAnnounced for ${investment.id}: ${investment.yearAnnounced}`
+          Number.isInteger(investment.yearAnnounced) &&
+            investment.yearAnnounced >= 1990 &&
+            investment.yearAnnounced <= 2100,
+          `Invalid yearAnnounced for ${investment.id}: ${investment.yearAnnounced}`,
         );
       }
       if (investment.yearOperational != null) {
         assert.ok(
-          Number.isInteger(investment.yearOperational)
-            && investment.yearOperational >= 1990
-            && investment.yearOperational <= 2100,
-          `Invalid yearOperational for ${investment.id}: ${investment.yearOperational}`
+          Number.isInteger(investment.yearOperational) &&
+            investment.yearOperational >= 1990 &&
+            investment.yearOperational <= 2100,
+          `Invalid yearOperational for ${investment.id}: ${investment.yearOperational}`,
         );
       }
       if (investment.yearAnnounced != null && investment.yearOperational != null) {
         assert.ok(
           investment.yearOperational >= investment.yearAnnounced,
-          `yearOperational before yearAnnounced for ${investment.id}`
+          `yearOperational before yearAnnounced for ${investment.id}`,
         );
       }
       if (investment.sourceUrl) {
         assert.match(
           investment.sourceUrl,
           /^https?:\/\//,
-          `sourceUrl must be absolute for ${investment.id}`
+          `sourceUrl must be absolute for ${investment.id}`,
         );
       }
     }

@@ -8,7 +8,8 @@ import { XMLParser } from 'fast-xml-parser';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const FEEDS_PATH = join(__dirname, '..', 'src', 'config', 'feeds.ts');
 
-const CHROME_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+const CHROME_UA =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 const FETCH_TIMEOUT = 15_000;
 const CONCURRENCY = 10;
 const STALE_DAYS = 30;
@@ -51,7 +52,10 @@ function extractFeeds() {
       // Find the closest preceding lang key for this rss() call
       let lang = null;
       for (let k = langMap.length - 1; k >= 0; k--) {
-        if (langMap[k].pos < rssPos) { lang = langMap[k].lang; break; }
+        if (langMap[k].pos < rssPos) {
+          lang = langMap[k].lang;
+          break;
+        }
       }
 
       const label = lang ? `${currentName} [${lang}]` : currentName;
@@ -84,7 +88,10 @@ async function fetchFeed(url) {
   try {
     const resp = await fetch(url, {
       signal: controller.signal,
-      headers: { 'User-Agent': CHROME_UA, 'Accept': 'application/rss+xml, application/xml, text/xml, */*' },
+      headers: {
+        'User-Agent': CHROME_UA,
+        Accept: 'application/rss+xml, application/xml, text/xml, */*',
+      },
       redirect: 'follow',
     });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -112,7 +119,11 @@ function parseNewestDate(xml) {
   // Atom
   const atomFeed = doc?.feed;
   if (atomFeed) {
-    const entries = Array.isArray(atomFeed.entry) ? atomFeed.entry : atomFeed.entry ? [atomFeed.entry] : [];
+    const entries = Array.isArray(atomFeed.entry)
+      ? atomFeed.entry
+      : atomFeed.entry
+        ? [atomFeed.entry]
+        : [];
     for (const entry of entries) {
       const d = entry.updated || entry.published;
       if (d) dates.push(new Date(d));
@@ -129,9 +140,9 @@ function parseNewestDate(xml) {
     }
   }
 
-  const valid = dates.filter(d => !isNaN(d.getTime()));
+  const valid = dates.filter((d) => !isNaN(d.getTime()));
   if (valid.length === 0) return null;
-  return new Date(Math.max(...valid.map(d => d.getTime())));
+  return new Date(Math.max(...valid.map((d) => d.getTime())));
 }
 
 async function validateFeed(feed) {
@@ -183,15 +194,17 @@ function pad(str, len) {
 
 async function main() {
   const feeds = extractFeeds();
-  console.log(`Validating ${feeds.length} RSS feeds (${CONCURRENCY} concurrent, ${FETCH_TIMEOUT / 1000}s timeout)...\n`);
+  console.log(
+    `Validating ${feeds.length} RSS feeds (${CONCURRENCY} concurrent, ${FETCH_TIMEOUT / 1000}s timeout)...\n`,
+  );
 
   const results = await runBatch(feeds, validateFeed, CONCURRENCY);
 
-  const ok = results.filter(r => r.status === 'OK');
-  const stale = results.filter(r => r.status === 'STALE');
-  const dead = results.filter(r => r.status === 'DEAD');
-  const empty = results.filter(r => r.status === 'EMPTY');
-  const skipped = results.filter(r => r.status === 'SKIP');
+  const ok = results.filter((r) => r.status === 'OK');
+  const stale = results.filter((r) => r.status === 'STALE');
+  const dead = results.filter((r) => r.status === 'DEAD');
+  const empty = results.filter((r) => r.status === 'EMPTY');
+  const skipped = results.filter((r) => r.status === 'SKIP');
 
   if (stale.length) {
     stale.sort((a, b) => a.newest - b.newest);
@@ -224,13 +237,15 @@ async function main() {
     console.log();
   }
 
-  console.log(`Summary: ${ok.length} OK, ${stale.length} stale, ${dead.length} dead, ${empty.length} empty` +
-    (skipped.length ? `, ${skipped.length} skipped` : ''));
+  console.log(
+    `Summary: ${ok.length} OK, ${stale.length} stale, ${dead.length} dead, ${empty.length} empty` +
+      (skipped.length ? `, ${skipped.length} skipped` : ''),
+  );
 
   if (stale.length || dead.length) process.exit(1);
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Fatal:', err);
   process.exit(2);
 });

@@ -87,7 +87,11 @@ export class Panel {
     headerLeft.appendChild(title);
 
     if (options.infoTooltip) {
-      const infoBtn = h('button', { className: 'panel-info-btn', 'aria-label': t('components.panel.showMethodologyInfo') }, '?');
+      const infoBtn = h(
+        'button',
+        { className: 'panel-info-btn', 'aria-label': t('components.panel.showMethodologyInfo') },
+        '?',
+      );
 
       const tooltip = h('div', { className: 'panel-info-tooltip' });
       tooltip.appendChild(safeHtml(options.infoTooltip));
@@ -184,9 +188,13 @@ export class Panel {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
 
-      const currentSpan = this.element.classList.contains('span-4') ? 4 :
-        this.element.classList.contains('span-3') ? 3 :
-          this.element.classList.contains('span-2') ? 2 : 1;
+      const currentSpan = this.element.classList.contains('span-4')
+        ? 4
+        : this.element.classList.contains('span-3')
+          ? 3
+          : this.element.classList.contains('span-2')
+            ? 2
+            : 1;
       savePanelSpan(this.panelId, currentSpan);
       trackPanelResized(this.panelId, currentSpan);
     };
@@ -204,18 +212,22 @@ export class Panel {
     });
 
     // Touch support
-    this.resizeHandle.addEventListener('touchstart', (e: TouchEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const touch = e.touches[0];
-      if (!touch) return;
-      this.isResizing = true;
-      this.startY = touch.clientY;
-      this.startHeight = this.element.getBoundingClientRect().height;
-      this.element.classList.add('resizing');
-      this.element.dataset.resizing = 'true';
-      this.resizeHandle?.classList.add('active');
-    }, { passive: false });
+    this.resizeHandle.addEventListener(
+      'touchstart',
+      (e: TouchEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const touch = e.touches[0];
+        if (!touch) return;
+        this.isResizing = true;
+        this.startY = touch.clientY;
+        this.startHeight = this.element.getBoundingClientRect().height;
+        this.element.classList.add('resizing');
+        this.element.dataset.resizing = 'true';
+        this.resizeHandle?.classList.add('active');
+      },
+      { passive: false },
+    );
 
     // Use bound handlers so they can be removed in destroy()
     this.onTouchMove = (e: TouchEvent) => {
@@ -234,9 +246,13 @@ export class Panel {
       this.element.classList.remove('resizing');
       delete this.element.dataset.resizing;
       this.resizeHandle?.classList.remove('active');
-      const currentSpan = this.element.classList.contains('span-4') ? 4 :
-        this.element.classList.contains('span-3') ? 3 :
-          this.element.classList.contains('span-2') ? 2 : 1;
+      const currentSpan = this.element.classList.contains('span-4')
+        ? 4
+        : this.element.classList.contains('span-3')
+          ? 3
+          : this.element.classList.contains('span-2')
+            ? 2
+            : 1;
       savePanelSpan(this.panelId, currentSpan);
       trackPanelResized(this.panelId, currentSpan);
     };
@@ -251,7 +267,6 @@ export class Panel {
     document.addEventListener('touchend', this.onTouchEnd);
     document.addEventListener('mouseup', this.onDocMouseUp);
   }
-
 
   protected setDataBadge(state: 'live' | 'cached' | 'unavailable', detail?: string): void {
     if (!this.statusBadgeEl) return;
@@ -273,10 +288,22 @@ export class Panel {
     return this.element;
   }
 
+  public setTitle(title: string): void {
+    const titleEl = this.header.querySelector('.panel-title');
+    if (titleEl) {
+      titleEl.textContent = title;
+    }
+  }
+
   public showLoading(message = t('common.loading')): void {
-    replaceChildren(this.content,
-      h('div', { className: 'panel-loading' },
-        h('div', { className: 'panel-loading-radar' },
+    replaceChildren(
+      this.content,
+      h(
+        'div',
+        { className: 'panel-loading' },
+        h(
+          'div',
+          { className: 'panel-loading-radar' },
           h('div', { className: 'panel-radar-sweep' }),
           h('div', { className: 'panel-radar-dot' }),
         ),
@@ -290,9 +317,14 @@ export class Panel {
   }
 
   public showRetrying(message = t('common.retrying')): void {
-    replaceChildren(this.content,
-      h('div', { className: 'panel-loading' },
-        h('div', { className: 'panel-loading-radar' },
+    replaceChildren(
+      this.content,
+      h(
+        'div',
+        { className: 'panel-loading' },
+        h(
+          'div',
+          { className: 'panel-loading-radar' },
           h('div', { className: 'panel-radar-sweep' }),
           h('div', { className: 'panel-radar-dot' }),
         ),
@@ -305,11 +337,15 @@ export class Panel {
     const msgEl = h('div', { className: 'config-error-message' }, message);
     if (isDesktopRuntime()) {
       msgEl.appendChild(
-        h('button', {
-          type: 'button',
-          className: 'config-error-settings-btn',
-          onClick: () => void invokeTauri<void>('open_settings_window_command').catch(() => { }),
-        }, t('components.panel.openSettings')),
+        h(
+          'button',
+          {
+            type: 'button',
+            className: 'config-error-settings-btn',
+            onClick: () => void invokeTauri<void>('open_settings_window_command').catch(() => { }),
+          },
+          t('components.panel.openSettings'),
+        ),
       );
     }
     replaceChildren(this.content, msgEl);

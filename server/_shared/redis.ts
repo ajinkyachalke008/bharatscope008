@@ -35,18 +35,27 @@ export async function getCachedJson(key: string): Promise<unknown | null> {
   }
 }
 
-export async function setCachedJson(key: string, value: unknown, ttlSeconds: number): Promise<void> {
+export async function setCachedJson(
+  key: string,
+  value: unknown,
+  ttlSeconds: number,
+): Promise<void> {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) return;
   try {
     // Atomic SET with EX — single call avoids race between SET and EXPIRE (C-3 fix)
-    await fetch(`${url}/set/${encodeURIComponent(prefixKey(key))}/${encodeURIComponent(JSON.stringify(value))}/EX/${ttlSeconds}`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      signal: AbortSignal.timeout(3_000),
-    });
-  } catch { /* best-effort */ }
+    await fetch(
+      `${url}/set/${encodeURIComponent(prefixKey(key))}/${encodeURIComponent(JSON.stringify(value))}/EX/${ttlSeconds}`,
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        signal: AbortSignal.timeout(3_000),
+      },
+    );
+  } catch {
+    /* best-effort */
+  }
 }
 
 /**
@@ -75,10 +84,16 @@ export async function getCachedJsonBatch(keys: string[]): Promise<Map<string, un
     for (let i = 0; i < keys.length; i++) {
       const raw = data[i]?.result;
       if (raw) {
-        try { result.set(keys[i]!, JSON.parse(raw)); } catch { /* skip malformed */ }
+        try {
+          result.set(keys[i]!, JSON.parse(raw));
+        } catch {
+          /* skip malformed */
+        }
       }
     }
-  } catch { /* best-effort */ }
+  } catch {
+    /* best-effort */
+  }
   return result;
 }
 

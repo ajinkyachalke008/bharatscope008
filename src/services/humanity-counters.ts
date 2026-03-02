@@ -88,9 +88,7 @@ export const COUNTER_METRICS: CounterMetric[] = [
  */
 export function getCounterValue(metric: CounterMetric): number {
   const now = new Date();
-  const midnightUTC = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
-  );
+  const midnightUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const elapsedSeconds = (now.getTime() - midnightUTC.getTime()) / 1000;
   return metric.perSecondRate * elapsedSeconds;
 }

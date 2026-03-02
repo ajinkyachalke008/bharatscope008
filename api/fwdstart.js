@@ -6,13 +6,16 @@ export const config = { runtime: 'edge' };
 export default async function handler(req) {
   const cors = getCorsHeaders(req);
   if (isDisallowedOrigin(req)) {
-    return new Response(JSON.stringify({ error: 'Origin not allowed' }), { status: 403, headers: cors });
+    return new Response(JSON.stringify({ error: 'Origin not allowed' }), {
+      status: 403,
+      headers: cors,
+    });
   }
   try {
     const response = await fetch('https://www.fwdstart.me/archive', {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'text/html,application/xhtml+xml',
+        Accept: 'text/html,application/xhtml+xml',
       },
       signal: AbortSignal.timeout(15000),
     });
@@ -43,7 +46,9 @@ export default async function handler(req) {
       if (!title || title.length < 5) continue;
 
       // Extract date - look for "Mon DD, YYYY" pattern
-      const dateMatch = block.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),?\s+(\d{4})/i);
+      const dateMatch = block.match(
+        /(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),?\s+(\d{4})/i,
+      );
       let pubDate = new Date();
       if (dateMatch) {
         const dateStr = `${dateMatch[1]} ${dateMatch[2]}, ${dateMatch[3]}`;
@@ -64,7 +69,10 @@ export default async function handler(req) {
     }
 
     // Build RSS XML
-    const rssItems = items.slice(0, 30).map(item => `
+    const rssItems = items
+      .slice(0, 30)
+      .map(
+        (item) => `
     <item>
       <title><![CDATA[${item.title}]]></title>
       <link>${item.link}</link>
@@ -72,7 +80,9 @@ export default async function handler(req) {
       <pubDate>${new Date(item.date).toUTCString()}</pubDate>
       <description><![CDATA[${item.description}]]></description>
       <source url="https://www.fwdstart.me">FwdStart Newsletter</source>
-    </item>`).join('');
+    </item>`,
+      )
+      .join('');
 
     const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
@@ -96,15 +106,18 @@ export default async function handler(req) {
     });
   } catch (error) {
     console.error('FwdStart scraper error:', error);
-    return new Response(JSON.stringify({
-      error: 'Failed to fetch FwdStart archive',
-      details: error.message
-    }), {
-      status: 502,
-      headers: {
-        'Content-Type': 'application/json',
-        ...cors,
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to fetch FwdStart archive',
+        details: error.message,
+      }),
+      {
+        status: 502,
+        headers: {
+          'Content-Type': 'application/json',
+          ...cors,
+        },
       },
-    });
+    );
   }
 }

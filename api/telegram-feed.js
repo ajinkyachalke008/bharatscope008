@@ -23,7 +23,10 @@ export default async function handler(req) {
   }
 
   if (isDisallowedOrigin(req)) {
-    return new Response(JSON.stringify({ error: 'Origin not allowed' }), { status: 403, headers: cors });
+    return new Response(JSON.stringify({ error: 'Origin not allowed' }), {
+      status: 403,
+      headers: cors,
+    });
   }
 
   let relay = process.env.WS_RELAY_URL;
@@ -40,7 +43,10 @@ export default async function handler(req) {
   if (relay.startsWith('ws://')) relay = relay.replace('ws://', 'http://');
 
   const url = new URL(req.url);
-  const limit = Math.max(1, Math.min(200, parseInt(url.searchParams.get('limit') || '50', 10) || 50));
+  const limit = Math.max(
+    1,
+    Math.min(200, parseInt(url.searchParams.get('limit') || '50', 10) || 50),
+  );
   const topic = (url.searchParams.get('topic') || '').trim();
   const channel = (url.searchParams.get('channel') || '').trim();
 
@@ -50,9 +56,13 @@ export default async function handler(req) {
   if (channel) relayUrl.searchParams.set('channel', channel);
 
   try {
-    const res = await fetchWithTimeout(relayUrl.toString(), {
-      headers: { 'Accept': 'application/json' },
-    }, 25000);
+    const res = await fetchWithTimeout(
+      relayUrl.toString(),
+      {
+        headers: { Accept: 'application/json' },
+      },
+      25000,
+    );
 
     const text = await res.text();
     return new Response(text, {
@@ -67,11 +77,14 @@ export default async function handler(req) {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     const isAbort = err && (err.name === 'AbortError' || /aborted/i.test(msg));
-    return new Response(JSON.stringify({
-      error: isAbort ? 'Telegram relay request timed out' : 'Telegram relay fetch failed',
-    }), {
-      status: isAbort ? 504 : 502,
-      headers: { 'Content-Type': 'application/json', ...cors },
-    });
+    return new Response(
+      JSON.stringify({
+        error: isAbort ? 'Telegram relay request timed out' : 'Telegram relay fetch failed',
+      }),
+      {
+        status: isAbort ? 504 : 502,
+        headers: { 'Content-Type': 'application/json', ...cors },
+      },
+    );
   }
 }

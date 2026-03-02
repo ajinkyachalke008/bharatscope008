@@ -118,13 +118,10 @@ export const listPredictionMarkets: PredictionServiceHandler['listPredictionMark
           params.set('tag_slug', req.category);
         }
 
-        const response = await fetch(
-          `${GAMMA_BASE}/${endpoint}?${params}`,
-          {
-            headers: { Accept: 'application/json', 'User-Agent': CHROME_UA },
-            signal: AbortSignal.timeout(FETCH_TIMEOUT),
-          },
-        );
+        const response = await fetch(`${GAMMA_BASE}/${endpoint}?${params}`, {
+          headers: { Accept: 'application/json', 'User-Agent': CHROME_UA },
+          signal: AbortSignal.timeout(FETCH_TIMEOUT),
+        });
         if (!response.ok) return null;
 
         const data: unknown = await response.json();

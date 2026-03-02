@@ -7,35 +7,35 @@
 import { getCSSColor } from '@/utils';
 
 export type DataSourceId =
-  | 'acled'      // Protests/conflicts
-  | 'opensky'    // Military flights
-  | 'wingbits'   // Aircraft enrichment
-  | 'ais'        // Vessel tracking
-  | 'usgs'       // Earthquakes
-  | 'gdelt'      // News velocity
-  | 'gdelt_doc'  // GDELT Doc protest intelligence
-  | 'rss'        // RSS feeds
+  | 'acled' // Protests/conflicts
+  | 'opensky' // Military flights
+  | 'wingbits' // Aircraft enrichment
+  | 'ais' // Vessel tracking
+  | 'usgs' // Earthquakes
+  | 'gdelt' // News velocity
+  | 'gdelt_doc' // GDELT Doc protest intelligence
+  | 'rss' // RSS feeds
   | 'polymarket' // Prediction markets
   | 'predictions' // Predictions feed
-  | 'pizzint'    // PizzINT monitoring
-  | 'outages'    // Internet outages
+  | 'pizzint' // PizzINT monitoring
+  | 'outages' // Internet outages
   | 'cyber_threats' // Cyber threat IOC layer
-  | 'weather'    // Weather alerts
-  | 'economic'   // Economic indicators (FRED)
-  | 'oil'        // EIA oil analytics
-  | 'spending'        // USASpending.gov
-  | 'firms'          // NASA FIRMS satellite fires
+  | 'weather' // Weather alerts
+  | 'economic' // Economic indicators (FRED)
+  | 'oil' // EIA oil analytics
+  | 'spending' // USASpending.gov
+  | 'firms' // NASA FIRMS satellite fires
   | 'acled_conflict' // ACLED battles/explosions/violence
-  | 'ucdp'           // UCDP conflict classification
-  | 'hapi'           // HDX HAPI aggregated conflict data
-  | 'ucdp_events'    // UCDP georeferenced conflict events
-  | 'unhcr'          // UNHCR displacement data
-  | 'climate'        // Climate anomaly data (Open-Meteo)
-  | 'worldpop'       // WorldPop population exposure
-  | 'giving'         // Global giving activity data
-  | 'bis'            // BIS central bank data
-  | 'wto_trade'      // WTO trade policy data
-  | 'supply_chain';  // Supply chain disruption intelligence
+  | 'ucdp' // UCDP conflict classification
+  | 'hapi' // HDX HAPI aggregated conflict data
+  | 'ucdp_events' // UCDP georeferenced conflict events
+  | 'unhcr' // UNHCR displacement data
+  | 'climate' // Climate anomaly data (Open-Meteo)
+  | 'worldpop' // WorldPop population exposure
+  | 'giving' // Global giving activity data
+  | 'bis' // BIS central bank data
+  | 'wto_trade' // WTO trade policy data
+  | 'supply_chain'; // Supply chain disruption intelligence
 
 export type FreshnessStatus = 'fresh' | 'stale' | 'very_stale' | 'no_data' | 'disabled' | 'error';
 
@@ -63,15 +63,18 @@ export interface DataFreshnessSummary {
 }
 
 // Thresholds in milliseconds
-const FRESH_THRESHOLD = 15 * 60 * 1000;      // 15 minutes
-const STALE_THRESHOLD = 2 * 60 * 60 * 1000;  // 2 hours
+const FRESH_THRESHOLD = 15 * 60 * 1000; // 15 minutes
+const STALE_THRESHOLD = 2 * 60 * 60 * 1000; // 2 hours
 const VERY_STALE_THRESHOLD = 6 * 60 * 60 * 1000; // 6 hours
 
 // Core sources needed for meaningful risk assessment
 // Note: ACLED is optional since GDELT provides protest data as fallback
 const CORE_SOURCES: DataSourceId[] = ['gdelt', 'rss'];
 
-const SOURCE_METADATA: Record<DataSourceId, { name: string; requiredForRisk: boolean; panelId?: string }> = {
+const SOURCE_METADATA: Record<
+  DataSourceId,
+  { name: string; requiredForRisk: boolean; panelId?: string }
+> = {
   acled: { name: 'Protests & Conflicts', requiredForRisk: false, panelId: 'protests' },
   opensky: { name: 'Military Flights', requiredForRisk: false, panelId: 'military' },
   wingbits: { name: 'Aircraft Enrichment', requiredForRisk: false, panelId: 'military' },
@@ -100,7 +103,11 @@ const SOURCE_METADATA: Record<DataSourceId, { name: string; requiredForRisk: boo
   giving: { name: 'Global Giving Activity', requiredForRisk: false, panelId: 'giving' },
   bis: { name: 'BIS Central Banks', requiredForRisk: false, panelId: 'economic' },
   wto_trade: { name: 'WTO Trade Policy', requiredForRisk: false, panelId: 'trade-policy' },
-  supply_chain: { name: 'Supply Chain Intelligence', requiredForRisk: false, panelId: 'supply-chain' },
+  supply_chain: {
+    name: 'Supply Chain Intelligence',
+    requiredForRisk: false,
+    panelId: 'supply-chain',
+  },
 };
 
 class DataFreshnessTracker {
@@ -177,7 +184,7 @@ class DataFreshnessTracker {
    * Get all source states
    */
   getAllSources(): DataSourceState[] {
-    return Array.from(this.sources.values()).map(source => ({
+    return Array.from(this.sources.values()).map((source) => ({
       ...source,
       status: source.enabled ? this.calculateStatus(source) : 'disabled',
     }));
@@ -187,7 +194,7 @@ class DataFreshnessTracker {
    * Get sources required for risk assessment
    */
   getRiskSources(): DataSourceState[] {
-    return this.getAllSources().filter(s => s.requiredForRisk);
+    return this.getAllSources().filter((s) => s.requiredForRisk);
   }
 
   /**
@@ -195,22 +202,25 @@ class DataFreshnessTracker {
    */
   getSummary(): DataFreshnessSummary {
     const sources = this.getAllSources();
-    const riskSources = sources.filter(s => s.requiredForRisk);
+    const riskSources = sources.filter((s) => s.requiredForRisk);
 
-    const activeSources = sources.filter(s => s.status === 'fresh' || s.status === 'stale' || s.status === 'very_stale');
-    const activeRiskSources = riskSources.filter(s => s.status === 'fresh' || s.status === 'stale' || s.status === 'very_stale');
-    const staleSources = sources.filter(s => s.status === 'stale' || s.status === 'very_stale');
-    const disabledSources = sources.filter(s => s.status === 'disabled');
-    const errorSources = sources.filter(s => s.status === 'error');
+    const activeSources = sources.filter(
+      (s) => s.status === 'fresh' || s.status === 'stale' || s.status === 'very_stale',
+    );
+    const activeRiskSources = riskSources.filter(
+      (s) => s.status === 'fresh' || s.status === 'stale' || s.status === 'very_stale',
+    );
+    const staleSources = sources.filter((s) => s.status === 'stale' || s.status === 'very_stale');
+    const disabledSources = sources.filter((s) => s.status === 'disabled');
+    const errorSources = sources.filter((s) => s.status === 'error');
 
-    const updates = sources
-      .filter(s => s.lastUpdate)
-      .map(s => s.lastUpdate!.getTime());
+    const updates = sources.filter((s) => s.lastUpdate).map((s) => s.lastUpdate!.getTime());
 
     // Coverage is based on risk-required sources
-    const coveragePercent = riskSources.length > 0
-      ? Math.round((activeRiskSources.length / riskSources.length) * 100)
-      : 0;
+    const coveragePercent =
+      riskSources.length > 0
+        ? Math.round((activeRiskSources.length / riskSources.length) * 100)
+        : 0;
 
     // Overall status
     let overallStatus: 'sufficient' | 'limited' | 'insufficient';
@@ -307,24 +317,36 @@ export const dataFreshness = new DataFreshnessTracker();
 // Helper to get status color
 export function getStatusColor(status: FreshnessStatus): string {
   switch (status) {
-    case 'fresh': return getCSSColor('--semantic-normal');
-    case 'stale': return getCSSColor('--semantic-elevated');
-    case 'very_stale': return getCSSColor('--semantic-high');
-    case 'error': return getCSSColor('--semantic-critical');
-    case 'disabled': return getCSSColor('--text-muted');
-    case 'no_data': return getCSSColor('--text-dim');
+    case 'fresh':
+      return getCSSColor('--semantic-normal');
+    case 'stale':
+      return getCSSColor('--semantic-elevated');
+    case 'very_stale':
+      return getCSSColor('--semantic-high');
+    case 'error':
+      return getCSSColor('--semantic-critical');
+    case 'disabled':
+      return getCSSColor('--text-muted');
+    case 'no_data':
+      return getCSSColor('--text-dim');
   }
 }
 
 // Helper to get status icon
 export function getStatusIcon(status: FreshnessStatus): string {
   switch (status) {
-    case 'fresh': return '●';
-    case 'stale': return '◐';
-    case 'very_stale': return '○';
-    case 'error': return '✕';
-    case 'disabled': return '○';
-    case 'no_data': return '○';
+    case 'fresh':
+      return '●';
+    case 'stale':
+      return '◐';
+    case 'very_stale':
+      return '○';
+    case 'error':
+      return '✕';
+    case 'disabled':
+      return '○';
+    case 'no_data':
+      return '○';
   }
 }
 
@@ -365,11 +387,19 @@ const INTELLIGENCE_GAP_MESSAGES: Record<DataSourceId, string> = {
  * Get intelligence gap warnings for stale or unavailable data sources.
  * These warnings help analysts understand what they CANNOT see.
  */
-export function getIntelligenceGaps(): { source: DataSourceId; message: string; severity: 'warning' | 'critical' }[] {
+export function getIntelligenceGaps(): {
+  source: DataSourceId;
+  message: string;
+  severity: 'warning' | 'critical';
+}[] {
   const gaps: { source: DataSourceId; message: string; severity: 'warning' | 'critical' }[] = [];
 
   for (const source of dataFreshness.getAllSources()) {
-    if (source.status === 'no_data' || source.status === 'very_stale' || source.status === 'error') {
+    if (
+      source.status === 'no_data' ||
+      source.status === 'very_stale' ||
+      source.status === 'error'
+    ) {
       const message = INTELLIGENCE_GAP_MESSAGES[source.id] || `${source.name} data unavailable`;
       const severity = source.requiredForRisk || source.status === 'error' ? 'critical' : 'warning';
       gaps.push({ source: source.id, message, severity });
@@ -388,7 +418,7 @@ export function getIntelligenceGaps(): { source: DataSourceId; message: string; 
  */
 export function getIntelligenceGapSummary(): string[] {
   const gaps = getIntelligenceGaps();
-  return gaps.map(gap => {
+  return gaps.map((gap) => {
     const icon = gap.severity === 'critical' ? '⚠️ CRITICAL' : '⚡';
     return `${icon}: ${gap.message}`;
   });
@@ -398,5 +428,5 @@ export function getIntelligenceGapSummary(): string[] {
  * Check if there are any critical intelligence gaps.
  */
 export function hasCriticalGaps(): boolean {
-  return getIntelligenceGaps().some(gap => gap.severity === 'critical');
+  return getIntelligenceGaps().some((gap) => gap.severity === 'critical');
 }

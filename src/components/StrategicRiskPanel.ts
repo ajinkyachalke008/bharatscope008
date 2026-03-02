@@ -110,46 +110,64 @@ export class StrategicRiskPanel extends Panel {
 
   private getTrendEmoji(trend: string): string {
     switch (trend) {
-      case 'escalating': return '📈';
-      case 'de-escalating': return '📉';
-      default: return '➡️';
+      case 'escalating':
+        return '📈';
+      case 'de-escalating':
+        return '📉';
+      default:
+        return '➡️';
     }
   }
 
   private getTrendColor(trend: string): string {
     switch (trend) {
-      case 'escalating': return getCSSColor('--semantic-critical');
-      case 'de-escalating': return getCSSColor('--semantic-normal');
-      default: return getCSSColor('--text-dim');
+      case 'escalating':
+        return getCSSColor('--semantic-critical');
+      case 'de-escalating':
+        return getCSSColor('--semantic-normal');
+      default:
+        return getCSSColor('--text-dim');
     }
   }
 
-
   private getPriorityColor(priority: AlertPriority): string {
     switch (priority) {
-      case 'critical': return getCSSColor('--semantic-critical');
-      case 'high': return getCSSColor('--semantic-high');
-      case 'medium': return getCSSColor('--semantic-elevated');
-      case 'low': return getCSSColor('--semantic-normal');
+      case 'critical':
+        return getCSSColor('--semantic-critical');
+      case 'high':
+        return getCSSColor('--semantic-high');
+      case 'medium':
+        return getCSSColor('--semantic-elevated');
+      case 'low':
+        return getCSSColor('--semantic-normal');
     }
   }
 
   private getPriorityEmoji(priority: AlertPriority): string {
     switch (priority) {
-      case 'critical': return '🔴';
-      case 'high': return '🟠';
-      case 'medium': return '🟡';
-      case 'low': return '🟢';
+      case 'critical':
+        return '🔴';
+      case 'high':
+        return '🟠';
+      case 'medium':
+        return '🟡';
+      case 'low':
+        return '🟢';
     }
   }
 
   private getTypeEmoji(type: string): string {
     switch (type) {
-      case 'convergence': return '🎯';
-      case 'cii_spike': return '📊';
-      case 'cascade': return '🔗';
-      case 'composite': return '⚠️';
-      default: return '📍';
+      case 'convergence':
+        return '🎯';
+      case 'cii_spike':
+        return '📊';
+      case 'cascade':
+        return '🔗';
+      case 'composite':
+        return '⚠️';
+      default:
+        return '📍';
     }
   }
 
@@ -158,7 +176,7 @@ export class StrategicRiskPanel extends Panel {
    */
   private renderInsufficientData(): string {
     const sources = dataFreshness.getAllSources();
-    const riskSources = sources.filter(s => s.requiredForRisk);
+    const riskSources = sources.filter((s) => s.requiredForRisk);
 
     return `
       <div class="strategic-risk-panel">
@@ -173,14 +191,18 @@ export class StrategicRiskPanel extends Panel {
         <div class="risk-section">
           <div class="risk-section-title">${t('components.strategicRisk.requiredDataSources')}</div>
           <div class="risk-sources">
-            ${riskSources.map(source => this.renderSourceRow(source)).join('')}
+            ${riskSources.map((source) => this.renderSourceRow(source)).join('')}
           </div>
         </div>
 
         <div class="risk-section">
           <div class="risk-section-title">${t('components.strategicRisk.optionalSources')}</div>
           <div class="risk-sources">
-            ${sources.filter(s => !s.requiredForRisk).slice(0, 4).map(source => this.renderSourceRow(source)).join('')}
+            ${sources
+              .filter((s) => !s.requiredForRisk)
+              .slice(0, 4)
+              .map((source) => this.renderSourceRow(source))
+              .join('')}
           </div>
         </div>
 
@@ -197,7 +219,6 @@ export class StrategicRiskPanel extends Panel {
       </div>
     `;
   }
-
 
   /**
    * Render full data view - normal operation
@@ -268,9 +289,13 @@ export class StrategicRiskPanel extends Panel {
         </span>
         <span class="risk-source-name">${escapeHtml(source.name)}</span>
         <span class="risk-source-time">${source.status === 'no_data' ? t('components.strategicRisk.noData') : timeSince}</span>
-        ${panelId && (source.status === 'no_data' || source.status === 'disabled') ? `
+        ${
+          panelId && (source.status === 'no_data' || source.status === 'disabled')
+            ? `
           <button class="risk-source-enable" data-panel="${panelId}">${t('components.strategicRisk.enable')}</button>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
     `;
   }
@@ -314,25 +339,27 @@ export class StrategicRiskPanel extends Panel {
       <div class="risk-section">
         <div class="risk-section-title">${t('components.strategicRisk.topRisks')}</div>
         <div class="risk-list">
-          ${this.overview.topRisks.map((risk, i) => {
-      // First risk is convergence - make it clickable if we have location
-      const isConvergence = i === 0 && risk.startsWith('Convergence:') && topZone;
-      if (isConvergence) {
-        return `
+          ${this.overview.topRisks
+            .map((risk, i) => {
+              // First risk is convergence - make it clickable if we have location
+              const isConvergence = i === 0 && risk.startsWith('Convergence:') && topZone;
+              if (isConvergence) {
+                return `
                 <div class="risk-item risk-item-clickable" data-lat="${topZone.lat}" data-lon="${topZone.lon}">
                   <span class="risk-rank">${i + 1}.</span>
                   <span class="risk-text">${escapeHtml(risk)}</span>
                   <span class="risk-location-icon">↗</span>
                 </div>
               `;
-      }
-      return `
+              }
+              return `
               <div class="risk-item">
                 <span class="risk-rank">${i + 1}.</span>
                 <span class="risk-text">${escapeHtml(risk)}</span>
               </div>
             `;
-    }).join('')}
+            })
+            .join('')}
         </div>
       </div>
     `;
@@ -349,14 +376,15 @@ export class StrategicRiskPanel extends Panel {
       <div class="risk-section">
         <div class="risk-section-title">${t('components.strategicRisk.recentAlerts', { count: String(this.alerts.length) })}</div>
         <div class="risk-alerts">
-          ${displayAlerts.map(alert => {
-      const hasLocation = alert.location && alert.location.lat && alert.location.lon;
-      const clickableClass = hasLocation ? 'risk-alert-clickable' : '';
-      const locationAttrs = hasLocation
-        ? `data-lat="${alert.location!.lat}" data-lon="${alert.location!.lon}"`
-        : '';
+          ${displayAlerts
+            .map((alert) => {
+              const hasLocation = alert.location && alert.location.lat && alert.location.lon;
+              const clickableClass = hasLocation ? 'risk-alert-clickable' : '';
+              const locationAttrs = hasLocation
+                ? `data-lat="${alert.location!.lat}" data-lon="${alert.location!.lon}"`
+                : '';
 
-      return `
+              return `
               <div class="risk-alert ${clickableClass}" style="border-left: 3px solid ${this.getPriorityColor(alert.priority)}" ${locationAttrs}>
                 <div class="risk-alert-header">
                   <span class="risk-alert-type">${this.getTypeEmoji(alert.type)}</span>
@@ -368,7 +396,8 @@ export class StrategicRiskPanel extends Panel {
                 <div class="risk-alert-time">${this.formatTime(alert.timestamp)}</div>
               </div>
             `;
-    }).join('')}
+            })
+            .join('')}
         </div>
       </div>
     `;
@@ -381,7 +410,8 @@ export class StrategicRiskPanel extends Panel {
     const hours = Math.floor(minutes / 60);
 
     if (minutes < 1) return t('components.strategicRisk.time.justNow');
-    if (minutes < 60) return t('components.strategicRisk.time.minutesAgo', { count: String(minutes) });
+    if (minutes < 60)
+      return t('components.strategicRisk.time.minutesAgo', { count: String(minutes) });
     if (hours < 24) return t('components.strategicRisk.time.hoursAgo', { count: String(hours) });
     return date.toLocaleDateString();
   }
@@ -417,7 +447,7 @@ export class StrategicRiskPanel extends Panel {
 
     // Enable source buttons
     const enableBtns = this.content.querySelectorAll('.risk-source-enable');
-    enableBtns.forEach(btn => {
+    enableBtns.forEach((btn) => {
       btn.addEventListener('click', (e) => {
         const panelId = (e.target as HTMLElement).dataset.panel;
         if (panelId) {
@@ -428,7 +458,7 @@ export class StrategicRiskPanel extends Panel {
 
     // Action buttons
     const actionBtns = this.content.querySelectorAll('.risk-action-btn');
-    actionBtns.forEach(btn => {
+    actionBtns.forEach((btn) => {
       btn.addEventListener('click', (e) => {
         const action = (e.target as HTMLElement).dataset.action;
         if (action === 'enable-core') {
@@ -441,7 +471,7 @@ export class StrategicRiskPanel extends Panel {
 
     // Clickable risk items (convergence zones)
     const clickableRisks = this.content.querySelectorAll('.risk-item-clickable');
-    clickableRisks.forEach(item => {
+    clickableRisks.forEach((item) => {
       item.addEventListener('click', () => {
         const lat = parseFloat((item as HTMLElement).dataset.lat || '0');
         const lon = parseFloat((item as HTMLElement).dataset.lon || '0');
@@ -453,7 +483,7 @@ export class StrategicRiskPanel extends Panel {
 
     // Clickable alerts with location
     const clickableAlerts = this.content.querySelectorAll('.risk-alert-clickable');
-    clickableAlerts.forEach(alert => {
+    clickableAlerts.forEach((alert) => {
       alert.addEventListener('click', () => {
         const lat = parseFloat((alert as HTMLElement).dataset.lat || '0');
         const lon = parseFloat((alert as HTMLElement).dataset.lon || '0');
@@ -469,7 +499,7 @@ export class StrategicRiskPanel extends Panel {
   }
 
   private emitEnablePanels(panelIds: string[]): void {
-    panelIds.forEach(id => this.emitEnablePanel(id));
+    panelIds.forEach((id) => this.emitEnablePanel(id));
   }
 
   public destroy(): void {

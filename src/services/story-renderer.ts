@@ -26,14 +26,22 @@ function humanizeSignalType(type: string): string {
     ais_gap: 'AIS Gaps',
     satellite_fire: 'Satellite Fires',
   };
-  return map[type] || type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  return map[type] || type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 const LEVEL_COLORS: Record<string, string> = {
-  critical: '#ef4444', high: '#f97316', elevated: '#eab308', normal: '#22c55e', low: '#3b82f6',
+  critical: '#ef4444',
+  high: '#f97316',
+  elevated: '#eab308',
+  normal: '#22c55e',
+  low: '#3b82f6',
 };
 const THREAT_COLORS: Record<string, string> = {
-  critical: '#ef4444', high: '#f97316', medium: '#eab308', low: '#22c55e', info: '#3b82f6',
+  critical: '#ef4444',
+  high: '#f97316',
+  medium: '#eab308',
+  low: '#22c55e',
+  info: '#3b82f6',
 };
 
 const LOGO_URL = '/favico/worldmonitor-icon-1024.png';
@@ -54,7 +62,11 @@ export async function renderStoryToCanvas(data: StoryData): Promise<HTMLCanvasEl
   const ctx = canvas.getContext('2d')!;
 
   let logoImg: HTMLImageElement | null = null;
-  try { logoImg = await loadImage(LOGO_URL); } catch { /* proceed without logo */ }
+  try {
+    logoImg = await loadImage(LOGO_URL);
+  } catch {
+    /* proceed without logo */
+  }
 
   // Background — slightly lighter for better contrast
   ctx.fillStyle = '#0c0c14';
@@ -76,7 +88,12 @@ export async function renderStoryToCanvas(data: StoryData): Promise<HTMLCanvasEl
   ctx.letterSpacing = '6px';
   ctx.fillText('WORLDMONITOR', textX, y + 26);
   ctx.letterSpacing = '0px';
-  const dateStr = new Date().toLocaleDateString(getLocale(), { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  const dateStr = new Date().toLocaleDateString(getLocale(), {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
   ctx.font = '400 24px Inter, system-ui, sans-serif';
   ctx.fillStyle = '#555';
   const dateW = ctx.measureText(dateStr).width;
@@ -153,7 +170,7 @@ export async function renderStoryToCanvas(data: StoryData): Promise<HTMLCanvasEl
   ctx.fill();
   if (score > 0) {
     ctx.fillStyle = levelColor;
-    roundRect(ctx, PAD, y, barW * score / 100, 18, 9);
+    roundRect(ctx, PAD, y, (barW * score) / 100, 18, 9);
     ctx.fill();
   }
 
@@ -161,10 +178,26 @@ export async function renderStoryToCanvas(data: StoryData): Promise<HTMLCanvasEl
   if (data.cii?.components) {
     y += 44;
     const comps = [
-      { label: t('common.unrest').toUpperCase(), val: data.cii.components.unrest, color: '#f97316' },
-      { label: t('common.conflict').toUpperCase(), val: data.cii.components.conflict, color: '#dc2626' },
-      { label: t('common.security').toUpperCase(), val: data.cii.components.security, color: '#ef4444' },
-      { label: t('common.information').toUpperCase(), val: data.cii.components.information, color: '#8b5cf6' },
+      {
+        label: t('common.unrest').toUpperCase(),
+        val: data.cii.components.unrest,
+        color: '#f97316',
+      },
+      {
+        label: t('common.conflict').toUpperCase(),
+        val: data.cii.components.conflict,
+        color: '#dc2626',
+      },
+      {
+        label: t('common.security').toUpperCase(),
+        val: data.cii.components.security,
+        color: '#ef4444',
+      },
+      {
+        label: t('common.information').toUpperCase(),
+        val: data.cii.components.information,
+        color: '#8b5cf6',
+      },
     ];
     const compBarW = (barW - 24) / 3;
     for (const comp of comps) {
@@ -181,14 +214,19 @@ export async function renderStoryToCanvas(data: StoryData): Promise<HTMLCanvasEl
       roundRect(ctx, cx, y + 8, compBarW, 8, 4);
       ctx.fill();
       ctx.fillStyle = comp.color;
-      roundRect(ctx, cx, y + 8, compBarW * Math.min(comp.val, 100) / 100, 8, 4);
+      roundRect(ctx, cx, y + 8, (compBarW * Math.min(comp.val, 100)) / 100, 8, 4);
       ctx.fill();
     }
     y += 24;
   }
 
   // ── ACTIVE SIGNALS ──
-  const hasSignals = data.signals.protests + data.signals.militaryFlights + data.signals.militaryVessels + data.signals.outages > 0;
+  const hasSignals =
+    data.signals.protests +
+      data.signals.militaryFlights +
+      data.signals.militaryVessels +
+      data.signals.outages >
+    0;
   if (hasSignals) {
     y += 40;
     drawSeparator(ctx, y, PAD);
@@ -198,10 +236,20 @@ export async function renderStoryToCanvas(data: StoryData): Promise<HTMLCanvasEl
     y += 48;
     const sigItems = [
       { icon: '📢', label: 'Protests', count: data.signals.protests, color: '#f97316' },
-      { icon: '✈', label: 'Military Aircraft', count: data.signals.militaryFlights, color: '#ef4444' },
-      { icon: '⚓', label: 'Military Vessels', count: data.signals.militaryVessels, color: '#3b82f6' },
+      {
+        icon: '✈',
+        label: 'Military Aircraft',
+        count: data.signals.militaryFlights,
+        color: '#ef4444',
+      },
+      {
+        icon: '⚓',
+        label: 'Military Vessels',
+        count: data.signals.militaryVessels,
+        color: '#3b82f6',
+      },
       { icon: '🌐', label: 'Internet Outages', count: data.signals.outages, color: '#8b5cf6' },
-    ].filter(s => s.count > 0);
+    ].filter((s) => s.count > 0);
 
     const colW = (RIGHT - PAD) / Math.min(sigItems.length, 4);
     for (const sig of sigItems) {
@@ -294,7 +342,9 @@ export async function renderStoryToCanvas(data: StoryData): Promise<HTMLCanvasEl
 
     y += 36;
     const totalSources = data.news.reduce((s, n) => s + (n.sourceCount || 1), 0);
-    const alertCount = data.news.filter(n => n.threatLevel === 'critical' || n.threatLevel === 'high').length;
+    const alertCount = data.news.filter(
+      (n) => n.threatLevel === 'critical' || n.threatLevel === 'high',
+    ).length;
     ctx.fillStyle = '#555';
     ctx.font = '400 22px Inter, system-ui, sans-serif';
     let statsText = `${totalSources} sources across ${data.news.length} stories`;
@@ -309,8 +359,12 @@ export async function renderStoryToCanvas(data: StoryData): Promise<HTMLCanvasEl
     y += 46;
     drawSectionHeader(ctx, 'MILITARY POSTURE', PAD, y);
 
-    const postureColor = data.theater.postureLevel === 'critical' ? '#ef4444'
-      : data.theater.postureLevel === 'elevated' ? '#f97316' : '#22c55e';
+    const postureColor =
+      data.theater.postureLevel === 'critical'
+        ? '#ef4444'
+        : data.theater.postureLevel === 'elevated'
+          ? '#f97316'
+          : '#22c55e';
 
     y += 52;
     ctx.fillStyle = '#e0e0e0';
@@ -389,9 +443,9 @@ export async function renderStoryToCanvas(data: StoryData): Promise<HTMLCanvasEl
       { label: 'Critical', count: data.threats.critical, color: '#ef4444' },
       { label: 'High', count: data.threats.high, color: '#f97316' },
       { label: 'Medium', count: data.threats.medium, color: '#eab308' },
-    ].filter(t => t.count > 0);
+    ].filter((t) => t.count > 0);
 
-    const maxCount = Math.max(...threatBars.map(t => t.count));
+    const maxCount = Math.max(...threatBars.map((t) => t.count));
     for (const t of threatBars) {
       ctx.fillStyle = t.color;
       ctx.font = '700 26px Inter, system-ui, sans-serif';
@@ -416,7 +470,11 @@ export async function renderStoryToCanvas(data: StoryData): Promise<HTMLCanvasEl
       y += 6;
       ctx.fillStyle = '#888';
       ctx.font = '400 24px Inter, system-ui, sans-serif';
-      ctx.fillText(data.threats.categories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join('  ·  '), PAD, y);
+      ctx.fillText(
+        data.threats.categories.map((c) => c.charAt(0).toUpperCase() + c.slice(1)).join('  ·  '),
+        PAD,
+        y,
+      );
     }
   }
 
@@ -459,7 +517,12 @@ function drawSeparator(ctx: CanvasRenderingContext2D, y: number, pad: number): v
   ctx.stroke();
 }
 
-function drawSectionHeader(ctx: CanvasRenderingContext2D, text: string, x: number, y: number): void {
+function drawSectionHeader(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+): void {
   ctx.fillStyle = '#777';
   ctx.font = '700 26px Inter, system-ui, sans-serif';
   ctx.letterSpacing = '4px';
@@ -476,7 +539,14 @@ function truncateText(ctx: CanvasRenderingContext2D, text: string, maxWidth: num
   return t + '...';
 }
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+): void {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.lineTo(x + w - r, y);

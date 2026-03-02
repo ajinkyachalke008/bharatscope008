@@ -47,13 +47,35 @@ export interface PaginationResponse {
   totalCount: number;
 }
 
-export type AirportRegion = "AIRPORT_REGION_UNSPECIFIED" | "AIRPORT_REGION_AMERICAS" | "AIRPORT_REGION_EUROPE" | "AIRPORT_REGION_APAC" | "AIRPORT_REGION_MENA" | "AIRPORT_REGION_AFRICA";
+export type AirportRegion =
+  | 'AIRPORT_REGION_UNSPECIFIED'
+  | 'AIRPORT_REGION_AMERICAS'
+  | 'AIRPORT_REGION_EUROPE'
+  | 'AIRPORT_REGION_APAC'
+  | 'AIRPORT_REGION_MENA'
+  | 'AIRPORT_REGION_AFRICA';
 
-export type FlightDelaySeverity = "FLIGHT_DELAY_SEVERITY_UNSPECIFIED" | "FLIGHT_DELAY_SEVERITY_NORMAL" | "FLIGHT_DELAY_SEVERITY_MINOR" | "FLIGHT_DELAY_SEVERITY_MODERATE" | "FLIGHT_DELAY_SEVERITY_MAJOR" | "FLIGHT_DELAY_SEVERITY_SEVERE";
+export type FlightDelaySeverity =
+  | 'FLIGHT_DELAY_SEVERITY_UNSPECIFIED'
+  | 'FLIGHT_DELAY_SEVERITY_NORMAL'
+  | 'FLIGHT_DELAY_SEVERITY_MINOR'
+  | 'FLIGHT_DELAY_SEVERITY_MODERATE'
+  | 'FLIGHT_DELAY_SEVERITY_MAJOR'
+  | 'FLIGHT_DELAY_SEVERITY_SEVERE';
 
-export type FlightDelaySource = "FLIGHT_DELAY_SOURCE_UNSPECIFIED" | "FLIGHT_DELAY_SOURCE_FAA" | "FLIGHT_DELAY_SOURCE_EUROCONTROL" | "FLIGHT_DELAY_SOURCE_COMPUTED";
+export type FlightDelaySource =
+  | 'FLIGHT_DELAY_SOURCE_UNSPECIFIED'
+  | 'FLIGHT_DELAY_SOURCE_FAA'
+  | 'FLIGHT_DELAY_SOURCE_EUROCONTROL'
+  | 'FLIGHT_DELAY_SOURCE_COMPUTED';
 
-export type FlightDelayType = "FLIGHT_DELAY_TYPE_UNSPECIFIED" | "FLIGHT_DELAY_TYPE_GROUND_STOP" | "FLIGHT_DELAY_TYPE_GROUND_DELAY" | "FLIGHT_DELAY_TYPE_DEPARTURE_DELAY" | "FLIGHT_DELAY_TYPE_ARRIVAL_DELAY" | "FLIGHT_DELAY_TYPE_GENERAL";
+export type FlightDelayType =
+  | 'FLIGHT_DELAY_TYPE_UNSPECIFIED'
+  | 'FLIGHT_DELAY_TYPE_GROUND_STOP'
+  | 'FLIGHT_DELAY_TYPE_GROUND_DELAY'
+  | 'FLIGHT_DELAY_TYPE_DEPARTURE_DELAY'
+  | 'FLIGHT_DELAY_TYPE_ARRIVAL_DELAY'
+  | 'FLIGHT_DELAY_TYPE_GENERAL';
 
 export interface FieldViolation {
   field: string;
@@ -64,8 +86,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -76,7 +98,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -98,23 +120,26 @@ export class AviationServiceClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string, options?: AviationServiceClientOptions) {
-    this.baseURL = baseURL.replace(/\/+$/, "");
+    this.baseURL = baseURL.replace(/\/+$/, '');
     this.fetchFn = options?.fetch ?? globalThis.fetch;
     this.defaultHeaders = { ...options?.defaultHeaders };
   }
 
-  async listAirportDelays(req: ListAirportDelaysRequest, options?: AviationServiceCallOptions): Promise<ListAirportDelaysResponse> {
-    let path = "/api/aviation/v1/list-airport-delays";
+  async listAirportDelays(
+    req: ListAirportDelaysRequest,
+    options?: AviationServiceCallOptions,
+  ): Promise<ListAirportDelaysResponse> {
+    const path = '/api/aviation/v1/list-airport-delays';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -124,7 +149,7 @@ export class AviationServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as ListAirportDelaysResponse;
+    return (await resp.json()) as ListAirportDelaysResponse;
   }
 
   private async handleError(resp: Response): Promise<never> {
@@ -142,4 +167,3 @@ export class AviationServiceClient {
     throw new ApiError(resp.status, `Request failed with status ${resp.status}`, body);
   }
 }
-

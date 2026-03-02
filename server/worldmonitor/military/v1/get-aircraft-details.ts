@@ -30,24 +30,28 @@ export async function getAircraftDetails(
   const cacheKey = `${REDIS_CACHE_KEY}:${icao24}`;
 
   try {
-    const result = await cachedFetchJson<CachedAircraftDetails>(cacheKey, REDIS_CACHE_TTL, async () => {
-      const resp = await fetch(`https://customer-api.wingbits.com/v1/flights/details/${icao24}`, {
-        headers: { 'x-api-key': apiKey, Accept: 'application/json', 'User-Agent': CHROME_UA },
-        signal: AbortSignal.timeout(10_000),
-      });
+    const result = await cachedFetchJson<CachedAircraftDetails>(
+      cacheKey,
+      REDIS_CACHE_TTL,
+      async () => {
+        const resp = await fetch(`https://customer-api.wingbits.com/v1/flights/details/${icao24}`, {
+          headers: { 'x-api-key': apiKey, Accept: 'application/json', 'User-Agent': CHROME_UA },
+          signal: AbortSignal.timeout(10_000),
+        });
 
-      // Cache not-found responses to avoid repeated misses for the same aircraft.
-      if (resp.status === 404) {
-        return { details: null, configured: true };
-      }
-      if (!resp.ok) return null;
+        // Cache not-found responses to avoid repeated misses for the same aircraft.
+        if (resp.status === 404) {
+          return { details: null, configured: true };
+        }
+        if (!resp.ok) return null;
 
-      const data = (await resp.json()) as Record<string, unknown>;
-      return {
-        details: mapWingbitsDetails(icao24, data),
-        configured: true,
-      };
-    });
+        const data = (await resp.json()) as Record<string, unknown>;
+        return {
+          details: mapWingbitsDetails(icao24, data),
+          configured: true,
+        };
+      },
+    );
 
     if (!result || !result.details) {
       return { details: undefined, configured: true };

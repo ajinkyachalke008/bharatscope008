@@ -52,12 +52,15 @@ for (const deviceConfig of MOBILE_DEVICE_MATRIX) {
       await page.goto('/tests/mobile-map-harness.html');
 
       await expect
-        .poll(async () => {
-          return await page.evaluate(() => {
-            const w = window as HarnessWindow;
-            return Boolean(w.__mobileMapHarness?.ready);
-          });
-        }, { timeout: 20000 })
+        .poll(
+          async () => {
+            return await page.evaluate(() => {
+              const w = window as HarnessWindow;
+              return Boolean(w.__mobileMapHarness?.ready);
+            });
+          },
+          { timeout: 20000 },
+        )
         .toBe(true);
 
       const hotspotRect = await page.evaluate(() => {
@@ -77,19 +80,22 @@ for (const deviceConfig of MOBILE_DEVICE_MATRIX) {
       await expect(popup).toBeVisible();
 
       await expect
-        .poll(async () => {
-          return await page.evaluate(() => {
-            const w = window as HarnessWindow;
-            const rect = w.__mobileMapHarness?.getPopupRect();
-            if (!rect) return false;
-            return (
-              rect.left >= 0 &&
-              rect.top >= 0 &&
-              rect.right <= rect.viewportWidth + 1 &&
-              rect.bottom <= rect.viewportHeight + 1
-            );
-          });
-        }, { timeout: 5000 })
+        .poll(
+          async () => {
+            return await page.evaluate(() => {
+              const w = window as HarnessWindow;
+              const rect = w.__mobileMapHarness?.getPopupRect();
+              if (!rect) return false;
+              return (
+                rect.left >= 0 &&
+                rect.top >= 0 &&
+                rect.right <= rect.viewportWidth + 1 &&
+                rect.bottom <= rect.viewportHeight + 1
+              );
+            });
+          },
+          { timeout: 5000 },
+        )
         .toBe(true);
 
       const popupRect = await page.evaluate(() => {
@@ -105,7 +111,9 @@ for (const deviceConfig of MOBILE_DEVICE_MATRIX) {
 
       const dragPopupBy = async (distance: number): Promise<void> => {
         await page.evaluate((dragDistance) => {
-          const popupEl = document.querySelector('.map-popup.map-popup-sheet') as HTMLElement | null;
+          const popupEl = document.querySelector(
+            '.map-popup.map-popup-sheet',
+          ) as HTMLElement | null;
           const handle = document.querySelector('.map-popup-sheet-handle') as HTMLElement | null;
           if (!popupEl || !handle || typeof Touch === 'undefined') return;
 
@@ -139,7 +147,7 @@ for (const deviceConfig of MOBILE_DEVICE_MATRIX) {
               touches: [startTouch],
               targetTouches: [startTouch],
               changedTouches: [startTouch],
-            })
+            }),
           );
 
           const moveTouch = makeTouch(endY);
@@ -150,7 +158,7 @@ for (const deviceConfig of MOBILE_DEVICE_MATRIX) {
               touches: [moveTouch],
               targetTouches: [moveTouch],
               changedTouches: [moveTouch],
-            })
+            }),
           );
 
           target.dispatchEvent(
@@ -160,7 +168,7 @@ for (const deviceConfig of MOBILE_DEVICE_MATRIX) {
               touches: [],
               targetTouches: [],
               changedTouches: [moveTouch],
-            })
+            }),
           );
         }, distance);
       };
@@ -168,12 +176,17 @@ for (const deviceConfig of MOBILE_DEVICE_MATRIX) {
       await dragPopupBy(48);
       await expect(page.locator('.map-popup.map-popup-sheet')).toBeVisible();
       await expect
-        .poll(async () => {
-          return await page.evaluate(() => {
-            const popupEl = document.querySelector('.map-popup.map-popup-sheet') as HTMLElement | null;
-            return popupEl?.style.transform ?? null;
-          });
-        }, { timeout: 2000 })
+        .poll(
+          async () => {
+            return await page.evaluate(() => {
+              const popupEl = document.querySelector(
+                '.map-popup.map-popup-sheet',
+              ) as HTMLElement | null;
+              return popupEl?.style.transform ?? null;
+            });
+          },
+          { timeout: 2000 },
+        )
         .toBe('');
 
       await dragPopupBy(150);
@@ -206,12 +219,15 @@ test.describe('Mobile SVG popup integration path', () => {
     await page.goto('/tests/mobile-map-integration-harness.html');
 
     await expect
-      .poll(async () => {
-        return await page.evaluate(() => {
-          const w = window as HarnessWindow;
-          return Boolean(w.__mobileMapIntegrationHarness?.ready);
-        });
-      }, { timeout: 30000 })
+      .poll(
+        async () => {
+          return await page.evaluate(() => {
+            const w = window as HarnessWindow;
+            return Boolean(w.__mobileMapIntegrationHarness?.ready);
+          });
+        },
+        { timeout: 30000 },
+      )
       .toBe(true);
 
     const timeSlider = page.locator('.time-slider');
@@ -236,19 +252,22 @@ test.describe('Mobile SVG popup integration path', () => {
     await expect(popup).toBeVisible();
 
     await expect
-      .poll(async () => {
-        return await page.evaluate(() => {
-          const w = window as HarnessWindow;
-          const rect = w.__mobileMapIntegrationHarness?.getPopupRect();
-          if (!rect) return false;
-          return (
-            rect.left >= 0 &&
-            rect.top >= 0 &&
-            rect.right <= rect.viewportWidth + 1 &&
-            rect.bottom <= rect.viewportHeight + 1
-          );
-        });
-      }, { timeout: 5000 })
+      .poll(
+        async () => {
+          return await page.evaluate(() => {
+            const w = window as HarnessWindow;
+            const rect = w.__mobileMapIntegrationHarness?.getPopupRect();
+            if (!rect) return false;
+            return (
+              rect.left >= 0 &&
+              rect.top >= 0 &&
+              rect.right <= rect.viewportWidth + 1 &&
+              rect.bottom <= rect.viewportHeight + 1
+            );
+          });
+        },
+        { timeout: 5000 },
+      )
       .toBe(true);
 
     const popupRect = await page.evaluate(() => {

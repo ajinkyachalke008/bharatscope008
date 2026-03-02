@@ -79,8 +79,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -91,7 +91,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -113,23 +113,26 @@ export class SupplyChainServiceClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string, options?: SupplyChainServiceClientOptions) {
-    this.baseURL = baseURL.replace(/\/+$/, "");
+    this.baseURL = baseURL.replace(/\/+$/, '');
     this.fetchFn = options?.fetch ?? globalThis.fetch;
     this.defaultHeaders = { ...options?.defaultHeaders };
   }
 
-  async getShippingRates(req: GetShippingRatesRequest, options?: SupplyChainServiceCallOptions): Promise<GetShippingRatesResponse> {
-    let path = "/api/supply-chain/v1/get-shipping-rates";
+  async getShippingRates(
+    req: GetShippingRatesRequest,
+    options?: SupplyChainServiceCallOptions,
+  ): Promise<GetShippingRatesResponse> {
+    const path = '/api/supply-chain/v1/get-shipping-rates';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -139,21 +142,24 @@ export class SupplyChainServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetShippingRatesResponse;
+    return (await resp.json()) as GetShippingRatesResponse;
   }
 
-  async getChokepointStatus(req: GetChokepointStatusRequest, options?: SupplyChainServiceCallOptions): Promise<GetChokepointStatusResponse> {
-    let path = "/api/supply-chain/v1/get-chokepoint-status";
+  async getChokepointStatus(
+    req: GetChokepointStatusRequest,
+    options?: SupplyChainServiceCallOptions,
+  ): Promise<GetChokepointStatusResponse> {
+    const path = '/api/supply-chain/v1/get-chokepoint-status';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -163,21 +169,24 @@ export class SupplyChainServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetChokepointStatusResponse;
+    return (await resp.json()) as GetChokepointStatusResponse;
   }
 
-  async getCriticalMinerals(req: GetCriticalMineralsRequest, options?: SupplyChainServiceCallOptions): Promise<GetCriticalMineralsResponse> {
-    let path = "/api/supply-chain/v1/get-critical-minerals";
+  async getCriticalMinerals(
+    req: GetCriticalMineralsRequest,
+    options?: SupplyChainServiceCallOptions,
+  ): Promise<GetCriticalMineralsResponse> {
+    const path = '/api/supply-chain/v1/get-critical-minerals';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -187,7 +196,7 @@ export class SupplyChainServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetCriticalMineralsResponse;
+    return (await resp.json()) as GetCriticalMineralsResponse;
   }
 
   private async handleError(resp: Response): Promise<never> {

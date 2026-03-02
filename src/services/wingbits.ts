@@ -58,7 +58,10 @@ const CACHE_SWEEP_INTERVAL_MS = 5 * 60 * 1000;
 let lastCacheSweep = 0;
 
 function sweepLocalCache(now = Date.now()): void {
-  if (now - lastCacheSweep < CACHE_SWEEP_INTERVAL_MS && localCache.size <= MAX_LOCAL_CACHE_ENTRIES) {
+  if (
+    now - lastCacheSweep < CACHE_SWEEP_INTERVAL_MS &&
+    localCache.size <= MAX_LOCAL_CACHE_ENTRIES
+  ) {
     return;
   }
 
@@ -72,8 +75,9 @@ function sweepLocalCache(now = Date.now()): void {
 
   if (localCache.size <= MAX_LOCAL_CACHE_ENTRIES) return;
 
-  const oldestFirst = Array.from(localCache.entries())
-    .sort((a, b) => a[1].timestamp - b[1].timestamp);
+  const oldestFirst = Array.from(localCache.entries()).sort(
+    (a, b) => a[1].timestamp - b[1].timestamp,
+  );
   const toDelete = oldestFirst.slice(0, localCache.size - MAX_LOCAL_CACHE_ENTRIES);
   for (const [key] of toDelete) {
     localCache.delete(key);
@@ -112,31 +116,94 @@ const breaker = createCircuitBreaker<WingbitsAircraftDetails | null>({
 
 // Military keywords for classification
 const MILITARY_OPERATORS = [
-  'air force', 'navy', 'army', 'marine', 'military', 'defense', 'defence',
-  'usaf', 'raf', 'luftwaffe', 'aeronautica', 'fuerza aerea',
-  'coast guard', 'national guard', 'air national guard',
-  'nato', 'norad',
+  'air force',
+  'navy',
+  'army',
+  'marine',
+  'military',
+  'defense',
+  'defence',
+  'usaf',
+  'raf',
+  'luftwaffe',
+  'aeronautica',
+  'fuerza aerea',
+  'coast guard',
+  'national guard',
+  'air national guard',
+  'nato',
+  'norad',
 ];
 
 const MILITARY_OWNERS = [
-  'united states air force', 'united states navy', 'united states army',
-  'us air force', 'us navy', 'us army', 'us marine corps',
-  'department of defense', 'department of the air force', 'department of the navy',
-  'ministry of defence', 'ministry of defense',
-  'royal air force', 'royal navy',
-  'bundeswehr', 'german air force', 'german navy',
-  'french air force', 'armee de lair',
-  'israel defense forces', 'israeli air force',
-  'nato', 'northrop grumman', 'lockheed martin', 'general atomics', 'raytheon',
-  'boeing defense', 'bae systems',
+  'united states air force',
+  'united states navy',
+  'united states army',
+  'us air force',
+  'us navy',
+  'us army',
+  'us marine corps',
+  'department of defense',
+  'department of the air force',
+  'department of the navy',
+  'ministry of defence',
+  'ministry of defense',
+  'royal air force',
+  'royal navy',
+  'bundeswehr',
+  'german air force',
+  'german navy',
+  'french air force',
+  'armee de lair',
+  'israel defense forces',
+  'israeli air force',
+  'nato',
+  'northrop grumman',
+  'lockheed martin',
+  'general atomics',
+  'raytheon',
+  'boeing defense',
+  'bae systems',
 ];
 
 const MILITARY_AIRCRAFT_TYPES = [
-  'C17', 'C5', 'C130', 'C135', 'KC135', 'KC10', 'KC46', 'E3', 'E8', 'E6',
-  'B52', 'B1', 'B2', 'F15', 'F16', 'F18', 'F22', 'F35', 'A10',
-  'P8', 'P3', 'EP3', 'RC135', 'U2', 'RQ4', 'MQ9', 'MQ1',
-  'V22', 'CH47', 'UH60', 'AH64', 'HH60',
-  'EUFI', 'TYPHOON', 'RAFALE', 'TORNADO', 'GRIPEN',
+  'C17',
+  'C5',
+  'C130',
+  'C135',
+  'KC135',
+  'KC10',
+  'KC46',
+  'E3',
+  'E8',
+  'E6',
+  'B52',
+  'B1',
+  'B2',
+  'F15',
+  'F16',
+  'F18',
+  'F22',
+  'F35',
+  'A10',
+  'P8',
+  'P3',
+  'EP3',
+  'RC135',
+  'U2',
+  'RQ4',
+  'MQ9',
+  'MQ1',
+  'V22',
+  'CH47',
+  'UH60',
+  'AH64',
+  'HH60',
+  'EUFI',
+  'TYPHOON',
+  'RAFALE',
+  'TORNADO',
+  'GRIPEN',
 ];
 
 // ---- Proto-to-legacy type mapping ----
@@ -239,17 +306,22 @@ export async function getAircraftDetails(icao24: string): Promise<WingbitsAircra
 /**
  * Batch fetch aircraft details
  */
-export async function getAircraftDetailsBatch(icao24List: string[]): Promise<Map<string, WingbitsAircraftDetails>> {
+export async function getAircraftDetailsBatch(
+  icao24List: string[],
+): Promise<Map<string, WingbitsAircraftDetails>> {
   if (!isFeatureAvailable('wingbitsEnrichment')) return new Map();
   const results = new Map<string, WingbitsAircraftDetails>();
   const toFetch: string[] = [];
-  const requestedKeys = Array.from(new Set(icao24List.map((icao24) => icao24.toLowerCase()))).sort();
+  const requestedKeys = Array.from(
+    new Set(icao24List.map((icao24) => icao24.toLowerCase())),
+  ).sort();
 
   // Check local cache first
   for (const key of requestedKeys) {
     const cached = getFromLocalCache(key);
     if (cached) {
-      if (cached.registration) { // Only include valid results
+      if (cached.registration) {
+        // Only include valid results
         results.set(key, cached);
       }
     } else {
@@ -364,7 +436,14 @@ export function analyzeAircraftDetails(details: WingbitsAircraftDetails): Enrich
   }
 
   // Defense contractors often operate military aircraft
-  const defenseContractors = ['northrop', 'lockheed', 'general atomics', 'raytheon', 'boeing defense', 'l3harris'];
+  const defenseContractors = [
+    'northrop',
+    'lockheed',
+    'general atomics',
+    'raytheon',
+    'boeing defense',
+    'l3harris',
+  ];
   for (const contractor of defenseContractors) {
     if (ownerLower.includes(contractor) || operatorLower.includes(contractor)) {
       result.isMilitary = true;
@@ -377,7 +456,8 @@ export function analyzeAircraftDetails(details: WingbitsAircraftDetails): Enrich
 }
 
 function extractMilitaryBranch(text: string): string | null {
-  if (text.includes('air force') || text.includes('usaf') || text.includes('raf')) return 'Air Force';
+  if (text.includes('air force') || text.includes('usaf') || text.includes('raf'))
+    return 'Air Force';
   if (text.includes('navy') || text.includes('naval')) return 'Navy';
   if (text.includes('army')) return 'Army';
   if (text.includes('marine')) return 'Marines';

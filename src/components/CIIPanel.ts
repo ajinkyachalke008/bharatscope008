@@ -24,28 +24,40 @@ export class CIIPanel extends Panel {
 
   private getLevelColor(level: CountryScore['level']): string {
     switch (level) {
-      case 'critical': return getCSSColor('--semantic-critical');
-      case 'high': return getCSSColor('--semantic-high');
-      case 'elevated': return getCSSColor('--semantic-elevated');
-      case 'normal': return getCSSColor('--semantic-normal');
-      case 'low': return getCSSColor('--semantic-low');
+      case 'critical':
+        return getCSSColor('--semantic-critical');
+      case 'high':
+        return getCSSColor('--semantic-high');
+      case 'elevated':
+        return getCSSColor('--semantic-elevated');
+      case 'normal':
+        return getCSSColor('--semantic-normal');
+      case 'low':
+        return getCSSColor('--semantic-low');
     }
   }
 
   private getLevelEmoji(level: CountryScore['level']): string {
     switch (level) {
-      case 'critical': return '🔴';
-      case 'high': return '🟠';
-      case 'elevated': return '🟡';
-      case 'normal': return '🟢';
-      case 'low': return '⚪';
+      case 'critical':
+        return '🔴';
+      case 'high':
+        return '🟠';
+      case 'elevated':
+        return '🟡';
+      case 'normal':
+        return '🟢';
+      case 'low':
+        return '⚪';
     }
   }
 
-  private static readonly SHARE_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>';
+  private static readonly SHARE_SVG =
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>';
 
   private buildTrendArrow(trend: CountryScore['trend'], change: number): HTMLElement {
-    if (trend === 'rising') return h('span', { className: 'trend-up' }, `↑${change > 0 ? change : ''}`);
+    if (trend === 'rising')
+      return h('span', { className: 'trend-up' }, `↑${change > 0 ? change : ''}`);
     if (trend === 'falling') return h('span', { className: 'trend-down' }, `↓${Math.abs(change)}`);
     return h('span', { className: 'trend-stable' }, '→');
   }
@@ -61,18 +73,29 @@ export class CIIPanel extends Panel {
     });
     shareBtn.appendChild(rawHtml(CIIPanel.SHARE_SVG));
 
-    return h('div', { className: 'cii-country', dataset: { code: country.code } },
-      h('div', { className: 'cii-header' },
+    return h(
+      'div',
+      { className: 'cii-country', dataset: { code: country.code } },
+      h(
+        'div',
+        { className: 'cii-header' },
         h('span', { className: 'cii-emoji' }, emoji),
         h('span', { className: 'cii-name' }, country.name),
         h('span', { className: 'cii-score' }, String(country.score)),
         this.buildTrendArrow(country.trend, country.change24h),
         shareBtn,
       ),
-      h('div', { className: 'cii-bar-container' },
-        h('div', { className: 'cii-bar', style: `width: ${country.score}%; background: ${color};` }),
+      h(
+        'div',
+        { className: 'cii-bar-container' },
+        h('div', {
+          className: 'cii-bar',
+          style: `width: ${country.score}%; background: ${color};`,
+        }),
       ),
-      h('div', { className: 'cii-components' },
+      h(
+        'div',
+        { className: 'cii-components' },
         h('span', { title: t('common.unrest') }, `U:${country.components.unrest}`),
         h('span', { title: t('common.conflict') }, `C:${country.components.conflict}`),
         h('span', { title: t('common.security') }, `S:${country.components.security}`),
@@ -83,7 +106,7 @@ export class CIIPanel extends Panel {
 
   private bindShareButtons(): void {
     if (!this.onShareStory) return;
-    this.content.querySelectorAll('.cii-share-btn').forEach(btn => {
+    this.content.querySelectorAll('.cii-share-btn').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const el = e.currentTarget as HTMLElement;
@@ -108,19 +131,26 @@ export class CIIPanel extends Panel {
 
     try {
       const localScores = calculateCII();
-      const localWithData = localScores.filter(s => s.score > 0).length;
+      const localWithData = localScores.filter((s) => s.score > 0).length;
       this.scores = localScores;
       console.log(`[CIIPanel] Calculated ${localWithData} countries with focal point intelligence`);
 
-      const withData = this.scores.filter(s => s.score > 0);
+      const withData = this.scores.filter((s) => s.score > 0);
       this.setCount(withData.length);
 
       if (withData.length === 0) {
-        replaceChildren(this.content, h('div', { className: 'empty-state' }, t('components.cii.noSignals')));
+        replaceChildren(
+          this.content,
+          h('div', { className: 'empty-state' }, t('components.cii.noSignals')),
+        );
         return;
       }
 
-      const listEl = h('div', { className: 'cii-list' }, ...withData.map(s => this.buildCountry(s)));
+      const listEl = h(
+        'div',
+        { className: 'cii-list' },
+        ...withData.map((s) => this.buildCountry(s)),
+      );
       replaceChildren(this.content, listEl);
       this.bindShareButtons();
     } catch (error) {

@@ -50,11 +50,7 @@ import type { WeatherAlert } from '../services/weather';
 type Scenario = 'alpha' | 'beta';
 type HarnessVariant = 'full' | 'tech' | 'finance';
 type HarnessLayerKey = keyof MapLayers;
-type PulseProtestScenario =
-  | 'none'
-  | 'recent-acled-riot'
-  | 'recent-gdelt-riot'
-  | 'recent-protest';
+type PulseProtestScenario = 'none' | 'recent-acled-riot' | 'recent-gdelt-riot' | 'recent-protest';
 type NewsPulseScenario = 'none' | 'recent' | 'stale';
 
 type LayerSnapshot = {
@@ -371,7 +367,7 @@ const toCamera = (lon: number, lat: number, zoom: number): CameraState => ({
 
 const firstLatLon = <T extends { lat: number; lon: number }>(
   items: T[],
-  fallback: [number, number]
+  fallback: [number, number],
 ): [number, number] => {
   const first = items[0];
   if (!first) return fallback;
@@ -380,7 +376,7 @@ const firstLatLon = <T extends { lat: number; lon: number }>(
 
 const firstPathPoint = <T extends { points: [number, number][] }>(
   items: T[],
-  fallback: [number, number]
+  fallback: [number, number],
 ): [number, number] => {
   const firstPoint = items[0]?.points?.[0];
   if (!firstPoint || firstPoint.length < 2) return fallback;
@@ -716,19 +712,15 @@ const visualScenarioMap = new Map(VISUAL_SCENARIOS.map((scenario) => [scenario.i
 
 const filterScenariosForVariant = (variant: HarnessVariant): VisualScenario[] => {
   return VISUAL_SCENARIOS.filter(
-    (scenario) => scenario.variant === 'both' || scenario.variant === variant
+    (scenario) => scenario.variant === 'both' || scenario.variant === variant,
   );
 };
 
-const currentHarnessVariant: HarnessVariant = SITE_VARIANT === 'tech'
-  ? 'tech'
-  : SITE_VARIANT === 'finance'
-  ? 'finance'
-  : 'full';
+const currentHarnessVariant: HarnessVariant =
+  SITE_VARIANT === 'tech' ? 'tech' : SITE_VARIANT === 'finance' ? 'finance' : 'full';
 
 const buildProtests = (scenario: Scenario): SocialUnrestEvent[] => {
-  const title =
-    scenario === 'alpha' ? 'Scenario Alpha Protest' : 'Scenario Beta Protest';
+  const title = scenario === 'alpha' ? 'Scenario Alpha Protest' : 'Scenario Beta Protest';
   const baseTime =
     scenario === 'alpha'
       ? new Date('2026-02-01T12:00:00.000Z')
@@ -789,9 +781,7 @@ const buildPulseProtests = (scenario: PulseProtestScenario): SocialUnrestEvent[]
   ];
 };
 
-const buildHotspotActivityNews = (
-  scenario: 'none' | 'breaking'
-): NewsItem[] => {
+const buildHotspotActivityNews = (scenario: 'none' | 'breaking'): NewsItem[] => {
   if (scenario === 'none') return [];
 
   return [
@@ -828,7 +818,11 @@ const seedAllDynamicData = (): void => {
       areaDesc: 'Harness Region',
       onset: new Date('2026-02-01T09:00:00.000Z'),
       expires: new Date('2026-02-01T18:00:00.000Z'),
-      coordinates: [[-80.1, 25.7], [-80.2, 25.8], [-80.3, 25.6]],
+      coordinates: [
+        [-80.1, 25.7],
+        [-80.2, 25.8],
+        [-80.3, 25.6],
+      ],
       centroid: [-80.2, 25.7],
     },
   ];
@@ -1179,7 +1173,7 @@ const isVisualScenarioReady = (scenarioId: string): boolean => {
   if (!scenario) return false;
 
   const layersById = new Map<string, number>(
-    getDeckLayerSnapshot().map((layer) => [layer.id, layer.dataCount])
+    getDeckLayerSnapshot().map((layer) => [layer.id, layer.dataCount]),
   );
 
   for (const expectedLayerId of scenario.expectedDeckLayers) {
@@ -1219,9 +1213,7 @@ const pollReady = (): void => {
   const maplibreMap = internals.maplibreMap;
   const styleLoaded = Boolean(maplibreMap?.isStyleLoaded());
   const allowStyleFallback =
-    hasCanvas &&
-    Boolean(maplibreMap) &&
-    Date.now() - readyStartedAt >= STYLE_READY_FALLBACK_MS;
+    hasCanvas && Boolean(maplibreMap) && Date.now() - readyStartedAt >= STYLE_READY_FALLBACK_MS;
 
   if ((hasCanvas && styleLoaded) || allowStyleFallback) {
     if (!deterministicVisualModeEnabled) {

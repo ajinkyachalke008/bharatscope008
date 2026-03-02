@@ -23,7 +23,23 @@ import { wtoFetch, WTO_MEMBER_CODES } from './_shared';
 const REDIS_CACHE_TTL = 21600; // 6h — WTO data is annual, rarely changes
 
 /** Major economies to query. */
-const MAJOR_REPORTERS = ['840', '156', '276', '392', '826', '356', '076', '643', '410', '036', '124', '484', '250', '380', '528'];
+const MAJOR_REPORTERS = [
+  '840',
+  '156',
+  '276',
+  '392',
+  '826',
+  '356',
+  '076',
+  '643',
+  '410',
+  '036',
+  '124',
+  '484',
+  '250',
+  '380',
+  '528',
+];
 
 /**
  * Validate a country code string — alphanumeric, max 10 chars.
@@ -41,7 +57,7 @@ interface TariffRow {
 }
 
 function parseRows(data: any): TariffRow[] {
-  const dataset: any[] = Array.isArray(data) ? data : data?.Dataset ?? data?.dataset ?? [];
+  const dataset: any[] = Array.isArray(data) ? data : (data?.Dataset ?? data?.dataset ?? []);
   const rows: TariffRow[] = [];
 
   for (const row of dataset) {
@@ -130,7 +146,12 @@ async function fetchBarriers(
       id: `${code}-tariff-gap-${year}`,
       notifyingCountry: country,
       title: `Agricultural tariff: ${agriRate.toFixed(1)}% vs Non-agricultural: ${nonAgriRate.toFixed(1)}% (gap: ${gap > 0 ? '+' : ''}${gap.toFixed(1)}pp)`,
-      measureType: gap > 10 ? 'High agricultural protection' : gap > 5 ? 'Moderate agricultural protection' : 'Low tariff gap',
+      measureType:
+        gap > 10
+          ? 'High agricultural protection'
+          : gap > 5
+            ? 'Moderate agricultural protection'
+            : 'Low tariff gap',
       productDescription: 'Agricultural vs Non-agricultural products',
       objective: gap > 0 ? 'Agricultural sector protection' : 'Uniform tariff structure',
       status: gap > 10 ? 'high' : gap > 5 ? 'moderate' : 'low',
@@ -168,7 +189,9 @@ export async function getTradeBarriers(
       },
     );
 
-    return result ?? { barriers: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true };
+    return (
+      result ?? { barriers: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true }
+    );
   } catch {
     return {
       barriers: [],

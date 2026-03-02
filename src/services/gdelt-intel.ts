@@ -35,7 +35,8 @@ export const INTEL_TOPICS: IntelTopic[] = [
   {
     id: 'military',
     name: 'Military Activity',
-    query: '(military exercise OR troop deployment OR airstrike OR "naval exercise") sourcelang:eng',
+    query:
+      '(military exercise OR troop deployment OR airstrike OR "naval exercise") sourcelang:eng',
     icon: '⚔️',
     description: 'Military exercises, deployments, and operations',
   },
@@ -49,7 +50,8 @@ export const INTEL_TOPICS: IntelTopic[] = [
   {
     id: 'nuclear',
     name: 'Nuclear',
-    query: '(nuclear OR uranium enrichment OR IAEA OR "nuclear weapon" OR plutonium) sourcelang:eng',
+    query:
+      '(nuclear OR uranium enrichment OR IAEA OR "nuclear weapon" OR plutonium) sourcelang:eng',
     icon: '☢️',
     description: 'Nuclear programs, IAEA inspections, proliferation',
   },
@@ -70,7 +72,8 @@ export const INTEL_TOPICS: IntelTopic[] = [
   {
     id: 'maritime',
     name: 'Maritime Security',
-    query: '(naval blockade OR piracy OR "strait of hormuz" OR "south china sea" OR warship) sourcelang:eng',
+    query:
+      '(naval blockade OR piracy OR "strait of hormuz" OR "south china sea" OR warship) sourcelang:eng',
     icon: '🚢',
     description: 'Naval operations, maritime chokepoints, sea lanes',
   },
@@ -80,42 +83,47 @@ export const POSITIVE_GDELT_TOPICS: IntelTopic[] = [
   {
     id: 'science-breakthroughs',
     name: 'Science Breakthroughs',
-    query: '(breakthrough OR discovery OR "new treatment" OR "clinical trial success") sourcelang:eng',
+    query:
+      '(breakthrough OR discovery OR "new treatment" OR "clinical trial success") sourcelang:eng',
     icon: '',
     description: 'Scientific discoveries and medical advances',
   },
   {
     id: 'climate-progress',
     name: 'Climate Progress',
-    query: '(renewable energy record OR "solar installation" OR "wind farm" OR "emissions decline" OR "green hydrogen") sourcelang:eng',
+    query:
+      '(renewable energy record OR "solar installation" OR "wind farm" OR "emissions decline" OR "green hydrogen") sourcelang:eng',
     icon: '',
     description: 'Renewable energy milestones and climate wins',
   },
   {
     id: 'conservation-wins',
     name: 'Conservation Wins',
-    query: '(species recovery OR "population rebound" OR "conservation success" OR "habitat restored" OR "marine sanctuary") sourcelang:eng',
+    query:
+      '(species recovery OR "population rebound" OR "conservation success" OR "habitat restored" OR "marine sanctuary") sourcelang:eng',
     icon: '',
     description: 'Wildlife recovery and habitat restoration',
   },
   {
     id: 'humanitarian-progress',
     name: 'Humanitarian Progress',
-    query: '(poverty decline OR "literacy rate" OR "vaccination campaign" OR "peace agreement" OR "humanitarian aid") sourcelang:eng',
+    query:
+      '(poverty decline OR "literacy rate" OR "vaccination campaign" OR "peace agreement" OR "humanitarian aid") sourcelang:eng',
     icon: '',
     description: 'Poverty reduction, education, and peace',
   },
   {
     id: 'innovation',
     name: 'Innovation',
-    query: '("clean technology" OR "AI healthcare" OR "3D printing" OR "electric vehicle" OR "fusion energy") sourcelang:eng',
+    query:
+      '("clean technology" OR "AI healthcare" OR "3D printing" OR "electric vehicle" OR "fusion energy") sourcelang:eng',
     icon: '',
     description: 'Technology for good and clean innovation',
   },
 ];
 
 export function getIntelTopics(): IntelTopic[] {
-  return INTEL_TOPICS.map(topic => ({
+  return INTEL_TOPICS.map((topic) => ({
     ...topic,
     name: t(`intel.topics.${topic.id}.name`),
     description: t(`intel.topics.${topic.id}.description`),
@@ -125,7 +133,11 @@ export function getIntelTopics(): IntelTopic[] {
 // ---- Sebuf client ----
 
 const client = new IntelligenceServiceClient('', { fetch: (...args) => globalThis.fetch(...args) });
-const gdeltBreaker = createCircuitBreaker<SearchGdeltDocumentsResponse>({ name: 'GDELT Intelligence', cacheTtlMs: 5 * 60 * 1000, persistCache: true });
+const gdeltBreaker = createCircuitBreaker<SearchGdeltDocumentsResponse>({
+  name: 'GDELT Intelligence',
+  cacheTtlMs: 5 * 60 * 1000,
+  persistCache: true,
+});
 
 const emptyGdeltFallback: SearchGdeltDocumentsResponse = { articles: [], query: '', error: '' };
 
@@ -148,7 +160,7 @@ function toGdeltArticle(a: ProtoGdeltArticle): GdeltArticle {
 export async function fetchGdeltArticles(
   query: string,
   maxrecords = 10,
-  timespan = '24h'
+  timespan = '24h',
 ): Promise<GdeltArticle[]> {
   const cacheKey = `${query}:${maxrecords}:${timespan}`;
   const cached = articleCache.get(cacheKey);
@@ -194,12 +206,12 @@ export async function fetchTopicIntelligence(topic: IntelTopic): Promise<TopicIn
 
 export async function fetchAllTopicIntelligence(): Promise<TopicIntelligence[]> {
   const results = await Promise.allSettled(
-    INTEL_TOPICS.map(topic => fetchTopicIntelligence(topic))
+    INTEL_TOPICS.map((topic) => fetchTopicIntelligence(topic)),
   );
 
   return results
     .filter((r): r is PromiseFulfilledResult<TopicIntelligence> => r.status === 'fulfilled')
-    .map(r => r.value);
+    .map((r) => r.value);
 }
 
 export function formatArticleDate(dateStr: string): string {
@@ -270,16 +282,18 @@ export async function fetchPositiveGdeltArticles(
   return articles;
 }
 
-export async function fetchPositiveTopicIntelligence(topic: IntelTopic): Promise<TopicIntelligence> {
+export async function fetchPositiveTopicIntelligence(
+  topic: IntelTopic,
+): Promise<TopicIntelligence> {
   const articles = await fetchPositiveGdeltArticles(topic.query);
   return { topic, articles, fetchedAt: new Date() };
 }
 
 export async function fetchAllPositiveTopicIntelligence(): Promise<TopicIntelligence[]> {
   const results = await Promise.allSettled(
-    POSITIVE_GDELT_TOPICS.map(topic => fetchPositiveTopicIntelligence(topic))
+    POSITIVE_GDELT_TOPICS.map((topic) => fetchPositiveTopicIntelligence(topic)),
   );
   return results
     .filter((r): r is PromiseFulfilledResult<TopicIntelligence> => r.status === 'fulfilled')
-    .map(r => r.value);
+    .map((r) => r.value);
 }

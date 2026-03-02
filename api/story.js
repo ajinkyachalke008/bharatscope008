@@ -6,14 +6,30 @@
  */
 
 const COUNTRY_NAMES = {
-  UA: 'Ukraine', RU: 'Russia', CN: 'China', US: 'United States',
-  IR: 'Iran', IL: 'Israel', TW: 'Taiwan', KP: 'North Korea',
-  SA: 'Saudi Arabia', TR: 'Turkey', PL: 'Poland', DE: 'Germany',
-  FR: 'France', GB: 'United Kingdom', IN: 'India', PK: 'Pakistan',
-  SY: 'Syria', YE: 'Yemen', MM: 'Myanmar', VE: 'Venezuela',
+  UA: 'Ukraine',
+  RU: 'Russia',
+  CN: 'China',
+  US: 'United States',
+  IR: 'Iran',
+  IL: 'Israel',
+  TW: 'Taiwan',
+  KP: 'North Korea',
+  SA: 'Saudi Arabia',
+  TR: 'Turkey',
+  PL: 'Poland',
+  DE: 'Germany',
+  FR: 'France',
+  GB: 'United Kingdom',
+  IN: 'India',
+  PK: 'Pakistan',
+  SY: 'Syria',
+  YE: 'Yemen',
+  MM: 'Myanmar',
+  VE: 'Venezuela',
 };
 
-const BOT_UA = /twitterbot|facebookexternalhit|linkedinbot|slackbot|telegrambot|whatsapp|discordbot|redditbot|googlebot/i;
+const BOT_UA =
+  /twitterbot|facebookexternalhit|linkedinbot|slackbot|telegrambot|whatsapp|discordbot|redditbot|googlebot/i;
 
 export default function handler(req, res) {
   const url = new URL(req.url, `https://${req.headers.host}`);
@@ -81,5 +97,9 @@ export default function handler(req, res) {
 }
 
 function esc(str) {
-  return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }

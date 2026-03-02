@@ -11,11 +11,10 @@ interface DesktopRuntimeInfo {
 type UpdaterOutcome = 'no_update' | 'update_available' | 'open_failed' | 'fetch_failed';
 type DesktopBuildVariant = 'full' | 'tech' | 'finance';
 
-const DESKTOP_BUILD_VARIANT: DesktopBuildVariant = (
+const DESKTOP_BUILD_VARIANT: DesktopBuildVariant =
   import.meta.env.VITE_VARIANT === 'tech' || import.meta.env.VITE_VARIANT === 'finance'
     ? import.meta.env.VITE_VARIANT
-    : 'full'
-);
+    : 'full';
 
 export class DesktopUpdater implements AppModule {
   private ctx: AppContext;
@@ -55,9 +54,8 @@ export class DesktopUpdater implements AppModule {
   }
 
   private logUpdaterOutcome(outcome: UpdaterOutcome, context: Record<string, unknown> = {}): void {
-    const logger = outcome === 'open_failed' || outcome === 'fetch_failed'
-      ? console.warn
-      : console.info;
+    const logger =
+      outcome === 'open_failed' || outcome === 'fetch_failed' ? console.warn : console.info;
     logger('[updater]', outcome, context);
   }
 
@@ -91,9 +89,10 @@ export class DesktopUpdater implements AppModule {
         return;
       }
 
-      const releaseUrl = typeof data.url === 'string' && data.url
-        ? data.url
-        : 'https://github.com/koala73/worldmonitor/releases/latest';
+      const releaseUrl =
+        typeof data.url === 'string' && data.url
+          ? data.url
+          : 'https://github.com/ajinkyachalke008/worldmonitor/releases/latest';
       this.logUpdaterOutcome('update_available', { current, remote, dismissed: false });
       trackUpdateShown(current, remote);
       await this.showUpdateToast(remote, releaseUrl);
@@ -118,7 +117,8 @@ export class DesktopUpdater implements AppModule {
 
   private mapDesktopDownloadPlatform(os: string, arch: string): string | null {
     const normalizedOs = os.toLowerCase();
-    const normalizedArch = arch.toLowerCase()
+    const normalizedArch = arch
+      .toLowerCase()
       .replace('amd64', 'x86_64')
       .replace('x64', 'x86_64')
       .replace('arm64', 'aarch64');
@@ -189,7 +189,10 @@ export class DesktopUpdater implements AppModule {
         trackUpdateClicked(version);
         if (this.ctx.isDesktopApp) {
           void invokeTauri<void>('open_url', { url }).catch((error) => {
-            this.logUpdaterOutcome('open_failed', { url, error: error instanceof Error ? error.message : String(error) });
+            this.logUpdaterOutcome('open_failed', {
+              url,
+              error: error instanceof Error ? error.message : String(error),
+            });
             window.open(url, '_blank', 'noopener');
           });
         } else {

@@ -30,14 +30,18 @@ export class GdeltIntelPanel extends Panel {
   }
 
   private createTabs(): void {
-    this.tabsEl = h('div', { className: 'gdelt-intel-tabs' },
-      ...getIntelTopics().map(topic =>
-        h('button', {
-          className: `gdelt-intel-tab ${topic.id === this.activeTopic.id ? 'active' : ''}`,
-          dataset: { topicId: topic.id },
-          title: topic.description,
-          onClick: () => this.selectTopic(topic),
-        },
+    this.tabsEl = h(
+      'div',
+      { className: 'gdelt-intel-tabs' },
+      ...getIntelTopics().map((topic) =>
+        h(
+          'button',
+          {
+            className: `gdelt-intel-tab ${topic.id === this.activeTopic.id ? 'active' : ''}`,
+            dataset: { topicId: topic.id },
+            title: topic.description,
+            onClick: () => this.selectTopic(topic),
+          },
           h('span', { className: 'tab-icon' }, topic.icon),
           h('span', { className: 'tab-label' }, topic.name),
         ),
@@ -52,7 +56,7 @@ export class GdeltIntelPanel extends Panel {
 
     this.activeTopic = topic;
 
-    this.tabsEl?.querySelectorAll('.gdelt-intel-tab').forEach(tab => {
+    this.tabsEl?.querySelectorAll('.gdelt-intel-tab').forEach((tab) => {
       tab.classList.toggle('active', (tab as HTMLElement).dataset.topicId === topic.id);
     });
 
@@ -74,7 +78,7 @@ export class GdeltIntelPanel extends Panel {
 
         if (data.articles.length === 0 && attempt < 2) {
           this.showRetrying();
-          await new Promise(r => setTimeout(r, 15_000));
+          await new Promise((r) => setTimeout(r, 15_000));
           continue;
         }
 
@@ -86,7 +90,7 @@ export class GdeltIntelPanel extends Panel {
         console.error(`[GdeltIntelPanel] Load error (attempt ${attempt + 1}):`, error);
         if (attempt < 2) {
           this.showRetrying();
-          await new Promise(r => setTimeout(r, 15_000));
+          await new Promise((r) => setTimeout(r, 15_000));
           continue;
         }
         this.showError(t('common.failedIntelFeed'));
@@ -96,13 +100,19 @@ export class GdeltIntelPanel extends Panel {
 
   private renderArticles(articles: GdeltArticle[]): void {
     if (articles.length === 0) {
-      replaceChildren(this.content, h('div', { className: 'empty-state' }, t('components.gdelt.empty')));
+      replaceChildren(
+        this.content,
+        h('div', { className: 'empty-state' }, t('components.gdelt.empty')),
+      );
       return;
     }
 
-    replaceChildren(this.content,
-      h('div', { className: 'gdelt-intel-articles' },
-        ...articles.map(article => this.buildArticle(article)),
+    replaceChildren(
+      this.content,
+      h(
+        'div',
+        { className: 'gdelt-intel-articles' },
+        ...articles.map((article) => this.buildArticle(article)),
       ),
     );
   }
@@ -110,15 +120,25 @@ export class GdeltIntelPanel extends Panel {
   private buildArticle(article: GdeltArticle): HTMLElement {
     const domain = article.source || extractDomain(article.url);
     const timeAgo = formatArticleDate(article.date);
-    const toneClass = article.tone ? (article.tone < -2 ? 'tone-negative' : article.tone > 2 ? 'tone-positive' : '') : '';
+    const toneClass = article.tone
+      ? article.tone < -2
+        ? 'tone-negative'
+        : article.tone > 2
+          ? 'tone-positive'
+          : ''
+      : '';
 
-    return h('a', {
-      href: sanitizeUrl(article.url),
-      target: '_blank',
-      rel: 'noopener',
-      className: `gdelt-intel-article ${toneClass}`.trim(),
-    },
-      h('div', { className: 'article-header' },
+    return h(
+      'a',
+      {
+        href: sanitizeUrl(article.url),
+        target: '_blank',
+        rel: 'noopener',
+        className: `gdelt-intel-article ${toneClass}`.trim(),
+      },
+      h(
+        'div',
+        { className: 'article-header' },
         h('span', { className: 'article-source' }, domain),
         h('span', { className: 'article-time' }, timeAgo),
       ),

@@ -28,10 +28,18 @@ const API_BASE = 'https://api.usaspending.gov/api/v2';
 
 // Award type code mapping
 const AWARD_TYPE_MAP: Record<string, GovernmentAward['awardType']> = {
-  'A': 'contract', 'B': 'contract', 'C': 'contract', 'D': 'contract',
-  '02': 'grant', '03': 'grant', '04': 'grant', '05': 'grant',
-  '06': 'grant', '10': 'grant',
-  '07': 'loan', '08': 'loan',
+  A: 'contract',
+  B: 'contract',
+  C: 'contract',
+  D: 'contract',
+  '02': 'grant',
+  '03': 'grant',
+  '04': 'grant',
+  '05': 'grant',
+  '06': 'grant',
+  '10': 'grant',
+  '07': 'loan',
+  '08': 'loan',
 };
 
 function getDateDaysAgo(days: number): string {
@@ -61,11 +69,13 @@ function validateLimit(val: number): number {
 /**
  * Fetch recent government awards/contracts
  */
-export async function fetchRecentAwards(options: {
-  daysBack?: number;
-  limit?: number;
-  awardTypes?: ('contract' | 'grant' | 'loan')[];
-} = {}): Promise<SpendingSummary> {
+export async function fetchRecentAwards(
+  options: {
+    daysBack?: number;
+    limit?: number;
+    awardTypes?: ('contract' | 'grant' | 'loan')[];
+  } = {},
+): Promise<SpendingSummary> {
   const daysBack = validateDaysBack(options.daysBack ?? 7);
   const limit = validateLimit(options.limit ?? 15);
   const awardTypes = options.awardTypes ?? ['contract'];
@@ -173,9 +183,13 @@ export function formatAwardAmount(amount: number): string {
  */
 export function getAwardTypeIcon(type: GovernmentAward['awardType']): string {
   switch (type) {
-    case 'contract': return '📄';
-    case 'grant': return '🎁';
-    case 'loan': return '💰';
-    default: return '📋';
+    case 'contract':
+      return '📄';
+    case 'grant':
+      return '🎁';
+    case 'loan':
+      return '💰';
+    default:
+      return '📋';
   }
 }

@@ -36,7 +36,7 @@ async function fetchTrendingRepos(req: ListTrendingReposRequest): Promise<Github
     });
 
     if (!response.ok) throw new Error('Primary API failed');
-    data = await response.json() as any[];
+    data = (await response.json()) as any[];
   } catch {
     // Fallback API
     try {
@@ -47,7 +47,7 @@ async function fetchTrendingRepos(req: ListTrendingReposRequest): Promise<Github
       });
 
       if (!fallbackResponse.ok) return [];
-      data = await fallbackResponse.json() as any[];
+      data = (await fallbackResponse.json()) as any[];
     } catch {
       return [];
     }
@@ -55,15 +55,17 @@ async function fetchTrendingRepos(req: ListTrendingReposRequest): Promise<Github
 
   if (!Array.isArray(data)) return [];
 
-  return data.slice(0, pageSize).map((raw: any): GithubRepo => ({
-    fullName: `${raw.author}/${raw.name}`,
-    description: raw.description || '',
-    language: raw.language || '',
-    stars: raw.stars || 0,
-    starsToday: raw.currentPeriodStars || 0,
-    forks: raw.forks || 0,
-    url: raw.url || `https://github.com/${raw.author}/${raw.name}`,
-  }));
+  return data.slice(0, pageSize).map(
+    (raw: any): GithubRepo => ({
+      fullName: `${raw.author}/${raw.name}`,
+      description: raw.description || '',
+      language: raw.language || '',
+      stars: raw.stars || 0,
+      starsToday: raw.currentPeriodStars || 0,
+      forks: raw.forks || 0,
+      url: raw.url || `https://github.com/${raw.author}/${raw.name}`,
+    }),
+  );
 }
 
 // ---------- Handler ----------
@@ -74,10 +76,14 @@ export async function listTrendingRepos(
 ): Promise<ListTrendingReposResponse> {
   try {
     const cacheKey = `${REDIS_CACHE_KEY}:${req.language || 'python'}:${req.period || 'daily'}:${req.pagination?.pageSize || 50}`;
-    const result = await cachedFetchJson<ListTrendingReposResponse>(cacheKey, REDIS_CACHE_TTL, async () => {
-      const repos = await fetchTrendingRepos(req);
-      return repos.length > 0 ? { repos, pagination: undefined } : null;
-    });
+    const result = await cachedFetchJson<ListTrendingReposResponse>(
+      cacheKey,
+      REDIS_CACHE_TTL,
+      async () => {
+        const repos = await fetchTrendingRepos(req);
+        return repos.length > 0 ? { repos, pagination: undefined } : null;
+      },
+    );
     return result || { repos: [], pagination: undefined };
   } catch {
     return { repos: [], pagination: undefined };

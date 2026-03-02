@@ -65,8 +65,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -77,7 +77,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -99,23 +99,26 @@ export class GivingServiceClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string, options?: GivingServiceClientOptions) {
-    this.baseURL = baseURL.replace(/\/+$/, "");
+    this.baseURL = baseURL.replace(/\/+$/, '');
     this.fetchFn = options?.fetch ?? globalThis.fetch;
     this.defaultHeaders = { ...options?.defaultHeaders };
   }
 
-  async getGivingSummary(req: GetGivingSummaryRequest, options?: GivingServiceCallOptions): Promise<GetGivingSummaryResponse> {
-    let path = "/api/giving/v1/get-giving-summary";
+  async getGivingSummary(
+    req: GetGivingSummaryRequest,
+    options?: GivingServiceCallOptions,
+  ): Promise<GetGivingSummaryResponse> {
+    const path = '/api/giving/v1/get-giving-summary';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -125,7 +128,7 @@ export class GivingServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetGivingSummaryResponse;
+    return (await resp.json()) as GetGivingSummaryResponse;
   }
 
   private async handleError(resp: Response): Promise<never> {

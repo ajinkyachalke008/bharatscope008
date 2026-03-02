@@ -28,7 +28,7 @@ export async function clusterNewsHybrid(items: NewsItem[]): Promise<ClusteredEve
 
   try {
     // Get cluster primary titles for embedding
-    const clusterTexts = jaccardClusters.map(c => ({
+    const clusterTexts = jaccardClusters.map((c) => ({
       id: c.id,
       text: c.primaryTitle,
     }));
@@ -36,7 +36,7 @@ export async function clusterNewsHybrid(items: NewsItem[]): Promise<ClusteredEve
     // Get semantic groupings
     const semanticGroups = await mlWorker.clusterBySemanticSimilarity(
       clusterTexts,
-      ML_THRESHOLDS.semanticClusterThreshold
+      ML_THRESHOLDS.semanticClusterThreshold,
     );
 
     // Merge semantically similar clusters
@@ -52,9 +52,9 @@ export async function clusterNewsHybrid(items: NewsItem[]): Promise<ClusteredEve
  */
 function mergeSemanticallySimilarClusters(
   clusters: ClusteredEvent[],
-  semanticGroups: string[][]
+  semanticGroups: string[][],
 ): ClusteredEvent[] {
-  const clusterMap = new Map(clusters.map(c => [c.id, c]));
+  const clusterMap = new Map(clusters.map((c) => [c.id, c]));
   const merged: ClusteredEvent[] = [];
   const usedIds = new Set<string>();
 
@@ -63,13 +63,13 @@ function mergeSemanticallySimilarClusters(
 
     // Get all clusters in this semantic group
     const groupClusters = group
-      .map(id => clusterMap.get(id))
+      .map((id) => clusterMap.get(id))
       .filter((c): c is ClusteredEvent => c !== undefined && !usedIds.has(c.id));
 
     if (groupClusters.length === 0) continue;
 
     // Mark all as used
-    groupClusters.forEach(c => usedIds.add(c.id));
+    groupClusters.forEach((c) => usedIds.add(c.id));
 
     const firstCluster = groupClusters[0];
     if (!firstCluster) continue;
@@ -96,7 +96,7 @@ function mergeSemanticallySimilarClusters(
 
     // Combine all items, sources, etc.
     const allItems = [...primary.allItems];
-    const topSourcesSet = new Map(primary.topSources.map(s => [s.url, s]));
+    const topSourcesSet = new Map(primary.topSources.map((s) => [s.url, s]));
 
     for (const other of others) {
       allItems.push(...other.allItems);
@@ -113,7 +113,7 @@ function mergeSemanticallySimilarClusters(
       .slice(0, 5);
 
     // Calculate merged timestamps
-    const allDates = allItems.map(i => i.pubDate.getTime());
+    const allDates = allItems.map((i) => i.pubDate.getTime());
     const firstSeen = new Date(Math.min(...allDates));
     const lastUpdated = new Date(Math.max(...allDates));
 
@@ -127,7 +127,7 @@ function mergeSemanticallySimilarClusters(
       allItems,
       firstSeen,
       lastUpdated,
-      isAlert: allItems.some(i => i.isAlert),
+      isAlert: allItems.some((i) => i.isAlert),
       monitorColor: primary.monitorColor,
       velocity: primary.velocity,
     };

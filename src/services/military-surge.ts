@@ -55,12 +55,37 @@ const OPERATOR_HOMES: OperatorHomeRegions[] = [
   { operator: 'usn', country: 'USA', homeRegions: ['alaska-adiz'], alertThreshold: 2 },
   { operator: 'usmc', country: 'USA', homeRegions: ['alaska-adiz'], alertThreshold: 2 },
   { operator: 'usa', country: 'USA', homeRegions: ['alaska-adiz'], alertThreshold: 2 },
-  { operator: 'vks', country: 'Russia', homeRegions: ['kaliningrad', 'arctic-russia', 'black-sea'], alertThreshold: 2 },
-  { operator: 'plaaf', country: 'China', homeRegions: ['taiwan-strait', 'south-china-sea'], alertThreshold: 2 },
-  { operator: 'plan', country: 'China', homeRegions: ['taiwan-strait', 'south-china-sea'], alertThreshold: 2 },
-  { operator: 'iaf', country: 'Israel', homeRegions: ['east-med', 'iran-border'], alertThreshold: 2 },
+  {
+    operator: 'vks',
+    country: 'Russia',
+    homeRegions: ['kaliningrad', 'arctic-russia', 'black-sea'],
+    alertThreshold: 2,
+  },
+  {
+    operator: 'plaaf',
+    country: 'China',
+    homeRegions: ['taiwan-strait', 'south-china-sea'],
+    alertThreshold: 2,
+  },
+  {
+    operator: 'plan',
+    country: 'China',
+    homeRegions: ['taiwan-strait', 'south-china-sea'],
+    alertThreshold: 2,
+  },
+  {
+    operator: 'iaf',
+    country: 'Israel',
+    homeRegions: ['east-med', 'iran-border'],
+    alertThreshold: 2,
+  },
   { operator: 'raf', country: 'UK', homeRegions: ['baltics', 'black-sea'], alertThreshold: 3 },
-  { operator: 'faf', country: 'France', homeRegions: ['sahel', 'east-med', 'libya-coast'], alertThreshold: 3 },
+  {
+    operator: 'faf',
+    country: 'France',
+    homeRegions: ['sahel', 'east-med', 'libya-coast'],
+    alertThreshold: 3,
+  },
   { operator: 'gaf', country: 'Germany', homeRegions: ['baltics'], alertThreshold: 3 },
 ];
 
@@ -112,10 +137,24 @@ const THEATERS: MilitaryTheater[] = [
   {
     id: 'middle-east',
     name: 'Middle East / Persian Gulf',
-    baseIds: ['al_udeid', 'ali_al_salem_air_base', 'camp_arifjan', 'camp_buehring', 'kuwait_naval_base',
-              'naval_support_activity_bahrain', 'isa_air_base', 'masirah_aira_base', 'rafo_thumrait',
-              'al_dhafra_air_base', 'port_of_jebel_ali', 'fujairah_naval_base', 'prince_sultan_air_base',
-              'ain_assad_air_base', 'camp_victory', 'naval_support_facility_diego_garcia'],
+    baseIds: [
+      'al_udeid',
+      'ali_al_salem_air_base',
+      'camp_arifjan',
+      'camp_buehring',
+      'kuwait_naval_base',
+      'naval_support_activity_bahrain',
+      'isa_air_base',
+      'masirah_aira_base',
+      'rafo_thumrait',
+      'al_dhafra_air_base',
+      'port_of_jebel_ali',
+      'fujairah_naval_base',
+      'prince_sultan_air_base',
+      'ain_assad_air_base',
+      'camp_victory',
+      'naval_support_facility_diego_garcia',
+    ],
     centerLat: 27.0,
     centerLon: 50.0,
   },
@@ -129,15 +168,31 @@ const THEATERS: MilitaryTheater[] = [
   {
     id: 'europe-west',
     name: 'Western Europe',
-    baseIds: ['ramstein', 'spangdahlem', 'usag_stuttgart', 'raf_lakenheath', 'raf_mildenhall', 'aviano'],
+    baseIds: [
+      'ramstein',
+      'spangdahlem',
+      'usag_stuttgart',
+      'raf_lakenheath',
+      'raf_mildenhall',
+      'aviano',
+    ],
     centerLat: 50.0,
     centerLon: 8.0,
   },
   {
     id: 'pacific-west',
     name: 'Western Pacific',
-    baseIds: ['kadena_air_base', 'camp_fuji', 'fleet_activities_okinawa', 'yokota', 'misawsa',
-              'osan_air_base', 'kunsan_ab', 'us_army_garrison_humphreys', 'andersen_air_force_base'],
+    baseIds: [
+      'kadena_air_base',
+      'camp_fuji',
+      'fleet_activities_okinawa',
+      'yokota',
+      'misawsa',
+      'osan_air_base',
+      'kunsan_ab',
+      'us_army_garrison_humphreys',
+      'andersen_air_force_base',
+    ],
     centerLat: 30.0,
     centerLon: 130.0,
   },
@@ -154,7 +209,12 @@ const SURGE_THRESHOLD = 2.0;
 const BASELINE_WINDOW_HOURS = 48;
 const BASELINE_MIN_SAMPLES = 6;
 const TRANSPORT_CALLSIGN_PATTERNS = [
-  /^RCH/i, /^REACH/i, /^MOOSE/i, /^HERKY/i, /^EVAC/i, /^DUSTOFF/i,
+  /^RCH/i,
+  /^REACH/i,
+  /^MOOSE/i,
+  /^HERKY/i,
+  /^EVAC/i,
+  /^DUSTOFF/i,
 ];
 const PROXIMITY_RADIUS_KM = 150;
 
@@ -175,15 +235,18 @@ function getTheaterForBase(baseId: string): MilitaryTheater | null {
 
 function distanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) ** 2;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function findNearbyBases(lat: number, lon: number): { baseId: string; baseName: string; distance: number }[] {
+function findNearbyBases(
+  lat: number,
+  lon: number,
+): { baseId: string; baseName: string; distance: number }[] {
   const nearby: { baseId: string; baseName: string; distance: number }[] = [];
   for (const base of MILITARY_BASES_EXPANDED) {
     const dist = distanceKm(lat, lon, base.lat, base.lon);
@@ -199,7 +262,7 @@ function isTransportFlight(flight: MilitaryFlight): boolean {
     return true;
   }
   const callsign = flight.callsign.toUpperCase();
-  return TRANSPORT_CALLSIGN_PATTERNS.some(p => p.test(callsign));
+  return TRANSPORT_CALLSIGN_PATTERNS.some((p) => p.test(callsign));
 }
 
 function classifyFlight(flight: MilitaryFlight): 'transport' | 'fighter' | 'recon' | 'other' {
@@ -222,10 +285,14 @@ function getTheaterForFlight(flight: MilitaryFlight): MilitaryTheater | null {
   return null;
 }
 
-function calculateBaseline(theaterId: string): { transport: number; fighter: number; recon: number } {
+function calculateBaseline(theaterId: string): {
+  transport: number;
+  fighter: number;
+  recon: number;
+} {
   const history = activityHistory.get(theaterId) || [];
   const cutoff = Date.now() - BASELINE_WINDOW_HOURS * 60 * 60 * 1000;
-  const relevant = history.filter(h => h.timestamp >= cutoff);
+  const relevant = history.filter((h) => h.timestamp >= cutoff);
 
   if (relevant.length < BASELINE_MIN_SAMPLES) {
     return { transport: 3, fighter: 2, recon: 1 };
@@ -249,7 +316,7 @@ function cleanupOldHistory(): void {
 
   const cutoff = now - MAX_HISTORY_HOURS * 60 * 60 * 1000;
   for (const [theaterId, history] of activityHistory) {
-    const filtered = history.filter(h => h.timestamp >= cutoff);
+    const filtered = history.filter((h) => h.timestamp >= cutoff);
     if (filtered.length === 0) {
       activityHistory.delete(theaterId);
     } else {
@@ -281,7 +348,7 @@ export function analyzeFlightsForSurge(flights: MilitaryFlight[]): SurgeAlert[] 
   const newAlerts: SurgeAlert[] = [];
 
   for (const [theaterId, theaterFlightList] of theaterFlights) {
-    const theater = THEATERS.find(t => t.id === theaterId);
+    const theater = THEATERS.find((t) => t.id === theaterId);
     if (!theater) continue;
 
     let transportCount = 0;
@@ -312,7 +379,7 @@ export function analyzeFlightsForSurge(flights: MilitaryFlight[]): SurgeAlert[] 
       fighterCount,
       reconCount,
       totalMilitary: theaterFlightList.length,
-      flightIds: theaterFlightList.map(f => f.id),
+      flightIds: theaterFlightList.map((f) => f.id),
     };
 
     const history = activityHistory.get(theaterId) || [];
@@ -398,18 +465,18 @@ function getRegionForPosition(lat: number, lon: number): GeoRegion | null {
 }
 
 function isHomeRegion(operator: MilitaryOperator, regionId: string): boolean {
-  const config = OPERATOR_HOMES.find(o => o.operator === operator);
+  const config = OPERATOR_HOMES.find((o) => o.operator === operator);
   if (!config) return true; // Unknown operator - don't alert
   return config.homeRegions.includes(regionId);
 }
 
 function getOperatorThreshold(operator: MilitaryOperator): number {
-  const config = OPERATOR_HOMES.find(o => o.operator === operator);
+  const config = OPERATOR_HOMES.find((o) => o.operator === operator);
   return config?.alertThreshold ?? 3;
 }
 
 function getOperatorCountry(operator: MilitaryOperator): string {
-  const config = OPERATOR_HOMES.find(o => o.operator === operator);
+  const config = OPERATOR_HOMES.find((o) => o.operator === operator);
   return config?.country ?? 'Unknown';
 }
 
@@ -417,7 +484,10 @@ export function detectForeignMilitaryPresence(flights: MilitaryFlight[]): Foreig
   const newAlerts: ForeignPresenceAlert[] = [];
 
   // Group flights by operator and region
-  const presenceMap = new Map<string, { operator: MilitaryOperator; region: GeoRegion; flights: MilitaryFlight[] }>();
+  const presenceMap = new Map<
+    string,
+    { operator: MilitaryOperator; region: GeoRegion; flights: MilitaryFlight[] }
+  >();
 
   for (const flight of flights) {
     const region = getRegionForPosition(flight.lat, flight.lon);
@@ -464,16 +534,16 @@ export function detectForeignMilitaryPresence(flights: MilitaryFlight[]): Foreig
 
 // Map operator country names to ISO codes for focal point lookup
 const COUNTRY_TO_ISO: Record<string, string> = {
-  'USA': 'US',
-  'Russia': 'RU',
-  'China': 'CN',
-  'Israel': 'IL',
-  'Iran': 'IR',
-  'UK': 'GB',
-  'France': 'FR',
-  'Germany': 'DE',
-  'Taiwan': 'TW',
-  'Ukraine': 'UA',
+  USA: 'US',
+  Russia: 'RU',
+  China: 'CN',
+  Israel: 'IL',
+  Iran: 'IR',
+  UK: 'GB',
+  France: 'FR',
+  Germany: 'DE',
+  Taiwan: 'TW',
+  Ukraine: 'UA',
   'Saudi Arabia': 'SA',
 };
 
@@ -482,7 +552,7 @@ const REGION_AFFECTED_COUNTRIES: Record<string, string[]> = {
   'persian-gulf': ['IR', 'SA'],
   'strait-hormuz': ['IR'],
   'iran-border': ['IR', 'IL'],
-  'baltics': ['RU', 'UA'],
+  baltics: ['RU', 'UA'],
   'poland-border': ['RU', 'UA'],
   'black-sea': ['RU', 'UA'],
   'taiwan-strait': ['TW', 'CN'],
@@ -522,17 +592,21 @@ export function foreignPresenceToSignal(alert: ForeignPresenceAlert): {
 
   // Severity based on operator and region sensitivity
   const criticalCombos = [
-    ['vks', 'baltics'], ['vks', 'poland-border'], ['vks', 'alaska-adiz'],
-    ['plaaf', 'taiwan-strait'], ['plan', 'taiwan-strait'],
-    ['usaf', 'iran-border'], ['usn', 'persian-gulf'], ['iaf', 'iran-border'],
+    ['vks', 'baltics'],
+    ['vks', 'poland-border'],
+    ['vks', 'alaska-adiz'],
+    ['plaaf', 'taiwan-strait'],
+    ['plan', 'taiwan-strait'],
+    ['usaf', 'iran-border'],
+    ['usn', 'persian-gulf'],
+    ['iaf', 'iran-border'],
   ];
 
   const isCritical = criticalCombos.some(
-    ([op, reg]) => alert.operator === op && alert.region.id === reg
+    ([op, reg]) => alert.operator === op && alert.region.id === reg,
   );
 
-  const severity = isCritical ? 'critical' :
-    alert.aircraftCount >= 5 ? 'high' : 'medium';
+  const severity = isCritical ? 'critical' : alert.aircraftCount >= 5 ? 'high' : 'medium';
 
   const confidence = Math.min(0.95, 0.7 + alert.aircraftCount * 0.05);
 
@@ -552,7 +626,8 @@ export function foreignPresenceToSignal(alert: ForeignPresenceAlert): {
   const newsContext = focalPointDetector.getNewsCorrelationContext(relevantCountries);
 
   // Build enhanced description with news correlation
-  let description = `${alert.aircraftCount} ${alert.operatorCountry} aircraft detected in ${alert.region.name}. ` +
+  const description =
+    `${alert.aircraftCount} ${alert.operatorCountry} aircraft detected in ${alert.region.name}. ` +
     `${aircraftList}. Callsigns: ${callsigns.slice(0, 4).join(', ')}${callsigns.length > 4 ? '...' : ''}`;
 
   // Check for critical focal points in affected region
@@ -560,7 +635,9 @@ export function foreignPresenceToSignal(alert: ForeignPresenceAlert): {
   for (const iso of relevantCountries) {
     const fp = focalPointDetector.getFocalPointForCountry(iso);
     if (fp && fp.newsMentions > 0) {
-      focalPointContexts.push(`${fp.displayName}: ${fp.newsMentions} news mentions (${fp.urgency})`);
+      focalPointContexts.push(
+        `${fp.displayName}: ${fp.newsMentions} news mentions (${fp.urgency})`,
+      );
     }
   }
 
@@ -631,8 +708,8 @@ export function surgeAlertToSignal(surge: SurgeAlert): {
     .map(([type, count]) => `${count}x ${type}`)
     .join(', ');
 
-  const severity = surge.surgeMultiple >= 4 ? 'critical' :
-    surge.surgeMultiple >= 3 ? 'high' : 'medium';
+  const severity =
+    surge.surgeMultiple >= 4 ? 'critical' : surge.surgeMultiple >= 3 ? 'high' : 'medium';
 
   const confidence = Math.min(0.95, 0.6 + (surge.surgeMultiple - 2) * 0.1);
 
@@ -651,7 +728,8 @@ export function surgeAlertToSignal(surge: SurgeAlert): {
     type: 'military_surge',
     source: 'Military Flight Tracking',
     title: `${typeLabels[surge.type]} - ${surge.theater.name}`,
-    description: `${surge.currentCount} ${surge.type} aircraft detected (${surge.surgeMultiple.toFixed(1)}x baseline). ` +
+    description:
+      `${surge.currentCount} ${surge.type} aircraft detected (${surge.surgeMultiple.toFixed(1)}x baseline). ` +
       `${aircraftList}. Near: ${surge.nearbyBases.slice(0, 3).join(', ')}`,
     severity,
     confidence,
@@ -690,7 +768,7 @@ const POSTURE_THEATERS: PostureTheater[] = [
     regions: ['persian-gulf', 'strait-hormuz', 'iran-border'],
     bounds: { north: 42, south: 20, east: 65, west: 30 },
     thresholds: { elevated: 8, critical: 20 },
-    navalThresholds: { elevated: 2, critical: 5 },  // Low: AIS coverage poor in Persian Gulf, military vessels go dark
+    navalThresholds: { elevated: 2, critical: 5 }, // Low: AIS coverage poor in Persian Gulf, military vessels go dark
     strikeIndicators: { minTankers: 2, minAwacs: 1, minFighters: 5 },
   },
   {
@@ -828,7 +906,7 @@ export function getTheaterPostureSummaries(flights: MilitaryFlight[]): TheaterPo
         f.lat >= theater.bounds.south &&
         f.lat <= theater.bounds.north &&
         f.lon >= theater.bounds.west &&
-        f.lon <= theater.bounds.east
+        f.lon <= theater.bounds.east,
     );
 
     const byType = {
@@ -928,11 +1006,11 @@ export function getTheaterPostureSummaries(flights: MilitaryFlight[]): TheaterPo
  * Map theater target nations to ISO2 country codes for CII lookup.
  */
 const TARGET_NATION_CODES: Record<string, string> = {
-  'Iran': 'IR',
-  'Taiwan': 'TW',
+  Iran: 'IR',
+  Taiwan: 'TW',
   'North Korea': 'KP',
-  'Gaza': 'PS',
-  'Yemen': 'YE',
+  Gaza: 'PS',
+  Yemen: 'YE',
 };
 
 /**
@@ -946,12 +1024,18 @@ export function recalcPostureWithVessels(postures: TheaterPostureSummary[]): voi
     if (!theater) continue;
 
     const airLevel: 0 | 1 | 2 =
-      p.totalAircraft >= theater.thresholds.critical ? 2
-        : p.totalAircraft >= theater.thresholds.elevated ? 1 : 0;
+      p.totalAircraft >= theater.thresholds.critical
+        ? 2
+        : p.totalAircraft >= theater.thresholds.elevated
+          ? 1
+          : 0;
 
     const navalLevel: 0 | 1 | 2 =
-      p.totalVessels >= theater.navalThresholds.critical ? 2
-        : p.totalVessels >= theater.navalThresholds.elevated ? 1 : 0;
+      p.totalVessels >= theater.navalThresholds.critical
+        ? 2
+        : p.totalVessels >= theater.navalThresholds.elevated
+          ? 1
+          : 0;
 
     // CII boost: high instability in target nation elevates theater posture
     let ciiLevel: 0 | 1 | 2 = 0;
@@ -985,6 +1069,6 @@ export function recalcPostureWithVessels(postures: TheaterPostureSummary[]): voi
 
 export function getCriticalPostures(flights: MilitaryFlight[]): TheaterPostureSummary[] {
   return getTheaterPostureSummaries(flights).filter(
-    (p) => p.postureLevel === 'critical' || (p.postureLevel === 'elevated' && p.strikeCapable)
+    (p) => p.postureLevel === 'critical' || (p.postureLevel === 'elevated' && p.strikeCapable),
   );
 }

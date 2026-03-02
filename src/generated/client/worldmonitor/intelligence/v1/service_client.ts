@@ -138,11 +138,22 @@ export interface GdeltArticle {
   tone: number;
 }
 
-export type SeverityLevel = "SEVERITY_LEVEL_UNSPECIFIED" | "SEVERITY_LEVEL_LOW" | "SEVERITY_LEVEL_MEDIUM" | "SEVERITY_LEVEL_HIGH";
+export type SeverityLevel =
+  | 'SEVERITY_LEVEL_UNSPECIFIED'
+  | 'SEVERITY_LEVEL_LOW'
+  | 'SEVERITY_LEVEL_MEDIUM'
+  | 'SEVERITY_LEVEL_HIGH';
 
-export type TrendDirection = "TREND_DIRECTION_UNSPECIFIED" | "TREND_DIRECTION_RISING" | "TREND_DIRECTION_STABLE" | "TREND_DIRECTION_FALLING";
+export type TrendDirection =
+  | 'TREND_DIRECTION_UNSPECIFIED'
+  | 'TREND_DIRECTION_RISING'
+  | 'TREND_DIRECTION_STABLE'
+  | 'TREND_DIRECTION_FALLING';
 
-export type DataFreshness = "DATA_FRESHNESS_UNSPECIFIED" | "DATA_FRESHNESS_FRESH" | "DATA_FRESHNESS_STALE";
+export type DataFreshness =
+  | 'DATA_FRESHNESS_UNSPECIFIED'
+  | 'DATA_FRESHNESS_FRESH'
+  | 'DATA_FRESHNESS_STALE';
 
 export interface FieldViolation {
   field: string;
@@ -153,8 +164,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -165,7 +176,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -187,23 +198,26 @@ export class IntelligenceServiceClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string, options?: IntelligenceServiceClientOptions) {
-    this.baseURL = baseURL.replace(/\/+$/, "");
+    this.baseURL = baseURL.replace(/\/+$/, '');
     this.fetchFn = options?.fetch ?? globalThis.fetch;
     this.defaultHeaders = { ...options?.defaultHeaders };
   }
 
-  async getRiskScores(req: GetRiskScoresRequest, options?: IntelligenceServiceCallOptions): Promise<GetRiskScoresResponse> {
-    let path = "/api/intelligence/v1/get-risk-scores";
+  async getRiskScores(
+    req: GetRiskScoresRequest,
+    options?: IntelligenceServiceCallOptions,
+  ): Promise<GetRiskScoresResponse> {
+    const path = '/api/intelligence/v1/get-risk-scores';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -213,21 +227,24 @@ export class IntelligenceServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetRiskScoresResponse;
+    return (await resp.json()) as GetRiskScoresResponse;
   }
 
-  async getPizzintStatus(req: GetPizzintStatusRequest, options?: IntelligenceServiceCallOptions): Promise<GetPizzintStatusResponse> {
-    let path = "/api/intelligence/v1/get-pizzint-status";
+  async getPizzintStatus(
+    req: GetPizzintStatusRequest,
+    options?: IntelligenceServiceCallOptions,
+  ): Promise<GetPizzintStatusResponse> {
+    const path = '/api/intelligence/v1/get-pizzint-status';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -237,21 +254,24 @@ export class IntelligenceServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetPizzintStatusResponse;
+    return (await resp.json()) as GetPizzintStatusResponse;
   }
 
-  async classifyEvent(req: ClassifyEventRequest, options?: IntelligenceServiceCallOptions): Promise<ClassifyEventResponse> {
-    let path = "/api/intelligence/v1/classify-event";
+  async classifyEvent(
+    req: ClassifyEventRequest,
+    options?: IntelligenceServiceCallOptions,
+  ): Promise<ClassifyEventResponse> {
+    const path = '/api/intelligence/v1/classify-event';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -261,21 +281,24 @@ export class IntelligenceServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as ClassifyEventResponse;
+    return (await resp.json()) as ClassifyEventResponse;
   }
 
-  async getCountryIntelBrief(req: GetCountryIntelBriefRequest, options?: IntelligenceServiceCallOptions): Promise<GetCountryIntelBriefResponse> {
-    let path = "/api/intelligence/v1/get-country-intel-brief";
+  async getCountryIntelBrief(
+    req: GetCountryIntelBriefRequest,
+    options?: IntelligenceServiceCallOptions,
+  ): Promise<GetCountryIntelBriefResponse> {
+    const path = '/api/intelligence/v1/get-country-intel-brief';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -285,21 +308,24 @@ export class IntelligenceServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetCountryIntelBriefResponse;
+    return (await resp.json()) as GetCountryIntelBriefResponse;
   }
 
-  async searchGdeltDocuments(req: SearchGdeltDocumentsRequest, options?: IntelligenceServiceCallOptions): Promise<SearchGdeltDocumentsResponse> {
-    let path = "/api/intelligence/v1/search-gdelt-documents";
+  async searchGdeltDocuments(
+    req: SearchGdeltDocumentsRequest,
+    options?: IntelligenceServiceCallOptions,
+  ): Promise<SearchGdeltDocumentsResponse> {
+    const path = '/api/intelligence/v1/search-gdelt-documents';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -309,7 +335,7 @@ export class IntelligenceServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as SearchGdeltDocumentsResponse;
+    return (await resp.json()) as SearchGdeltDocumentsResponse;
   }
 
   private async handleError(resp: Response): Promise<never> {
@@ -327,4 +353,3 @@ export class IntelligenceServiceClient {
     throw new ApiError(resp.status, `Request failed with status ${resp.status}`, body);
   }
 }
-

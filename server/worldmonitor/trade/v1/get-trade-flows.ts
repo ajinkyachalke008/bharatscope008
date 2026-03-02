@@ -37,7 +37,7 @@ interface RawFlowRow {
  * Parse raw WTO rows into a flat list of { year, indicator, value }.
  */
 function parseRows(data: any, indicator: string): RawFlowRow[] {
-  const dataset: any[] = Array.isArray(data) ? data : data?.Dataset ?? data?.dataset ?? [];
+  const dataset: any[] = Array.isArray(data) ? data : (data?.Dataset ?? data?.dataset ?? []);
   const rows: RawFlowRow[] = [];
 
   for (const row of dataset) {

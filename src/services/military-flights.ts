@@ -1,4 +1,9 @@
-import type { MilitaryFlight, MilitaryFlightCluster, MilitaryAircraftType, MilitaryOperator } from '@/types';
+import type {
+  MilitaryFlight,
+  MilitaryFlightCluster,
+  MilitaryAircraftType,
+  MilitaryOperator,
+} from '@/types';
 import { createCircuitBreaker } from '@/utils';
 import {
   identifyByCallsign,
@@ -9,20 +14,18 @@ import {
   MILITARY_QUERY_REGIONS,
 } from '@/config/military';
 import type { QueryRegion } from '@/config/military';
-import {
-  getAircraftDetailsBatch,
-  analyzeAircraftDetails,
-  checkWingbitsStatus,
-} from './wingbits';
+import { getAircraftDetailsBatch, analyzeAircraftDetails, checkWingbitsStatus } from './wingbits';
 import { isFeatureAvailable } from './runtime-config';
 
 // OpenSky API path — route through Vercel so Railway secret never reaches the browser.
 const OPENSKY_PROXY_URL = '/api/opensky';
 const wsRelayUrl = import.meta.env.VITE_WS_RELAY_URL || '';
 const DIRECT_OPENSKY_BASE_URL = wsRelayUrl
-  ? wsRelayUrl.replace('wss://', 'https://').replace('ws://', 'http://').replace(/\/$/, '') + '/opensky'
+  ? wsRelayUrl.replace('wss://', 'https://').replace('ws://', 'http://').replace(/\/$/, '') +
+    '/opensky'
   : '';
-const isLocalhostRuntime = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname);
+const isLocalhostRuntime =
+  typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname);
 
 // Cache configuration
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutes - reduce upstream API pressure
@@ -34,7 +37,10 @@ const HISTORY_MAX_POINTS = 20;
 const HISTORY_CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 // Circuit breaker for API calls
-const breaker = createCircuitBreaker<{ flights: MilitaryFlight[]; clusters: MilitaryFlightCluster[] }>({
+const breaker = createCircuitBreaker<{
+  flights: MilitaryFlight[];
+  clusters: MilitaryFlightCluster[];
+}>({
   name: 'Military Flight Tracking',
   maxFailures: 3,
   cooldownMs: 5 * 60 * 1000, // 5 minute cooldown
@@ -47,23 +53,23 @@ const breaker = createCircuitBreaker<{ flights: MilitaryFlight[]; clusters: Mili
 // [10] true_track, [11] vertical_rate, [12] sensors, [13] geo_altitude, [14] squawk,
 // [15] spi, [16] position_source
 type OpenSkyStateArray = [
-  string,       // 0: icao24
-  string | null,// 1: callsign
-  string,       // 2: origin_country
-  number | null,// 3: time_position
-  number,       // 4: last_contact
-  number | null,// 5: longitude
-  number | null,// 6: latitude
-  number | null,// 7: baro_altitude (meters)
-  boolean,      // 8: on_ground
-  number | null,// 9: velocity (m/s)
-  number | null,// 10: true_track (degrees)
-  number | null,// 11: vertical_rate (m/s)
+  string, // 0: icao24
+  string | null, // 1: callsign
+  string, // 2: origin_country
+  number | null, // 3: time_position
+  number, // 4: last_contact
+  number | null, // 5: longitude
+  number | null, // 6: latitude
+  number | null, // 7: baro_altitude (meters)
+  boolean, // 8: on_ground
+  number | null, // 9: velocity (m/s)
+  number | null, // 10: true_track (degrees)
+  number | null, // 11: vertical_rate (m/s)
   number[] | null, // 12: sensors
-  number | null,// 13: geo_altitude
-  string | null,// 14: squawk
-  boolean,      // 15: spi
-  number        // 16: position_source
+  number | null, // 13: geo_altitude
+  string | null, // 14: squawk
+  boolean, // 15: spi
+  number, // 16: position_source
 ];
 
 interface OpenSkyResponse {
@@ -78,8 +84,13 @@ function determineAircraftInfo(
   callsign: string,
   icao24: string,
   originCountry?: string,
-  typeCode?: string
-): { type: MilitaryAircraftType; operator: MilitaryOperator; country: string; confidence: 'high' | 'medium' | 'low' } {
+  typeCode?: string,
+): {
+  type: MilitaryAircraftType;
+  operator: MilitaryOperator;
+  country: string;
+  confidence: 'high' | 'medium' | 'low';
+} {
   // Check callsign first (highest confidence)
   const callsignMatch = identifyByCallsign(callsign, originCountry);
   if (callsignMatch) {
@@ -164,16 +175,40 @@ function isMilitaryFlight(state: OpenSkyStateArray): boolean {
 
   // Extended list of countries with recognizable military patterns
   const militaryCountries = [
-    'United States', 'United Kingdom', 'France', 'Germany', 'Israel',
-    'Turkey', 'Saudi Arabia', 'United Arab Emirates', 'Qatar', 'Kuwait',
-    'Japan', 'South Korea', 'Australia', 'Canada', 'Italy', 'Spain',
-    'Netherlands', 'Poland', 'Greece', 'Norway', 'Sweden', 'India',
-    'Pakistan', 'Egypt', 'Singapore', 'Taiwan'
+    'United States',
+    'United Kingdom',
+    'France',
+    'Germany',
+    'Israel',
+    'Turkey',
+    'Saudi Arabia',
+    'United Arab Emirates',
+    'Qatar',
+    'Kuwait',
+    'Japan',
+    'South Korea',
+    'Australia',
+    'Canada',
+    'Italy',
+    'Spain',
+    'Netherlands',
+    'Poland',
+    'Greece',
+    'Norway',
+    'Sweden',
+    'India',
+    'Pakistan',
+    'Egypt',
+    'Singapore',
+    'Taiwan',
   ];
 
   if (militaryCountries.includes(originCountry)) {
     // Check for expanded military callsign patterns
-    const militaryPattern = /^(RCH|REACH|DUKE|KING|GOLD|NAVY|ARMY|MARINE|NATO|RAF|GAF|FAF|IAF|THK|TUR|RSAF|UAF|JPN|JASDF|ROKAF|KAF|RAAF|CANFORCE|CFC|AME|PLF|HAF|EGY|PAF|FORTE|HAWK|REAPER|COBRA|RIVET|OLIVE|SNTRY|DRAGN|BONE|DEATH|DOOM|TRIDENT|ASCOT|CNV|HMX|DUSTOFF|EVAC|MOOSE|HERKY)/i.test(callsign);
+    const militaryPattern =
+      /^(RCH|REACH|DUKE|KING|GOLD|NAVY|ARMY|MARINE|NATO|RAF|GAF|FAF|IAF|THK|TUR|RSAF|UAF|JPN|JASDF|ROKAF|KAF|RAAF|CANFORCE|CFC|AME|PLF|HAF|EGY|PAF|FORTE|HAWK|REAPER|COBRA|RIVET|OLIVE|SNTRY|DRAGN|BONE|DEATH|DOOM|TRIDENT|ASCOT|CNV|HMX|DUSTOFF|EVAC|MOOSE|HERKY)/i.test(
+        callsign,
+      );
     if (callsign && militaryPattern) {
       return true;
     }
@@ -220,7 +255,8 @@ function parseOpenSkyResponse(data: OpenSkyResponse): MilitaryFlight[] {
 
     // Check if near interesting hotspot
     const nearbyHotspot = getNearbyHotspot(lat, lon);
-    const isInteresting = nearbyHotspot?.priority === 'high' ||
+    const isInteresting =
+      nearbyHotspot?.priority === 'high' ||
       info.type === 'bomber' ||
       info.type === 'reconnaissance' ||
       info.type === 'awacs';
@@ -273,7 +309,7 @@ async function fetchQueryRegion(region: QueryRegion): Promise<RegionResult> {
 
   try {
     for (const url of urls) {
-      const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const response = await fetch(url, { headers: { Accept: 'application/json' } });
       if (!response.ok) {
         if (response.status === 429) {
           console.warn(`[Military Flights] Rate limited for ${region.name}`);
@@ -298,7 +334,7 @@ async function fetchFromOpenSky(): Promise<MilitaryFlight[]> {
   let allFailed = true;
 
   const results = await Promise.all(
-    MILITARY_QUERY_REGIONS.map(region => fetchQueryRegion(region))
+    MILITARY_QUERY_REGIONS.map((region) => fetchQueryRegion(region)),
   );
 
   for (const result of results) {
@@ -310,8 +346,10 @@ async function fetchFromOpenSky(): Promise<MilitaryFlight[]> {
       flights = result.flights;
     } else {
       const stale = regionCache.get(result.name);
-      if (stale && (Date.now() - stale.timestamp < STALE_MAX_AGE_MS)) {
-        console.warn(`[Military Flights] ${result.name} failed, using stale data (${Math.round((Date.now() - stale.timestamp) / 1000)}s old)`);
+      if (stale && Date.now() - stale.timestamp < STALE_MAX_AGE_MS) {
+        console.warn(
+          `[Military Flights] ${result.name} failed, using stale data (${Math.round((Date.now() - stale.timestamp) / 1000)}s old)`,
+        );
         flights = stale.flights;
       } else {
         console.warn(`[Military Flights] ${result.name} failed, no usable stale data`);
@@ -331,10 +369,11 @@ async function fetchFromOpenSky(): Promise<MilitaryFlight[]> {
     throw new Error('All regions failed — upstream may be down');
   }
 
-  console.log(`[Military Flights] Found ${allFlights.length} military aircraft from ${MILITARY_QUERY_REGIONS.length} regions`);
+  console.log(
+    `[Military Flights] Found ${allFlights.length} military aircraft from ${MILITARY_QUERY_REGIONS.length} regions`,
+  );
   return allFlights;
 }
-
 
 /**
  * Enrich flights with Wingbits aircraft details
@@ -358,10 +397,12 @@ async function enrichFlightsWithWingbits(flights: MilitaryFlight[]): Promise<Mil
     return flights;
   }
 
-  console.log(`[Military Flights] Enriching ${detailsMap.size} of ${flights.length} aircraft with Wingbits data`);
+  console.log(
+    `[Military Flights] Enriching ${detailsMap.size} of ${flights.length} aircraft with Wingbits data`,
+  );
 
   // Enrich each flight
-  return flights.map(flight => {
+  return flights.map((flight) => {
     const details = detailsMap.get(flight.hexCode.toLowerCase());
     if (!details) return flight;
 
@@ -435,7 +476,9 @@ function clusterFlights(flights: MilitaryFlight[]): MilitaryFlightCluster[] {
   for (const hotspot of MILITARY_HOTSPOTS) {
     const nearbyFlights = flights.filter((f) => {
       if (processed.has(f.id)) return false;
-      const distance = Math.sqrt(Math.pow(f.lat - hotspot.lat, 2) + Math.pow(f.lon - hotspot.lon, 2));
+      const distance = Math.sqrt(
+        Math.pow(f.lat - hotspot.lat, 2) + Math.pow(f.lon - hotspot.lon, 2),
+      );
       return distance <= hotspot.radius;
     });
 
@@ -462,9 +505,13 @@ function clusterFlights(flights: MilitaryFlight[]): MilitaryFlightCluster[] {
       }
 
       // Determine activity type
-      const hasTransport = nearbyFlights.some((f) => f.aircraftType === 'transport' || f.aircraftType === 'tanker');
+      const hasTransport = nearbyFlights.some(
+        (f) => f.aircraftType === 'transport' || f.aircraftType === 'tanker',
+      );
       const hasFighters = nearbyFlights.some((f) => f.aircraftType === 'fighter');
-      const hasRecon = nearbyFlights.some((f) => f.aircraftType === 'reconnaissance' || f.aircraftType === 'awacs');
+      const hasRecon = nearbyFlights.some(
+        (f) => f.aircraftType === 'reconnaissance' || f.aircraftType === 'awacs',
+      );
 
       let activityType: 'exercise' | 'patrol' | 'transport' | 'unknown' = 'unknown';
       if (hasFighters && hasRecon) activityType = 'exercise';
@@ -515,32 +562,37 @@ export async function fetchMilitaryFlights(): Promise<{
     return { flights: [], clusters: [] };
   }
 
-  return breaker.execute(async () => {
-    // Check cache
-    if (flightCache && Date.now() - flightCache.timestamp < CACHE_TTL) {
-      const clusters = clusterFlights(flightCache.data);
-      return { flights: flightCache.data, clusters };
-    }
+  return breaker.execute(
+    async () => {
+      // Check cache
+      if (flightCache && Date.now() - flightCache.timestamp < CACHE_TTL) {
+        const clusters = clusterFlights(flightCache.data);
+        return { flights: flightCache.data, clusters };
+      }
 
-    // Fetch from OpenSky (regional queries for efficiency)
-    let flights = await fetchFromOpenSky();
+      // Fetch from OpenSky (regional queries for efficiency)
+      let flights = await fetchFromOpenSky();
 
-    if (flights.length === 0) {
-      throw new Error('No flights returned — upstream may be down');
-    }
+      if (flights.length === 0) {
+        throw new Error('No flights returned — upstream may be down');
+      }
 
-    // Enrich with Wingbits aircraft details (owner, operator, type)
-    flights = await enrichFlightsWithWingbits(flights);
+      // Enrich with Wingbits aircraft details (owner, operator, type)
+      flights = await enrichFlightsWithWingbits(flights);
 
-    // Update cache
-    flightCache = { data: flights, timestamp: Date.now() };
+      // Update cache
+      flightCache = { data: flights, timestamp: Date.now() };
 
-    // Generate clusters
-    const clusters = clusterFlights(flights);
+      // Generate clusters
+      const clusters = clusterFlights(flights);
 
-    console.log(`[Military Flights] Total: ${flights.length} flights, ${clusters.length} clusters`);
-    return { flights, clusters };
-  }, { flights: [], clusters: [] });
+      console.log(
+        `[Military Flights] Total: ${flights.length} flights, ${clusters.length} clusters`,
+      );
+      return { flights, clusters };
+    },
+    { flights: [], clusters: [] },
+  );
 }
 
 /**

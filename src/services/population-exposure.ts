@@ -5,12 +5,19 @@ import type { GetPopulationExposureResponse } from '@/generated/client/worldmoni
 
 const client = new DisplacementServiceClient('', { fetch: (...args) => globalThis.fetch(...args) });
 
-const countriesBreaker = createCircuitBreaker<GetPopulationExposureResponse>({ name: 'WorldPop Countries', cacheTtlMs: 30 * 60 * 1000, persistCache: true });
+const countriesBreaker = createCircuitBreaker<GetPopulationExposureResponse>({
+  name: 'WorldPop Countries',
+  cacheTtlMs: 30 * 60 * 1000,
+  persistCache: true,
+});
 
 export async function fetchCountryPopulations(): Promise<CountryPopulation[]> {
-  const result = await countriesBreaker.execute(async () => {
-    return client.getPopulationExposure({ mode: 'countries', lat: 0, lon: 0, radius: 0 });
-  }, { success: false, countries: [] });
+  const result = await countriesBreaker.execute(
+    async () => {
+      return client.getPopulationExposure({ mode: 'countries', lat: 0, lon: 0, radius: 0 });
+    },
+    { success: false, countries: [] },
+  );
 
   return result.countries;
 }
@@ -22,9 +29,18 @@ interface ExposureResponse {
   densityPerKm2: number;
 }
 
-export async function fetchExposure(lat: number, lon: number, radiusKm: number): Promise<ExposureResponse | null> {
+export async function fetchExposure(
+  lat: number,
+  lon: number,
+  radiusKm: number,
+): Promise<ExposureResponse | null> {
   try {
-    const result = await client.getPopulationExposure({ mode: 'exposure', lat, lon, radius: radiusKm });
+    const result = await client.getPopulationExposure({
+      mode: 'exposure',
+      lat,
+      lon,
+      radius: radiusKm,
+    });
     if (!result.exposure) return null;
     return result.exposure;
   } catch {
@@ -82,7 +98,7 @@ export async function enrichEventsWithExposure(
           exposedPopulation: exposure.exposedPopulation,
           exposureRadiusKm: radius,
         } as PopulationExposure;
-      })
+      }),
     );
 
     for (const r of batchResults) {

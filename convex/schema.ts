@@ -1,5 +1,5 @@
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
+import { defineSchema, defineTable } from 'convex/server';
+import { v } from 'convex/values';
 
 export default defineSchema({
   registrations: defineTable({
@@ -8,5 +8,5 @@ export default defineSchema({
     registeredAt: v.number(),
     source: v.optional(v.string()),
     appVersion: v.optional(v.string()),
-  }).index("by_normalized_email", ["normalizedEmail"]),
+  }).index('by_normalized_email', ['normalizedEmail']),
 });

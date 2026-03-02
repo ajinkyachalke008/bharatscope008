@@ -135,8 +135,7 @@ export interface GetAircraftDetailsBatchResponse {
   configured: boolean;
 }
 
-export interface GetWingbitsStatusRequest {
-}
+export interface GetWingbitsStatusRequest {}
 
 export interface GetWingbitsStatusResponse {
   configured: boolean;
@@ -194,13 +193,52 @@ export interface USNIStrikeGroup {
   escorts: string[];
 }
 
-export type MilitaryActivityType = "MILITARY_ACTIVITY_TYPE_UNSPECIFIED" | "MILITARY_ACTIVITY_TYPE_EXERCISE" | "MILITARY_ACTIVITY_TYPE_PATROL" | "MILITARY_ACTIVITY_TYPE_TRANSPORT" | "MILITARY_ACTIVITY_TYPE_DEPLOYMENT" | "MILITARY_ACTIVITY_TYPE_TRANSIT" | "MILITARY_ACTIVITY_TYPE_UNKNOWN";
+export type MilitaryActivityType =
+  | 'MILITARY_ACTIVITY_TYPE_UNSPECIFIED'
+  | 'MILITARY_ACTIVITY_TYPE_EXERCISE'
+  | 'MILITARY_ACTIVITY_TYPE_PATROL'
+  | 'MILITARY_ACTIVITY_TYPE_TRANSPORT'
+  | 'MILITARY_ACTIVITY_TYPE_DEPLOYMENT'
+  | 'MILITARY_ACTIVITY_TYPE_TRANSIT'
+  | 'MILITARY_ACTIVITY_TYPE_UNKNOWN';
 
-export type MilitaryAircraftType = "MILITARY_AIRCRAFT_TYPE_UNSPECIFIED" | "MILITARY_AIRCRAFT_TYPE_FIGHTER" | "MILITARY_AIRCRAFT_TYPE_BOMBER" | "MILITARY_AIRCRAFT_TYPE_TRANSPORT" | "MILITARY_AIRCRAFT_TYPE_TANKER" | "MILITARY_AIRCRAFT_TYPE_AWACS" | "MILITARY_AIRCRAFT_TYPE_RECONNAISSANCE" | "MILITARY_AIRCRAFT_TYPE_HELICOPTER" | "MILITARY_AIRCRAFT_TYPE_DRONE" | "MILITARY_AIRCRAFT_TYPE_PATROL" | "MILITARY_AIRCRAFT_TYPE_SPECIAL_OPS" | "MILITARY_AIRCRAFT_TYPE_VIP" | "MILITARY_AIRCRAFT_TYPE_UNKNOWN";
+export type MilitaryAircraftType =
+  | 'MILITARY_AIRCRAFT_TYPE_UNSPECIFIED'
+  | 'MILITARY_AIRCRAFT_TYPE_FIGHTER'
+  | 'MILITARY_AIRCRAFT_TYPE_BOMBER'
+  | 'MILITARY_AIRCRAFT_TYPE_TRANSPORT'
+  | 'MILITARY_AIRCRAFT_TYPE_TANKER'
+  | 'MILITARY_AIRCRAFT_TYPE_AWACS'
+  | 'MILITARY_AIRCRAFT_TYPE_RECONNAISSANCE'
+  | 'MILITARY_AIRCRAFT_TYPE_HELICOPTER'
+  | 'MILITARY_AIRCRAFT_TYPE_DRONE'
+  | 'MILITARY_AIRCRAFT_TYPE_PATROL'
+  | 'MILITARY_AIRCRAFT_TYPE_SPECIAL_OPS'
+  | 'MILITARY_AIRCRAFT_TYPE_VIP'
+  | 'MILITARY_AIRCRAFT_TYPE_UNKNOWN';
 
-export type MilitaryConfidence = "MILITARY_CONFIDENCE_UNSPECIFIED" | "MILITARY_CONFIDENCE_LOW" | "MILITARY_CONFIDENCE_MEDIUM" | "MILITARY_CONFIDENCE_HIGH";
+export type MilitaryConfidence =
+  | 'MILITARY_CONFIDENCE_UNSPECIFIED'
+  | 'MILITARY_CONFIDENCE_LOW'
+  | 'MILITARY_CONFIDENCE_MEDIUM'
+  | 'MILITARY_CONFIDENCE_HIGH';
 
-export type MilitaryOperator = "MILITARY_OPERATOR_UNSPECIFIED" | "MILITARY_OPERATOR_USAF" | "MILITARY_OPERATOR_USN" | "MILITARY_OPERATOR_USMC" | "MILITARY_OPERATOR_USA" | "MILITARY_OPERATOR_RAF" | "MILITARY_OPERATOR_RN" | "MILITARY_OPERATOR_FAF" | "MILITARY_OPERATOR_GAF" | "MILITARY_OPERATOR_PLAAF" | "MILITARY_OPERATOR_PLAN" | "MILITARY_OPERATOR_VKS" | "MILITARY_OPERATOR_IAF" | "MILITARY_OPERATOR_NATO" | "MILITARY_OPERATOR_OTHER";
+export type MilitaryOperator =
+  | 'MILITARY_OPERATOR_UNSPECIFIED'
+  | 'MILITARY_OPERATOR_USAF'
+  | 'MILITARY_OPERATOR_USN'
+  | 'MILITARY_OPERATOR_USMC'
+  | 'MILITARY_OPERATOR_USA'
+  | 'MILITARY_OPERATOR_RAF'
+  | 'MILITARY_OPERATOR_RN'
+  | 'MILITARY_OPERATOR_FAF'
+  | 'MILITARY_OPERATOR_GAF'
+  | 'MILITARY_OPERATOR_PLAAF'
+  | 'MILITARY_OPERATOR_PLAN'
+  | 'MILITARY_OPERATOR_VKS'
+  | 'MILITARY_OPERATOR_IAF'
+  | 'MILITARY_OPERATOR_NATO'
+  | 'MILITARY_OPERATOR_OTHER';
 
 export interface FieldViolation {
   field: string;
@@ -211,8 +249,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -223,7 +261,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -245,23 +283,26 @@ export class MilitaryServiceClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string, options?: MilitaryServiceClientOptions) {
-    this.baseURL = baseURL.replace(/\/+$/, "");
+    this.baseURL = baseURL.replace(/\/+$/, '');
     this.fetchFn = options?.fetch ?? globalThis.fetch;
     this.defaultHeaders = { ...options?.defaultHeaders };
   }
 
-  async listMilitaryFlights(req: ListMilitaryFlightsRequest, options?: MilitaryServiceCallOptions): Promise<ListMilitaryFlightsResponse> {
-    let path = "/api/military/v1/list-military-flights";
+  async listMilitaryFlights(
+    req: ListMilitaryFlightsRequest,
+    options?: MilitaryServiceCallOptions,
+  ): Promise<ListMilitaryFlightsResponse> {
+    const path = '/api/military/v1/list-military-flights';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -271,21 +312,24 @@ export class MilitaryServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as ListMilitaryFlightsResponse;
+    return (await resp.json()) as ListMilitaryFlightsResponse;
   }
 
-  async getTheaterPosture(req: GetTheaterPostureRequest, options?: MilitaryServiceCallOptions): Promise<GetTheaterPostureResponse> {
-    let path = "/api/military/v1/get-theater-posture";
+  async getTheaterPosture(
+    req: GetTheaterPostureRequest,
+    options?: MilitaryServiceCallOptions,
+  ): Promise<GetTheaterPostureResponse> {
+    const path = '/api/military/v1/get-theater-posture';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -295,21 +339,24 @@ export class MilitaryServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetTheaterPostureResponse;
+    return (await resp.json()) as GetTheaterPostureResponse;
   }
 
-  async getAircraftDetails(req: GetAircraftDetailsRequest, options?: MilitaryServiceCallOptions): Promise<GetAircraftDetailsResponse> {
-    let path = "/api/military/v1/get-aircraft-details";
+  async getAircraftDetails(
+    req: GetAircraftDetailsRequest,
+    options?: MilitaryServiceCallOptions,
+  ): Promise<GetAircraftDetailsResponse> {
+    const path = '/api/military/v1/get-aircraft-details';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -319,21 +366,24 @@ export class MilitaryServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetAircraftDetailsResponse;
+    return (await resp.json()) as GetAircraftDetailsResponse;
   }
 
-  async getAircraftDetailsBatch(req: GetAircraftDetailsBatchRequest, options?: MilitaryServiceCallOptions): Promise<GetAircraftDetailsBatchResponse> {
-    let path = "/api/military/v1/get-aircraft-details-batch";
+  async getAircraftDetailsBatch(
+    req: GetAircraftDetailsBatchRequest,
+    options?: MilitaryServiceCallOptions,
+  ): Promise<GetAircraftDetailsBatchResponse> {
+    const path = '/api/military/v1/get-aircraft-details-batch';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -343,21 +393,24 @@ export class MilitaryServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetAircraftDetailsBatchResponse;
+    return (await resp.json()) as GetAircraftDetailsBatchResponse;
   }
 
-  async getWingbitsStatus(req: GetWingbitsStatusRequest, options?: MilitaryServiceCallOptions): Promise<GetWingbitsStatusResponse> {
-    let path = "/api/military/v1/get-wingbits-status";
+  async getWingbitsStatus(
+    req: GetWingbitsStatusRequest,
+    options?: MilitaryServiceCallOptions,
+  ): Promise<GetWingbitsStatusResponse> {
+    const path = '/api/military/v1/get-wingbits-status';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -367,21 +420,24 @@ export class MilitaryServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetWingbitsStatusResponse;
+    return (await resp.json()) as GetWingbitsStatusResponse;
   }
 
-  async getUSNIFleetReport(req: GetUSNIFleetReportRequest, options?: MilitaryServiceCallOptions): Promise<GetUSNIFleetReportResponse> {
-    let path = "/api/military/v1/get-usni-fleet-report";
+  async getUSNIFleetReport(
+    req: GetUSNIFleetReportRequest,
+    options?: MilitaryServiceCallOptions,
+  ): Promise<GetUSNIFleetReportResponse> {
+    const path = '/api/military/v1/get-usni-fleet-report';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -391,7 +447,7 @@ export class MilitaryServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetUSNIFleetReportResponse;
+    return (await resp.json()) as GetUSNIFleetReportResponse;
   }
 
   private async handleError(resp: Response): Promise<never> {
@@ -409,4 +465,3 @@ export class MilitaryServiceClient {
     throw new ApiError(resp.status, `Request failed with status ${resp.status}`, body);
   }
 }
-

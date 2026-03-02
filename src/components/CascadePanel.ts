@@ -46,30 +46,44 @@ export class CascadePanel extends Panel {
 
   private getImpactColor(level: CascadeImpactLevel): string {
     switch (level) {
-      case 'critical': return getCSSColor('--semantic-critical');
-      case 'high': return getCSSColor('--semantic-high');
-      case 'medium': return getCSSColor('--semantic-elevated');
-      case 'low': return getCSSColor('--semantic-normal');
+      case 'critical':
+        return getCSSColor('--semantic-critical');
+      case 'high':
+        return getCSSColor('--semantic-high');
+      case 'medium':
+        return getCSSColor('--semantic-elevated');
+      case 'low':
+        return getCSSColor('--semantic-normal');
     }
   }
 
   private getImpactEmoji(level: CascadeImpactLevel): string {
     switch (level) {
-      case 'critical': return '🔴';
-      case 'high': return '🟠';
-      case 'medium': return '🟡';
-      case 'low': return '🟢';
+      case 'critical':
+        return '🔴';
+      case 'high':
+        return '🟠';
+      case 'medium':
+        return '🟡';
+      case 'low':
+        return '🟢';
     }
   }
 
   private getNodeTypeEmoji(type: string): string {
     switch (type) {
-      case 'cable': return '🔌';
-      case 'pipeline': return '🛢️';
-      case 'port': return '⚓';
-      case 'chokepoint': return '🚢';
-      case 'country': return '🏳️';
-      default: return '📍';
+      case 'cable':
+        return '🔌';
+      case 'pipeline':
+        return '🛢️';
+      case 'port':
+        return '⚓';
+      case 'chokepoint':
+        return '🚢';
+      case 'country':
+        return '🏳️';
+      default:
+        return '📍';
     }
   }
 
@@ -98,17 +112,23 @@ export class CascadePanel extends Panel {
 
   private renderSelector(): string {
     const nodes = this.getFilteredNodes();
-    const filterButtons = ['cable', 'pipeline', 'port', 'chokepoint'].map((f) =>
-      `<button class="cascade-filter-btn ${this.filter === f ? 'active' : ''}" data-filter="${f}">
+    const filterButtons = ['cable', 'pipeline', 'port', 'chokepoint']
+      .map(
+        (f) =>
+          `<button class="cascade-filter-btn ${this.filter === f ? 'active' : ''}" data-filter="${f}">
         ${this.getNodeTypeEmoji(f)} ${this.getFilterLabel(f as Exclude<NodeFilter, 'all'>)}
-      </button>`
-    ).join('');
+      </button>`,
+      )
+      .join('');
 
-    const nodeOptions = nodes.map(n =>
-      `<option value="${escapeHtml(n.id)}" ${this.selectedNode === n.id ? 'selected' : ''}>
+    const nodeOptions = nodes
+      .map(
+        (n) =>
+          `<option value="${escapeHtml(n.id)}" ${this.selectedNode === n.id ? 'selected' : ''}>
         ${escapeHtml(n.name)}
-      </option>`
-    ).join('');
+      </option>`,
+      )
+      .join('');
     const selectedType = t(`components.cascade.filterType.${this.filter}`);
 
     return `
@@ -130,30 +150,40 @@ export class CascadePanel extends Panel {
 
     const { source, countriesAffected, redundancies } = this.cascadeResult;
 
-    const countriesHtml = countriesAffected.length > 0
-      ? countriesAffected.map(c => `
+    const countriesHtml =
+      countriesAffected.length > 0
+        ? countriesAffected
+            .map(
+              (c) => `
           <div class="cascade-country" style="border-left: 3px solid ${this.getImpactColor(c.impactLevel)}">
             <span class="cascade-emoji">${this.getImpactEmoji(c.impactLevel)}</span>
             <span class="cascade-country-name">${escapeHtml(c.countryName)}</span>
             <span class="cascade-impact">${t(`components.cascade.impactLevels.${c.impactLevel}`)}</span>
             ${c.affectedCapacity > 0 ? `<span class="cascade-capacity">${t('components.cascade.capacityPercent', { percent: String(Math.round(c.affectedCapacity * 100)) })}</span>` : ''}
           </div>
-        `).join('')
-      : `<div class="empty-state">${t('components.cascade.noCountryImpacts')}</div>`;
+        `,
+            )
+            .join('')
+        : `<div class="empty-state">${t('components.cascade.noCountryImpacts')}</div>`;
 
-    const redundanciesHtml = redundancies && redundancies.length > 0
-      ? `
+    const redundanciesHtml =
+      redundancies && redundancies.length > 0
+        ? `
         <div class="cascade-section">
           <div class="cascade-section-title">${t('components.cascade.alternativeRoutes')}</div>
-          ${redundancies.map(r => `
+          ${redundancies
+            .map(
+              (r) => `
             <div class="cascade-redundancy">
               <span class="cascade-redundancy-name">${escapeHtml(r.name)}</span>
               <span class="cascade-redundancy-capacity">${Math.round(r.capacityShare * 100)}%</span>
             </div>
-          `).join('')}
+          `,
+            )
+            .join('')}
         </div>
       `
-      : '';
+        : '';
 
     return `
       <div class="cascade-result">
@@ -202,7 +232,7 @@ export class CascadePanel extends Panel {
 
   private attachEventListeners(): void {
     const filterBtns = this.content.querySelectorAll('.cascade-filter-btn');
-    filterBtns.forEach(btn => {
+    filterBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
         this.filter = btn.getAttribute('data-filter') as NodeFilter;
         this.selectedNode = null;

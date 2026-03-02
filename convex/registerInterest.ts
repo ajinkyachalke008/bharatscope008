@@ -1,5 +1,5 @@
-import { mutation } from "./_generated/server";
-import { v } from "convex/values";
+import { mutation } from './_generated/server';
+import { v } from 'convex/values';
 
 export const register = mutation({
   args: {
@@ -11,22 +11,22 @@ export const register = mutation({
     const normalizedEmail = args.email.trim().toLowerCase();
 
     const existing = await ctx.db
-      .query("registrations")
-      .withIndex("by_normalized_email", (q) => q.eq("normalizedEmail", normalizedEmail))
+      .query('registrations')
+      .withIndex('by_normalized_email', (q) => q.eq('normalizedEmail', normalizedEmail))
       .first();
 
     if (existing) {
-      return { status: "already_registered" as const };
+      return { status: 'already_registered' as const };
     }
 
-    await ctx.db.insert("registrations", {
+    await ctx.db.insert('registrations', {
       email: args.email.trim(),
       normalizedEmail,
       registeredAt: Date.now(),
-      source: args.source ?? "unknown",
-      appVersion: args.appVersion ?? "unknown",
+      source: args.source ?? 'unknown',
+      appVersion: args.appVersion ?? 'unknown',
     });
 
-    return { status: "registered" as const };
+    return { status: 'registered' as const };
   },
 });

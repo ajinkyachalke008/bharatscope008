@@ -7,7 +7,12 @@ import type {
   MilitaryAircraftType,
 } from '../../../../src/generated/server/worldmonitor/military/v1/service_server';
 
-import { isMilitaryCallsign, isMilitaryHex, detectAircraftType, UPSTREAM_TIMEOUT_MS } from './_shared';
+import {
+  isMilitaryCallsign,
+  isMilitaryHex,
+  detectAircraftType,
+  UPSTREAM_TIMEOUT_MS,
+} from './_shared';
 import { CHROME_UA } from '../../../_shared/constants';
 import { cachedFetchJson } from '../../../_shared/redis';
 
@@ -39,7 +44,9 @@ function getRelayRequestHeaders(): Record<string, string> {
   return headers;
 }
 
-function normalizeBounds(bb: NonNullable<ListMilitaryFlightsRequest['boundingBox']>): RequestBounds {
+function normalizeBounds(
+  bb: NonNullable<ListMilitaryFlightsRequest['boundingBox']>,
+): RequestBounds {
   return {
     south: Math.min(bb.southWest!.latitude, bb.northEast!.latitude),
     north: Math.max(bb.southWest!.latitude, bb.northEast!.latitude),
@@ -75,7 +82,8 @@ export async function listMilitaryFlights(
 ): Promise<ListMilitaryFlightsResponse> {
   try {
     const bb = req.boundingBox;
-    if (!bb?.southWest || !bb?.northEast) return { flights: [], clusters: [], pagination: undefined };
+    if (!bb?.southWest || !bb?.northEast)
+      return { flights: [], clusters: [], pagination: undefined };
     const requestBounds = normalizeBounds(bb);
 
     // Quantize bbox to a 1° grid so nearby map views share cache entries.
@@ -95,7 +103,9 @@ export async function listMilitaryFlights(
         const isSidecar = (process.env.LOCAL_API_MODE || '').includes('sidecar');
         const baseUrl = isSidecar
           ? 'https://opensky-network.org/api/states/all'
-          : process.env.WS_RELAY_URL ? process.env.WS_RELAY_URL + '/opensky' : null;
+          : process.env.WS_RELAY_URL
+            ? process.env.WS_RELAY_URL + '/opensky'
+            : null;
 
         if (!baseUrl) return null;
 
@@ -124,9 +134,20 @@ export async function listMilitaryFlights(
 
         const flights: ListMilitaryFlightsResponse['flights'] = [];
         for (const state of data.states) {
-          const [icao24, callsign, , , , lon, lat, altitude, onGround, velocity, heading] = state as [
-            string, string, unknown, unknown, unknown, number | null, number | null, number | null, boolean, number | null, number | null,
-          ];
+          const [icao24, callsign, , , , lon, lat, altitude, onGround, velocity, heading] =
+            state as [
+              string,
+              string,
+              unknown,
+              unknown,
+              unknown,
+              number | null,
+              number | null,
+              number | null,
+              boolean,
+              number | null,
+              number | null,
+            ];
           if (lat == null || lon == null || onGround) continue;
           if (!isMilitaryCallsign(callsign) && !isMilitaryHex(icao24)) continue;
 
@@ -137,7 +158,8 @@ export async function listMilitaryFlights(
             callsign: (callsign || '').trim(),
             hexCode: icao24,
             registration: '',
-            aircraftType: (AIRCRAFT_TYPE_MAP[aircraftType] || 'MILITARY_AIRCRAFT_TYPE_UNKNOWN') as MilitaryAircraftType,
+            aircraftType: (AIRCRAFT_TYPE_MAP[aircraftType] ||
+              'MILITARY_AIRCRAFT_TYPE_UNKNOWN') as MilitaryAircraftType,
             aircraftModel: '',
             operator: 'MILITARY_OPERATOR_OTHER',
             operatorCountry: '',

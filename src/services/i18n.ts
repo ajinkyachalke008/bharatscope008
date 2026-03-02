@@ -4,8 +4,26 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 // English is always needed as fallback — bundle it eagerly.
 import enTranslation from '../locales/en.json';
 
-const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'el', 'es', 'it', 'pl', 'pt', 'nl', 'sv', 'ru', 'ar', 'zh', 'ja', 'tr', 'th', 'vi'] as const;
-type SupportedLanguage = typeof SUPPORTED_LANGUAGES[number];
+const SUPPORTED_LANGUAGES = [
+  'en',
+  'fr',
+  'de',
+  'el',
+  'es',
+  'it',
+  'pl',
+  'pt',
+  'nl',
+  'sv',
+  'ru',
+  'ar',
+  'zh',
+  'ja',
+  'tr',
+  'th',
+  'vi',
+] as const;
+type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 type TranslationDictionary = Record<string, unknown>;
 
 const SUPPORTED_LANGUAGE_SET = new Set<SupportedLanguage>(SUPPORTED_LANGUAGES);
@@ -72,24 +90,22 @@ export async function initI18n(): Promise<void> {
 
   loadedLanguages.add('en');
 
-  await i18next
-    .use(LanguageDetector)
-    .init({
-      resources: {
-        en: { translation: enTranslation as TranslationDictionary },
-      },
-      supportedLngs: [...SUPPORTED_LANGUAGES],
-      nonExplicitSupportedLngs: true,
-      fallbackLng: 'en',
-      debug: import.meta.env.DEV,
-      interpolation: {
-        escapeValue: false, // not needed for these simple strings
-      },
-      detection: {
-        order: ['localStorage', 'navigator'],
-        caches: ['localStorage'],
-      },
-    });
+  await i18next.use(LanguageDetector).init({
+    resources: {
+      en: { translation: enTranslation as TranslationDictionary },
+    },
+    supportedLngs: [...SUPPORTED_LANGUAGES],
+    nonExplicitSupportedLngs: true,
+    fallbackLng: 'en',
+    debug: import.meta.env.DEV,
+    interpolation: {
+      escapeValue: false, // not needed for these simple strings
+    },
+    detection: {
+      order: ['localStorage', 'navigator'],
+      caches: ['localStorage'],
+    },
+  });
 
   const detectedLanguage = await ensureLanguageLoaded(i18next.language || 'en');
   if (detectedLanguage !== 'en') {
@@ -125,7 +141,16 @@ export function isRTL(): boolean {
 
 export function getLocale(): string {
   const lang = getCurrentLanguage();
-  const map: Record<string, string> = { en: 'en-US', el: 'el-GR', zh: 'zh-CN', pt: 'pt-BR', ja: 'ja-JP', tr: 'tr-TR', th: 'th-TH', vi: 'vi-VN' };
+  const map: Record<string, string> = {
+    en: 'en-US',
+    el: 'el-GR',
+    zh: 'zh-CN',
+    pt: 'pt-BR',
+    ja: 'ja-JP',
+    tr: 'tr-TR',
+    th: 'th-TH',
+    vi: 'vi-VN',
+  };
   return map[lang] || lang;
 }
 

@@ -6,8 +6,14 @@ import {
 import type { CableHealthRecord, CableHealthResponse, CableHealthStatus } from '@/types';
 import { createCircuitBreaker } from '@/utils';
 
-const client = new InfrastructureServiceClient('', { fetch: (...args) => globalThis.fetch(...args) });
-const breaker = createCircuitBreaker<GetCableHealthResponse>({ name: 'Cable Health', cacheTtlMs: 10 * 60 * 1000, persistCache: true });
+const client = new InfrastructureServiceClient('', {
+  fetch: (...args) => globalThis.fetch(...args),
+});
+const breaker = createCircuitBreaker<GetCableHealthResponse>({
+  name: 'Cable Health',
+  cacheTtlMs: 10 * 60 * 1000,
+  persistCache: true,
+});
 const emptyFallback: GetCableHealthResponse = { generatedAt: 0, cables: {} };
 
 // ---- Proto enum -> frontend string adapter ----
@@ -24,7 +30,9 @@ function toRecord(proto: ProtoCableHealthRecord): CableHealthRecord {
     status: STATUS_REVERSE[proto.status] || 'unknown',
     score: proto.score,
     confidence: proto.confidence,
-    lastUpdated: proto.lastUpdated ? new Date(proto.lastUpdated).toISOString() : new Date().toISOString(),
+    lastUpdated: proto.lastUpdated
+      ? new Date(proto.lastUpdated).toISOString()
+      : new Date().toISOString(),
     evidence: proto.evidence.map((e) => ({
       source: e.source,
       summary: e.summary,
@@ -55,7 +63,9 @@ export async function fetchCableHealth(): Promise<CableHealthResponse> {
   }
 
   const result: CableHealthResponse = {
-    generatedAt: resp.generatedAt ? new Date(resp.generatedAt).toISOString() : new Date().toISOString(),
+    generatedAt: resp.generatedAt
+      ? new Date(resp.generatedAt).toISOString()
+      : new Date().toISOString(),
     cables,
   };
 

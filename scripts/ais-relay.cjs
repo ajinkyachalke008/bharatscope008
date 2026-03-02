@@ -28,41 +28,58 @@ if (!API_KEY) {
 }
 
 const MAX_WS_CLIENTS = 10; // Cap WS clients — app uses HTTP snapshots, not WS
-const UPSTREAM_QUEUE_HIGH_WATER = Math.max(500, Number(process.env.AIS_UPSTREAM_QUEUE_HIGH_WATER || 4000));
+const UPSTREAM_QUEUE_HIGH_WATER = Math.max(
+  500,
+  Number(process.env.AIS_UPSTREAM_QUEUE_HIGH_WATER || 4000),
+);
 const UPSTREAM_QUEUE_LOW_WATER = Math.max(
   100,
-  Math.min(UPSTREAM_QUEUE_HIGH_WATER - 1, Number(process.env.AIS_UPSTREAM_QUEUE_LOW_WATER || 1000))
+  Math.min(UPSTREAM_QUEUE_HIGH_WATER - 1, Number(process.env.AIS_UPSTREAM_QUEUE_LOW_WATER || 1000)),
 );
 const UPSTREAM_QUEUE_HARD_CAP = Math.max(
   UPSTREAM_QUEUE_HIGH_WATER + 1,
-  Number(process.env.AIS_UPSTREAM_QUEUE_HARD_CAP || 8000)
+  Number(process.env.AIS_UPSTREAM_QUEUE_HARD_CAP || 8000),
 );
 const UPSTREAM_DRAIN_BATCH = Math.max(1, Number(process.env.AIS_UPSTREAM_DRAIN_BATCH || 250));
-const UPSTREAM_DRAIN_BUDGET_MS = Math.max(2, Number(process.env.AIS_UPSTREAM_DRAIN_BUDGET_MS || 20));
+const UPSTREAM_DRAIN_BUDGET_MS = Math.max(
+  2,
+  Number(process.env.AIS_UPSTREAM_DRAIN_BUDGET_MS || 20),
+);
 const MAX_VESSELS = 50000; // hard cap on vessels Map
 const MAX_VESSEL_HISTORY = 50000;
 const MAX_DENSITY_CELLS = 5000;
 const RELAY_SHARED_SECRET = process.env.RELAY_SHARED_SECRET || '';
 const RELAY_AUTH_HEADER = (process.env.RELAY_AUTH_HEADER || 'x-relay-key').toLowerCase();
 const ALLOW_UNAUTHENTICATED_RELAY = process.env.ALLOW_UNAUTHENTICATED_RELAY === 'true';
-const IS_PRODUCTION_RELAY = process.env.NODE_ENV === 'production'
-  || !!process.env.RAILWAY_ENVIRONMENT
-  || !!process.env.RAILWAY_PROJECT_ID
-  || !!process.env.RAILWAY_STATIC_URL;
-const RELAY_RATE_LIMIT_WINDOW_MS = Math.max(1000, Number(process.env.RELAY_RATE_LIMIT_WINDOW_MS || 60000));
+const IS_PRODUCTION_RELAY =
+  process.env.NODE_ENV === 'production' ||
+  !!process.env.RAILWAY_ENVIRONMENT ||
+  !!process.env.RAILWAY_PROJECT_ID ||
+  !!process.env.RAILWAY_STATIC_URL;
+const RELAY_RATE_LIMIT_WINDOW_MS = Math.max(
+  1000,
+  Number(process.env.RELAY_RATE_LIMIT_WINDOW_MS || 60000),
+);
 const RELAY_RATE_LIMIT_MAX = Number.isFinite(Number(process.env.RELAY_RATE_LIMIT_MAX))
-  ? Number(process.env.RELAY_RATE_LIMIT_MAX) : 1200;
-const RELAY_OPENSKY_RATE_LIMIT_MAX = Number.isFinite(Number(process.env.RELAY_OPENSKY_RATE_LIMIT_MAX))
-  ? Number(process.env.RELAY_OPENSKY_RATE_LIMIT_MAX) : 600;
+  ? Number(process.env.RELAY_RATE_LIMIT_MAX)
+  : 1200;
+const RELAY_OPENSKY_RATE_LIMIT_MAX = Number.isFinite(
+  Number(process.env.RELAY_OPENSKY_RATE_LIMIT_MAX),
+)
+  ? Number(process.env.RELAY_OPENSKY_RATE_LIMIT_MAX)
+  : 600;
 const RELAY_RSS_RATE_LIMIT_MAX = Number.isFinite(Number(process.env.RELAY_RSS_RATE_LIMIT_MAX))
-  ? Number(process.env.RELAY_RSS_RATE_LIMIT_MAX) : 300;
+  ? Number(process.env.RELAY_RSS_RATE_LIMIT_MAX)
+  : 300;
 const RELAY_LOG_THROTTLE_MS = Math.max(1000, Number(process.env.RELAY_LOG_THROTTLE_MS || 10000));
 const ALLOW_VERCEL_PREVIEW_ORIGINS = process.env.ALLOW_VERCEL_PREVIEW_ORIGINS === 'true';
 
 if (IS_PRODUCTION_RELAY && !RELAY_SHARED_SECRET && !ALLOW_UNAUTHENTICATED_RELAY) {
   console.error('[Relay] Error: RELAY_SHARED_SECRET is required in production');
   console.error('[Relay] Set RELAY_SHARED_SECRET on Railway and Vercel to secure relay endpoints');
-  console.error('[Relay] To bypass temporarily (not recommended), set ALLOW_UNAUTHENTICATED_RELAY=true');
+  console.error(
+    '[Relay] To bypass temporarily (not recommended), set ALLOW_UNAUTHENTICATED_RELAY=true',
+  );
   process.exit(1);
 }
 
@@ -99,7 +116,12 @@ function sendCompressed(req, res, statusCode, headers, body) {
         safeEnd(res, statusCode, headers, body);
         return;
       }
-      safeEnd(res, statusCode, { ...headers, 'Content-Encoding': 'gzip', 'Vary': 'Accept-Encoding' }, compressed);
+      safeEnd(
+        res,
+        statusCode,
+        { ...headers, 'Content-Encoding': 'gzip', Vary: 'Accept-Encoding' },
+        compressed,
+      );
     });
   } else {
     safeEnd(res, statusCode, headers, body);
@@ -111,7 +133,12 @@ function sendPreGzipped(req, res, statusCode, headers, rawBody, gzippedBody) {
   if (res.headersSent || res.writableEnded) return;
   const acceptEncoding = req.headers['accept-encoding'] || '';
   if (acceptEncoding.includes('gzip') && gzippedBody) {
-    safeEnd(res, statusCode, { ...headers, 'Content-Encoding': 'gzip', 'Vary': 'Accept-Encoding' }, gzippedBody);
+    safeEnd(
+      res,
+      statusCode,
+      { ...headers, 'Content-Encoding': 'gzip', Vary: 'Accept-Encoding' },
+      gzippedBody,
+    );
   } else {
     safeEnd(res, statusCode, headers, rawBody);
   }
@@ -125,8 +152,13 @@ function sendPreGzipped(req, res, statusCode, headers, rawBody, gzippedBody) {
 // - TELEGRAM_API_HASH
 // - TELEGRAM_SESSION (StringSession)
 // ─────────────────────────────────────────────────────────────
-const TELEGRAM_ENABLED = Boolean(process.env.TELEGRAM_API_ID && process.env.TELEGRAM_API_HASH && process.env.TELEGRAM_SESSION);
-const TELEGRAM_POLL_INTERVAL_MS = Math.max(15_000, Number(process.env.TELEGRAM_POLL_INTERVAL_MS || 60_000));
+const TELEGRAM_ENABLED = Boolean(
+  process.env.TELEGRAM_API_ID && process.env.TELEGRAM_API_HASH && process.env.TELEGRAM_SESSION,
+);
+const TELEGRAM_POLL_INTERVAL_MS = Math.max(
+  15_000,
+  Number(process.env.TELEGRAM_POLL_INTERVAL_MS || 60_000),
+);
 const TELEGRAM_MAX_FEED_ITEMS = Math.max(50, Number(process.env.TELEGRAM_MAX_FEED_ITEMS || 200));
 const TELEGRAM_MAX_TEXT_CHARS = Math.max(200, Number(process.env.TELEGRAM_MAX_TEXT_CHARS || 800));
 
@@ -151,8 +183,8 @@ function loadTelegramChannels() {
     const channels = Array.isArray(bucket) ? bucket : [];
 
     telegramState.channels = channels
-      .filter(c => c && typeof c.handle === 'string' && c.handle.length > 1)
-      .map(c => ({
+      .filter((c) => c && typeof c.handle === 'string' && c.handle.length > 1)
+      .map((c) => ({
         handle: String(c.handle).replace(/^@/, ''),
         label: c.label ? String(c.label) : undefined,
         topic: c.topic ? String(c.topic) : undefined,
@@ -161,7 +193,7 @@ function loadTelegramChannels() {
         enabled: c.enabled !== false,
         maxMessages: c.maxMessages != null ? Number(c.maxMessages) : undefined,
       }))
-      .filter(c => c.enabled);
+      .filter((c) => c.enabled);
 
     if (!telegramState.channels.length) {
       console.warn(`[Relay] Telegram channel set "${set}" is empty — no channels to poll`);
@@ -248,13 +280,18 @@ async function pollTelegramOnce() {
         if (!msg || !msg.id || !msg.message) continue;
         const item = normalizeTelegramMessage(msg, channel);
         newItems.push(item);
-        if (!telegramState.cursorByHandle[handle] || msg.id > telegramState.cursorByHandle[handle]) {
+        if (
+          !telegramState.cursorByHandle[handle] ||
+          msg.id > telegramState.cursorByHandle[handle]
+        ) {
           telegramState.cursorByHandle[handle] = msg.id;
         }
       }
 
       // Gentle rate limiting between channels
-      await new Promise(r => setTimeout(r, Math.max(300, Number(process.env.TELEGRAM_RATE_LIMIT_MS || 800))));
+      await new Promise((r) =>
+        setTimeout(r, Math.max(300, Number(process.env.TELEGRAM_RATE_LIMIT_MS || 800))),
+      );
     } catch (e) {
       const em = e?.message || String(e);
       telegramState.lastError = `poll ${handle} failed: ${em}`;
@@ -265,7 +302,7 @@ async function pollTelegramOnce() {
   if (newItems.length) {
     const seen = new Set();
     telegramState.items = [...newItems, ...telegramState.items]
-      .filter(item => {
+      .filter((item) => {
         if (seen.has(item.id)) return false;
         seen.add(item.id);
         return true;
@@ -281,9 +318,9 @@ function startTelegramPollLoop() {
   if (!TELEGRAM_ENABLED) return;
   loadTelegramChannels();
   // Don’t block server startup.
-  pollTelegramOnce().catch(e => console.warn('[Relay] Telegram poll error:', e?.message || e));
+  pollTelegramOnce().catch((e) => console.warn('[Relay] Telegram poll error:', e?.message || e));
   setInterval(() => {
-    pollTelegramOnce().catch(e => console.warn('[Relay] Telegram poll error:', e?.message || e));
+    pollTelegramOnce().catch((e) => console.warn('[Relay] Telegram poll error:', e?.message || e));
   }, TELEGRAM_POLL_INTERVAL_MS).unref?.();
   console.log('[Relay] Telegram poll loop started');
 }
@@ -303,7 +340,10 @@ function getClientIp(req) {
   }
   const xff = req.headers['x-forwarded-for'];
   if (typeof xff === 'string' && xff) {
-    const parts = xff.split(',').map((part) => part.trim()).filter(Boolean);
+    const parts = xff
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean);
     // Proxy chain order is client,proxy1,proxy2...; use first hop as client IP.
     if (parts.length > 0) return parts[0];
   }
@@ -353,7 +393,8 @@ function getRateLimitForPath(pathname) {
 
 function consumeRateLimit(req, pathname) {
   const maxRequests = getRateLimitForPath(pathname);
-  if (!Number.isFinite(maxRequests) || maxRequests <= 0) return { limited: false, limit: 0, remaining: 0, resetInMs: 0 };
+  if (!Number.isFinite(maxRequests) || maxRequests <= 0)
+    return { limited: false, limit: 0, remaining: 0, resetInMs: 0 };
 
   const now = Date.now();
   const ip = getClientIp(req);
@@ -362,7 +403,12 @@ function consumeRateLimit(req, pathname) {
   if (!existing || now >= existing.resetAt) {
     const next = { count: 1, resetAt: now + RELAY_RATE_LIMIT_WINDOW_MS };
     requestRateBuckets.set(key, next);
-    return { limited: false, limit: maxRequests, remaining: Math.max(0, maxRequests - 1), resetInMs: next.resetAt - now };
+    return {
+      limited: false,
+      limit: maxRequests,
+      remaining: Math.max(0, maxRequests - 1),
+      resetInMs: next.resetAt - now,
+    };
   }
 
   existing.count += 1;
@@ -519,7 +565,10 @@ function getRelayRollingMetrics() {
       openskyRequests: relayMetricsLifetime.openskyRequests,
       openskyCacheHit: relayMetricsLifetime.openskyCacheHit,
       openskyNegativeHit: relayMetricsLifetime.openskyNegativeHit,
-      openskyDedup: relayMetricsLifetime.openskyDedup + relayMetricsLifetime.openskyDedupNeg + relayMetricsLifetime.openskyDedupEmpty,
+      openskyDedup:
+        relayMetricsLifetime.openskyDedup +
+        relayMetricsLifetime.openskyDedupNeg +
+        relayMetricsLifetime.openskyDedupEmpty,
       openskyMiss: relayMetricsLifetime.openskyMiss,
       openskyUpstreamFetches: relayMetricsLifetime.openskyUpstreamFetches,
       drops: relayMetricsLifetime.drops,
@@ -546,8 +595,8 @@ let snapshotSequence = 0;
 let lastSnapshot = null;
 let lastSnapshotAt = 0;
 // Pre-serialized cache: avoids JSON.stringify + gzip per request
-let lastSnapshotJson = null;       // cached JSON string (no candidates)
-let lastSnapshotGzip = null;       // cached gzip buffer (no candidates)
+let lastSnapshotJson = null; // cached JSON string (no candidates)
+let lastSnapshotGzip = null; // cached gzip buffer (no candidates)
 let lastSnapshotWithCandJson = null;
 let lastSnapshotWithCandGzip = null;
 
@@ -567,7 +616,8 @@ const CHOKEPOINTS = [
   { name: 'Black Sea', lat: 43.5, lon: 34.0, radius: 3 },
 ];
 
-const NAVAL_PREFIX_RE = /^(USS|USNS|HMS|HMAS|HMCS|INS|JS|ROKS|TCG|FS|BNS|RFS|PLAN|PLA|CGC|PNS|KRI|ITS|SNS|MMSI)/i;
+const NAVAL_PREFIX_RE =
+  /^(USS|USNS|HMS|HMAS|HMCS|INS|JS|ROKS|TCG|FS|BNS|RFS|PLAN|PLA|CGC|PNS|KRI|ITS|SNS|MMSI)/i;
 
 function getGridKey(lat, lon) {
   const gridLat = Math.floor(lat / GRID_SIZE) * GRID_SIZE;
@@ -580,7 +630,10 @@ function isLikelyMilitaryCandidate(meta) {
   const shipType = Number(meta?.ShipType);
   const name = (meta?.ShipName || '').trim().toUpperCase();
 
-  if (Number.isFinite(shipType) && (shipType === 35 || shipType === 55 || (shipType >= 50 && shipType <= 59))) {
+  if (
+    Number.isFinite(shipType) &&
+    (shipType === 35 || shipType === 55 || (shipType >= 50 && shipType <= 59))
+  ) {
     return true;
   }
 
@@ -684,7 +737,9 @@ function processRawUpstreamMessage(raw) {
   messageCount++;
   if (messageCount % 5000 === 0) {
     const mem = process.memoryUsage();
-    console.log(`[Relay] ${messageCount} msgs, ${clients.size} ws-clients, ${vessels.size} vessels, queue=${getUpstreamQueueSize()}, dropped=${droppedMessages}, rss=${(mem.rss / 1024 / 1024).toFixed(0)}MB heap=${(mem.heapUsed / 1024 / 1024).toFixed(0)}MB, cache: opensky=${openskyResponseCache.size} opensky_neg=${openskyNegativeCache.size} rss_feed=${rssResponseCache.size}`);
+    console.log(
+      `[Relay] ${messageCount} msgs, ${clients.size} ws-clients, ${vessels.size} vessels, queue=${getUpstreamQueueSize()}, dropped=${droppedMessages}, rss=${(mem.rss / 1024 / 1024).toFixed(0)}MB heap=${(mem.heapUsed / 1024 / 1024).toFixed(0)}MB, cache: opensky=${openskyResponseCache.size} opensky_neg=${openskyNegativeCache.size} rss_feed=${rssResponseCache.size}`,
+    );
   }
 
   try {
@@ -804,7 +859,11 @@ function cleanupAggregates() {
     }
   }
   // Hard cap: keep the most recent vessel histories.
-  evictMapByTimestamp(vesselHistory, MAX_VESSEL_HISTORY, (history) => history[history.length - 1] || 0);
+  evictMapByTimestamp(
+    vesselHistory,
+    MAX_VESSEL_HISTORY,
+    (history) => history[history.length - 1] || 0,
+  );
 
   for (const [key, cell] of densityGrid) {
     cell.previousCount = cell.vessels.size;
@@ -857,11 +916,12 @@ function detectDisruptions() {
 
     if (vesselCount >= 5) {
       const normalTraffic = chokepoint.radius * 10;
-      const severity = vesselCount > normalTraffic * 1.5
-        ? 'high'
-        : vesselCount > normalTraffic
-          ? 'elevated'
-          : 'low';
+      const severity =
+        vesselCount > normalTraffic * 1.5
+          ? 'high'
+          : vesselCount > normalTraffic
+            ? 'elevated'
+            : 'low';
 
       disruptions.push({
         id: `chokepoint-${chokepoint.name.toLowerCase().replace(/\s+/g, '-')}`,
@@ -924,13 +984,13 @@ function calculateDensityZones() {
     const logMin = Math.log(minVessels + 1);
     const logCurrent = Math.log(cell.vessels.size + 1);
 
-    const intensity = logMax > logMin
-      ? 0.2 + (0.8 * (logCurrent - logMin) / (logMax - logMin))
-      : 0.5;
+    const intensity =
+      logMax > logMin ? 0.2 + (0.8 * (logCurrent - logMin)) / (logMax - logMin) : 0.5;
 
-    const deltaPct = cell.previousCount > 0
-      ? Math.round(((cell.vessels.size - cell.previousCount) / cell.previousCount) * 100)
-      : 0;
+    const deltaPct =
+      cell.previousCount > 0
+        ? Math.round(((cell.vessels.size - cell.previousCount) / cell.previousCount) * 100)
+        : 0;
 
     zones.push({
       id: `density-${key}`,
@@ -944,9 +1004,7 @@ function calculateDensityZones() {
     });
   }
 
-  return zones
-    .sort((a, b) => b.intensity - a.intensity)
-    .slice(0, MAX_DENSITY_ZONES);
+  return zones.sort((a, b) => b.intensity - a.intensity).slice(0, MAX_DENSITY_ZONES);
 }
 
 function getCandidateReportsSnapshot() {
@@ -1043,20 +1101,30 @@ async function ucdpFetchPage(version, page) {
   const url = `https://ucdpapi.pcr.uu.se/api/gedevents/${version}?pagesize=${UCDP_PAGE_SIZE}&page=${page}`;
 
   return new Promise((resolve, reject) => {
-    const req = https.get(url, { headers: { Accept: 'application/json' }, timeout: UCDP_FETCH_TIMEOUT }, (res) => {
-      if (res.statusCode !== 200) {
-        res.resume();
-        return reject(new Error(`UCDP API ${res.statusCode} (v${version} p${page})`));
-      }
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try { resolve(JSON.parse(data)); }
-        catch (e) { reject(new Error('UCDP JSON parse error')); }
-      });
-    });
+    const req = https.get(
+      url,
+      { headers: { Accept: 'application/json' }, timeout: UCDP_FETCH_TIMEOUT },
+      (res) => {
+        if (res.statusCode !== 200) {
+          res.resume();
+          return reject(new Error(`UCDP API ${res.statusCode} (v${version} p${page})`));
+        }
+        let data = '';
+        res.on('data', (chunk) => (data += chunk));
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(data));
+          } catch (e) {
+            reject(new Error('UCDP JSON parse error'));
+          }
+        });
+      },
+    );
     req.on('error', reject);
-    req.on('timeout', () => { req.destroy(); reject(new Error('UCDP timeout')); });
+    req.on('timeout', () => {
+      req.destroy();
+      reject(new Error('UCDP timeout'));
+    });
   });
 }
 
@@ -1066,7 +1134,9 @@ async function ucdpDiscoverVersion() {
     try {
       const page0 = await ucdpFetchPage(version, 0);
       if (Array.isArray(page0?.Result)) return { version, page0 };
-    } catch { /* next candidate */ }
+    } catch {
+      /* next candidate */
+    }
   }
   throw new Error('No valid UCDP GED version found');
 }
@@ -1079,7 +1149,7 @@ async function ucdpFetchAllEvents() {
   let allEvents = [];
   let latestDatasetMs = NaN;
 
-  for (let offset = 0; offset < UCDP_MAX_PAGES && (newestPage - offset) >= 0; offset++) {
+  for (let offset = 0; offset < UCDP_MAX_PAGES && newestPage - offset >= 0; offset++) {
     const page = newestPage - offset;
     const rawData = page === 0 ? page0 : await ucdpFetchPage(version, page);
     const events = Array.isArray(rawData?.Result) ? rawData.Result : [];
@@ -1096,12 +1166,12 @@ async function ucdpFetchAllEvents() {
   }
 
   const sanitized = allEvents
-    .filter(e => {
+    .filter((e) => {
       if (!Number.isFinite(latestDatasetMs)) return true;
       const ms = ucdpParseDateMs(e?.date_start);
-      return Number.isFinite(ms) && ms >= (latestDatasetMs - UCDP_TRAILING_WINDOW_MS);
+      return Number.isFinite(ms) && ms >= latestDatasetMs - UCDP_TRAILING_WINDOW_MS;
     })
-    .map(e => ({
+    .map((e) => ({
       id: String(e.id || ''),
       date_start: e.date_start || '',
       date_end: e.date_end || '',
@@ -1135,33 +1205,55 @@ async function handleUcdpEventsRequest(req, res) {
   const now = Date.now();
 
   if (ucdpCache.data && now - ucdpCache.timestamp < UCDP_CACHE_TTL_MS) {
-    return sendCompressed(req, res, 200, {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=3600',
-      'X-Cache': 'HIT',
-    }, JSON.stringify(ucdpCache.data));
+    return sendCompressed(
+      req,
+      res,
+      200,
+      {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=3600',
+        'X-Cache': 'HIT',
+      },
+      JSON.stringify(ucdpCache.data),
+    );
   }
 
   if (ucdpCache.data && !ucdpFetchInProgress) {
     ucdpFetchInProgress = true;
     ucdpFetchAllEvents()
-      .then(result => {
+      .then((result) => {
         ucdpCache = { data: result, timestamp: Date.now() };
         console.log(`[UCDP] Background refresh: ${result.count} events (v${result.version})`);
       })
-      .catch(err => console.error('[UCDP] Background refresh error:', err.message))
-      .finally(() => { ucdpFetchInProgress = false; });
+      .catch((err) => console.error('[UCDP] Background refresh error:', err.message))
+      .finally(() => {
+        ucdpFetchInProgress = false;
+      });
 
-    return sendCompressed(req, res, 200, {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=600',
-      'X-Cache': 'STALE',
-    }, JSON.stringify(ucdpCache.data));
+    return sendCompressed(
+      req,
+      res,
+      200,
+      {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=600',
+        'X-Cache': 'STALE',
+      },
+      JSON.stringify(ucdpCache.data),
+    );
   }
 
   if (ucdpFetchInProgress) {
     res.writeHead(202, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify({ success: false, count: 0, data: [], cached_at: '', message: 'Fetch in progress' }));
+    return res.end(
+      JSON.stringify({
+        success: false,
+        count: 0,
+        data: [],
+        cached_at: '',
+        message: 'Fetch in progress',
+      }),
+    );
   }
 
   try {
@@ -1172,11 +1264,17 @@ async function handleUcdpEventsRequest(req, res) {
     ucdpFetchInProgress = false;
     console.log(`[UCDP] Cold fetch complete: ${result.count} events (v${result.version})`);
 
-    sendCompressed(req, res, 200, {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=3600',
-      'X-Cache': 'MISS',
-    }, JSON.stringify(result));
+    sendCompressed(
+      req,
+      res,
+      200,
+      {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=3600',
+        'X-Cache': 'MISS',
+      },
+      JSON.stringify(result),
+    );
   } catch (err) {
     ucdpFetchInProgress = false;
     console.error('[UCDP] Fetch error:', err.message);
@@ -1190,14 +1288,23 @@ const openskyResponseCache = new Map(); // key: sorted query params → { data, 
 const openskyNegativeCache = new Map(); // key: cacheKey → { status, timestamp, body, gzip } — prevents retry storms on 429/5xx
 const openskyInFlight = new Map(); // key: cacheKey → Promise (dedup concurrent requests)
 const OPENSKY_CACHE_TTL_MS = Number(process.env.OPENSKY_CACHE_TTL_MS) || 60 * 1000; // 60s default — env-configurable
-const OPENSKY_NEGATIVE_CACHE_TTL_MS = Number(process.env.OPENSKY_NEGATIVE_CACHE_TTL_MS) || 30 * 1000; // 30s — env-configurable
-const OPENSKY_CACHE_MAX_ENTRIES = Math.max(10, Number(process.env.OPENSKY_CACHE_MAX_ENTRIES || 128));
-const OPENSKY_NEGATIVE_CACHE_MAX_ENTRIES = Math.max(10, Number(process.env.OPENSKY_NEGATIVE_CACHE_MAX_ENTRIES || 256));
+const OPENSKY_NEGATIVE_CACHE_TTL_MS =
+  Number(process.env.OPENSKY_NEGATIVE_CACHE_TTL_MS) || 30 * 1000; // 30s — env-configurable
+const OPENSKY_CACHE_MAX_ENTRIES = Math.max(
+  10,
+  Number(process.env.OPENSKY_CACHE_MAX_ENTRIES || 128),
+);
+const OPENSKY_NEGATIVE_CACHE_MAX_ENTRIES = Math.max(
+  10,
+  Number(process.env.OPENSKY_NEGATIVE_CACHE_MAX_ENTRIES || 256),
+);
 const OPENSKY_BBOX_QUANT_STEP = Number.isFinite(Number(process.env.OPENSKY_BBOX_QUANT_STEP))
-  ? Math.max(0, Number(process.env.OPENSKY_BBOX_QUANT_STEP)) : 0.01;
-const OPENSKY_BBOX_DECIMALS = OPENSKY_BBOX_QUANT_STEP > 0
-  ? Math.min(6, ((String(OPENSKY_BBOX_QUANT_STEP).split('.')[1] || '').length || 0))
-  : 6;
+  ? Math.max(0, Number(process.env.OPENSKY_BBOX_QUANT_STEP))
+  : 0.01;
+const OPENSKY_BBOX_DECIMALS =
+  OPENSKY_BBOX_QUANT_STEP > 0
+    ? Math.min(6, (String(OPENSKY_BBOX_QUANT_STEP).split('.')[1] || '').length || 0)
+    : 6;
 const OPENSKY_DEDUP_EMPTY_RESPONSE_JSON = JSON.stringify({ states: [], time: 0 });
 const OPENSKY_DEDUP_EMPTY_RESPONSE_GZIP = gzipSyncBuffer(OPENSKY_DEDUP_EMPTY_RESPONSE_JSON);
 const rssResponseCache = new Map(); // key: feed URL → { data, contentType, timestamp, statusCode }
@@ -1220,22 +1327,32 @@ function touchCacheEntry(cache, key, entry) {
 }
 
 function cacheOpenSkyPositive(cacheKey, data) {
-  setBoundedCacheEntry(openskyResponseCache, cacheKey, {
-    data,
-    gzip: gzipSyncBuffer(data),
-    timestamp: Date.now(),
-  }, OPENSKY_CACHE_MAX_ENTRIES);
+  setBoundedCacheEntry(
+    openskyResponseCache,
+    cacheKey,
+    {
+      data,
+      gzip: gzipSyncBuffer(data),
+      timestamp: Date.now(),
+    },
+    OPENSKY_CACHE_MAX_ENTRIES,
+  );
 }
 
 function cacheOpenSkyNegative(cacheKey, status) {
   const now = Date.now();
   const body = JSON.stringify({ states: [], time: now });
-  setBoundedCacheEntry(openskyNegativeCache, cacheKey, {
-    status,
-    timestamp: now,
-    body,
-    gzip: gzipSyncBuffer(body),
-  }, OPENSKY_NEGATIVE_CACHE_MAX_ENTRIES);
+  setBoundedCacheEntry(
+    openskyNegativeCache,
+    cacheKey,
+    {
+      status,
+      timestamp: now,
+      body,
+      gzip: gzipSyncBuffer(body),
+    },
+    OPENSKY_NEGATIVE_CACHE_MAX_ENTRIES,
+  );
 }
 
 function quantizeCoordinate(value) {
@@ -1249,11 +1366,11 @@ function formatCoordinate(value) {
 
 function normalizeOpenSkyBbox(params) {
   const keys = ['lamin', 'lomin', 'lamax', 'lomax'];
-  const hasAny = keys.some(k => params.has(k));
+  const hasAny = keys.some((k) => params.has(k));
   if (!hasAny) {
     return { cacheKey: ',,,', queryParams: [] };
   }
-  if (!keys.every(k => params.has(k))) {
+  if (!keys.every((k) => params.has(k))) {
     return { error: 'Provide all bbox params: lamin,lomin,lamax,lomax' };
   }
 
@@ -1276,8 +1393,8 @@ function normalizeOpenSkyBbox(params) {
   const normalized = {};
   for (const key of keys) normalized[key] = formatCoordinate(quantizeCoordinate(values[key]));
   return {
-    cacheKey: keys.map(k => normalized[k]).join(','),
-    queryParams: keys.map(k => `${k}=${encodeURIComponent(normalized[k])}`),
+    cacheKey: keys.map((k) => normalized[k]).join(','),
+    queryParams: keys.map((k) => `${k}=${encodeURIComponent(normalized[k])}`),
   };
 }
 
@@ -1330,34 +1447,37 @@ function _attemptOpenSkyTokenFetch(clientId, clientSecret) {
   return new Promise((resolve) => {
     const postData = `grant_type=client_credentials&client_id=${encodeURIComponent(clientId)}&client_secret=${encodeURIComponent(clientSecret)}`;
 
-    const req = https.request({
-      hostname: 'auth.opensky-network.org',
-      port: 443,
-      family: 4,
-      path: '/auth/realms/opensky-network/protocol/openid-connect/token',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Content-Length': Buffer.byteLength(postData),
-        'User-Agent': 'WorldMonitor/1.0',
+    const req = https.request(
+      {
+        hostname: 'auth.opensky-network.org',
+        port: 443,
+        family: 4,
+        path: '/auth/realms/opensky-network/protocol/openid-connect/token',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Length': Buffer.byteLength(postData),
+          'User-Agent': 'WorldMonitor/1.0',
+        },
+        timeout: 10000,
       },
-      timeout: 10000
-    }, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try {
-          const json = JSON.parse(data);
-          if (json.access_token) {
-            resolve({ token: json.access_token, expiresIn: json.expires_in || 1800 });
-          } else {
-            resolve({ error: json.error || 'no_access_token', status: res.statusCode });
+      (res) => {
+        let data = '';
+        res.on('data', (chunk) => (data += chunk));
+        res.on('end', () => {
+          try {
+            const json = JSON.parse(data);
+            if (json.access_token) {
+              resolve({ token: json.access_token, expiresIn: json.expires_in || 1800 });
+            } else {
+              resolve({ error: json.error || 'no_access_token', status: res.statusCode });
+            }
+          } catch (e) {
+            resolve({ error: `parse: ${e.message}`, status: res.statusCode });
           }
-        } catch (e) {
-          resolve({ error: `parse: ${e.message}`, status: res.statusCode });
-        }
-      });
-    });
+        });
+      },
+    );
 
     req.on('error', (err) => {
       resolve({ error: `${err.code || 'UNKNOWN'}: ${err.message}` });
@@ -1381,8 +1501,10 @@ async function _fetchOpenSkyToken(clientId, clientSecret) {
     for (let attempt = 0; attempt < OPENSKY_AUTH_MAX_RETRIES; attempt++) {
       if (attempt > 0) {
         const delay = OPENSKY_AUTH_RETRY_DELAYS[attempt] || 5000;
-        console.log(`[Relay] OpenSky auth retry ${attempt + 1}/${OPENSKY_AUTH_MAX_RETRIES} in ${delay}ms...`);
-        await new Promise(r => setTimeout(r, delay));
+        console.log(
+          `[Relay] OpenSky auth retry ${attempt + 1}/${OPENSKY_AUTH_MAX_RETRIES} in ${delay}ms...`,
+        );
+        await new Promise((r) => setTimeout(r, delay));
       } else {
         console.log('[Relay] Fetching new OpenSky OAuth2 token...');
       }
@@ -1394,11 +1516,17 @@ async function _fetchOpenSkyToken(clientId, clientSecret) {
         console.log('[Relay] OpenSky token acquired, expires in', result.expiresIn, 'seconds');
         return openskyToken;
       }
-      console.error(`[Relay] OpenSky auth attempt ${attempt + 1} failed:`, result.error, result.status ? `(HTTP ${result.status})` : '');
+      console.error(
+        `[Relay] OpenSky auth attempt ${attempt + 1} failed:`,
+        result.error,
+        result.status ? `(HTTP ${result.status})` : '',
+      );
     }
 
     openskyAuthCooldownUntil = Date.now() + OPENSKY_AUTH_COOLDOWN_MS;
-    console.warn(`[Relay] OpenSky auth failed after ${OPENSKY_AUTH_MAX_RETRIES} attempts, cooling down for ${OPENSKY_AUTH_COOLDOWN_MS / 1000}s`);
+    console.warn(
+      `[Relay] OpenSky auth failed after ${OPENSKY_AUTH_MAX_RETRIES} attempts, cooling down for ${OPENSKY_AUTH_COOLDOWN_MS / 1000}s`,
+    );
     return null;
   } catch (err) {
     console.error('[Relay] OpenSky token error:', err.message);
@@ -1410,21 +1538,28 @@ async function _fetchOpenSkyToken(clientId, clientSecret) {
 // Promisified upstream OpenSky fetch (single request)
 function _openskyRawFetch(url, token) {
   return new Promise((resolve) => {
-    const request = https.get(url, {
-      family: 4,
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'WorldMonitor/1.0',
-        'Authorization': `Bearer ${token}`,
+    const request = https.get(
+      url,
+      {
+        family: 4,
+        headers: {
+          Accept: 'application/json',
+          'User-Agent': 'WorldMonitor/1.0',
+          Authorization: `Bearer ${token}`,
+        },
+        timeout: 15000,
       },
-      timeout: 15000,
-    }, (response) => {
-      let data = '';
-      response.on('data', chunk => data += chunk);
-      response.on('end', () => resolve({ status: response.statusCode || 502, data }));
-    });
+      (response) => {
+        let data = '';
+        response.on('data', (chunk) => (data += chunk));
+        response.on('end', () => resolve({ status: response.statusCode || 502, data }));
+      },
+    );
     request.on('error', (err) => resolve({ status: 0, data: null, error: err }));
-    request.on('timeout', () => { request.destroy(); resolve({ status: 504, data: null, error: new Error('timeout') }); });
+    request.on('timeout', () => {
+      request.destroy();
+      resolve({ status: 504, data: null, error: new Error('timeout') });
+    });
   });
 }
 
@@ -1433,12 +1568,20 @@ function _openskyRawFetch(url, token) {
 function openskyQueuedFetch(url, token) {
   const job = openskyUpstreamQueue.then(async () => {
     if (Date.now() < openskyGlobal429Until) {
-      return { status: 429, data: JSON.stringify({ states: [], time: Date.now() }), rateLimited: true };
+      return {
+        status: 429,
+        data: JSON.stringify({ states: [], time: Date.now() }),
+        rateLimited: true,
+      };
     }
     const wait = OPENSKY_REQUEST_SPACING_MS - (Date.now() - openskyLastUpstreamTime);
-    if (wait > 0) await new Promise(r => setTimeout(r, wait));
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
     if (Date.now() < openskyGlobal429Until) {
-      return { status: 429, data: JSON.stringify({ states: [], time: Date.now() }), rateLimited: true };
+      return {
+        status: 429,
+        data: JSON.stringify({ states: [], time: Date.now() }),
+        rateLimited: true,
+      };
     }
     openskyLastUpstreamTime = Date.now();
     return _openskyRawFetch(url, token);
@@ -1455,11 +1598,16 @@ async function handleOpenSkyRequest(req, res, PORT) {
     const params = url.searchParams;
     const normalizedBbox = normalizeOpenSkyBbox(params);
     if (normalizedBbox.error) {
-      return safeEnd(res, 400, { 'Content-Type': 'application/json' }, JSON.stringify({
-        error: normalizedBbox.error,
-        time: Date.now(),
-        states: [],
-      }));
+      return safeEnd(
+        res,
+        400,
+        { 'Content-Type': 'application/json' },
+        JSON.stringify({
+          error: normalizedBbox.error,
+          time: Date.now(),
+          states: [],
+        }),
+      );
     }
 
     cacheKey = normalizedBbox.cacheKey;
@@ -1470,11 +1618,18 @@ async function handleOpenSkyRequest(req, res, PORT) {
     if (cached && Date.now() - cached.timestamp < OPENSKY_CACHE_TTL_MS) {
       incrementRelayMetric('openskyCacheHit');
       touchCacheEntry(openskyResponseCache, cacheKey, cached); // LRU
-      return sendPreGzipped(req, res, 200, {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=30',
-        'X-Cache': 'HIT',
-      }, cached.data, cached.gzip);
+      return sendPreGzipped(
+        req,
+        res,
+        200,
+        {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=30',
+          'X-Cache': 'HIT',
+        },
+        cached.data,
+        cached.gzip,
+      );
     }
 
     // 2. Check negative cache — prevents retry storms when upstream returns 429/5xx
@@ -1482,11 +1637,18 @@ async function handleOpenSkyRequest(req, res, PORT) {
     if (negCached && Date.now() - negCached.timestamp < OPENSKY_NEGATIVE_CACHE_TTL_MS) {
       incrementRelayMetric('openskyNegativeHit');
       touchCacheEntry(openskyNegativeCache, cacheKey, negCached); // LRU
-      return sendPreGzipped(req, res, 200, {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache',
-        'X-Cache': 'NEG',
-      }, negCached.body, negCached.gzip);
+      return sendPreGzipped(
+        req,
+        res,
+        200,
+        {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+          'X-Cache': 'NEG',
+        },
+        negCached.body,
+        negCached.gzip,
+      );
     }
 
     // 2b. Global 429 cooldown — blocks ALL bbox queries when OpenSky is rate-limiting.
@@ -1495,11 +1657,17 @@ async function handleOpenSkyRequest(req, res, PORT) {
     if (Date.now() < openskyGlobal429Until) {
       incrementRelayMetric('openskyNegativeHit');
       cacheOpenSkyNegative(cacheKey, 429);
-      return sendCompressed(req, res, 200, {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache',
-        'X-Cache': 'RATE-LIMITED',
-      }, JSON.stringify({ states: [], time: Date.now() }));
+      return sendCompressed(
+        req,
+        res,
+        200,
+        {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+          'X-Cache': 'RATE-LIMITED',
+        },
+        JSON.stringify({ states: [], time: Date.now() }),
+      );
     }
 
     // 3. Dedup concurrent requests — await in-flight and return result OR empty (never fall through)
@@ -1507,34 +1675,57 @@ async function handleOpenSkyRequest(req, res, PORT) {
     if (existing) {
       try {
         await existing;
-      } catch { /* in-flight failed */ }
+      } catch {
+        /* in-flight failed */
+      }
       const deduped = openskyResponseCache.get(cacheKey);
       if (deduped && Date.now() - deduped.timestamp < OPENSKY_CACHE_TTL_MS) {
         incrementRelayMetric('openskyDedup');
         touchCacheEntry(openskyResponseCache, cacheKey, deduped); // LRU
-        return sendPreGzipped(req, res, 200, {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'public, max-age=30',
-          'X-Cache': 'DEDUP',
-        }, deduped.data, deduped.gzip);
+        return sendPreGzipped(
+          req,
+          res,
+          200,
+          {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'public, max-age=30',
+            'X-Cache': 'DEDUP',
+          },
+          deduped.data,
+          deduped.gzip,
+        );
       }
       const dedupNeg = openskyNegativeCache.get(cacheKey);
       if (dedupNeg && Date.now() - dedupNeg.timestamp < OPENSKY_NEGATIVE_CACHE_TTL_MS) {
         incrementRelayMetric('openskyDedupNeg');
         touchCacheEntry(openskyNegativeCache, cacheKey, dedupNeg); // LRU
-        return sendPreGzipped(req, res, 200, {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache',
-          'X-Cache': 'DEDUP-NEG',
-        }, dedupNeg.body, dedupNeg.gzip);
+        return sendPreGzipped(
+          req,
+          res,
+          200,
+          {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache',
+            'X-Cache': 'DEDUP-NEG',
+          },
+          dedupNeg.body,
+          dedupNeg.gzip,
+        );
       }
       // In-flight completed but no cache entry (upstream failed) — return empty instead of thundering herd
       incrementRelayMetric('openskyDedupEmpty');
-      return sendPreGzipped(req, res, 200, {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache',
-        'X-Cache': 'DEDUP-EMPTY',
-      }, OPENSKY_DEDUP_EMPTY_RESPONSE_JSON, OPENSKY_DEDUP_EMPTY_RESPONSE_GZIP);
+      return sendPreGzipped(
+        req,
+        res,
+        200,
+        {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+          'X-Cache': 'DEDUP-EMPTY',
+        },
+        OPENSKY_DEDUP_EMPTY_RESPONSE_JSON,
+        OPENSKY_DEDUP_EMPTY_RESPONSE_GZIP,
+      );
     }
 
     incrementRelayMetric('openskyMiss');
@@ -1542,7 +1733,9 @@ async function handleOpenSkyRequest(req, res, PORT) {
     // 4. Set in-flight BEFORE async token fetch to prevent race window
     let resolveFlight;
     let flightSettled = false;
-    const flightPromise = new Promise((resolve) => { resolveFlight = resolve; });
+    const flightPromise = new Promise((resolve) => {
+      resolveFlight = resolve;
+    });
     settleFlight = () => {
       if (flightSettled) return;
       flightSettled = true;
@@ -1556,8 +1749,16 @@ async function handleOpenSkyRequest(req, res, PORT) {
       // Only negative-cache actual upstream 429/5xx responses.
       settleFlight();
       openskyInFlight.delete(cacheKey);
-      return safeEnd(res, 503, { 'Content-Type': 'application/json' },
-        JSON.stringify({ error: 'OpenSky not configured or auth failed', time: Date.now(), states: [] }));
+      return safeEnd(
+        res,
+        503,
+        { 'Content-Type': 'application/json' },
+        JSON.stringify({
+          error: 'OpenSky not configured or auth failed',
+          time: Date.now(),
+          states: [],
+        }),
+      );
     }
 
     let openskyUrl = 'https://opensky-network.org/api/states/all';
@@ -1579,19 +1780,29 @@ async function handleOpenSkyRequest(req, res, PORT) {
 
     if (upstreamStatus === 429 && !result.rateLimited) {
       openskyGlobal429Until = Date.now() + OPENSKY_429_COOLDOWN_MS;
-      console.warn(`[Relay] OpenSky 429 — global cooldown ${OPENSKY_429_COOLDOWN_MS / 1000}s (all bbox queries blocked)`);
+      console.warn(
+        `[Relay] OpenSky 429 — global cooldown ${OPENSKY_429_COOLDOWN_MS / 1000}s (all bbox queries blocked)`,
+      );
     }
 
     if (upstreamStatus === 200 && result.data) {
       cacheOpenSkyPositive(cacheKey, result.data);
       openskyNegativeCache.delete(cacheKey);
     } else if (result.error) {
-      logThrottled('error', `opensky-error:${cacheKey}:${result.error.code || result.error.message}`, '[Relay] OpenSky error:', result.error.message);
+      logThrottled(
+        'error',
+        `opensky-error:${cacheKey}:${result.error.code || result.error.message}`,
+        '[Relay] OpenSky error:',
+        result.error.message,
+      );
       cacheOpenSkyNegative(cacheKey, upstreamStatus || 500);
     } else {
       cacheOpenSkyNegative(cacheKey, upstreamStatus);
-      logThrottled('warn', `opensky-upstream-${upstreamStatus}:${cacheKey}`,
-        `[Relay] OpenSky upstream ${upstreamStatus} for ${openskyUrl}, negative-cached for ${OPENSKY_NEGATIVE_CACHE_TTL_MS / 1000}s`);
+      logThrottled(
+        'warn',
+        `opensky-upstream-${upstreamStatus}:${cacheKey}`,
+        `[Relay] OpenSky upstream ${upstreamStatus} for ${openskyUrl}, negative-cached for ${OPENSKY_NEGATIVE_CACHE_TTL_MS / 1000}s`,
+      );
     }
 
     settleFlight();
@@ -1599,15 +1810,34 @@ async function handleOpenSkyRequest(req, res, PORT) {
 
     // Serve stale cache on network errors
     if (result.error && cached) {
-      return sendPreGzipped(req, res, 200, { 'Content-Type': 'application/json', 'X-Cache': 'STALE' }, cached.data, cached.gzip);
+      return sendPreGzipped(
+        req,
+        res,
+        200,
+        { 'Content-Type': 'application/json', 'X-Cache': 'STALE' },
+        cached.data,
+        cached.gzip,
+      );
     }
 
-    const responseData = result.data || JSON.stringify({ error: result.error?.message || 'upstream error', time: Date.now(), states: null });
-    return sendCompressed(req, res, upstreamStatus, {
-      'Content-Type': 'application/json',
-      'Cache-Control': upstreamStatus === 200 ? 'public, max-age=30' : 'no-cache',
-      'X-Cache': result.rateLimited ? 'RATE-LIMITED' : 'MISS',
-    }, responseData);
+    const responseData =
+      result.data ||
+      JSON.stringify({
+        error: result.error?.message || 'upstream error',
+        time: Date.now(),
+        states: null,
+      });
+    return sendCompressed(
+      req,
+      res,
+      upstreamStatus,
+      {
+        'Content-Type': 'application/json',
+        'Cache-Control': upstreamStatus === 200 ? 'public, max-age=30' : 'no-cache',
+        'X-Cache': result.rateLimited ? 'RATE-LIMITED' : 'MISS',
+      },
+      responseData,
+    );
   } catch (err) {
     if (settleFlight) settleFlight();
     if (!cacheKey) {
@@ -1619,8 +1849,12 @@ async function handleOpenSkyRequest(req, res, PORT) {
       }
     }
     openskyInFlight.delete(cacheKey);
-    safeEnd(res, 500, { 'Content-Type': 'application/json' },
-      JSON.stringify({ error: err.message, time: Date.now(), states: null }));
+    safeEnd(
+      res,
+      500,
+      { 'Content-Type': 'application/json' },
+      JSON.stringify({ error: err.message, time: Date.now(), states: null }),
+    );
   }
 }
 
@@ -1635,11 +1869,17 @@ function handleWorldBankRequest(req, res) {
 
   const cached = worldbankCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < WORLDBANK_CACHE_TTL_MS) {
-    return sendCompressed(req, res, 200, {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=1800',
-      'X-Cache': 'HIT',
-    }, cached.data);
+    return sendCompressed(
+      req,
+      res,
+      200,
+      {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=1800',
+        'X-Cache': 'HIT',
+      },
+      cached.data,
+    );
   }
 
   const targetUrl = `https://api.worldbank.org/v2${qs.includes('action=indicators') ? '' : '/country'}${url.pathname.replace('/worldbank', '')}${qs}`;
@@ -1669,19 +1909,67 @@ function handleWorldBankRequest(req, res) {
       'NE.EXP.GNFS.ZS': 'Exports of Goods & Services (% of GDP)',
     };
     const defaultCountries = [
-      'USA','CHN','JPN','DEU','KOR','GBR','IND','ISR','SGP','TWN',
-      'FRA','CAN','SWE','NLD','CHE','FIN','IRL','AUS','BRA','IDN',
-      'ARE','SAU','QAT','BHR','EGY','TUR','MYS','THA','VNM','PHL',
-      'ESP','ITA','POL','CZE','DNK','NOR','AUT','BEL','PRT','EST',
-      'MEX','ARG','CHL','COL','ZAF','NGA','KEN',
+      'USA',
+      'CHN',
+      'JPN',
+      'DEU',
+      'KOR',
+      'GBR',
+      'IND',
+      'ISR',
+      'SGP',
+      'TWN',
+      'FRA',
+      'CAN',
+      'SWE',
+      'NLD',
+      'CHE',
+      'FIN',
+      'IRL',
+      'AUS',
+      'BRA',
+      'IDN',
+      'ARE',
+      'SAU',
+      'QAT',
+      'BHR',
+      'EGY',
+      'TUR',
+      'MYS',
+      'THA',
+      'VNM',
+      'PHL',
+      'ESP',
+      'ITA',
+      'POL',
+      'CZE',
+      'DNK',
+      'NOR',
+      'AUT',
+      'BEL',
+      'PRT',
+      'EST',
+      'MEX',
+      'ARG',
+      'CHL',
+      'COL',
+      'ZAF',
+      'NGA',
+      'KEN',
     ];
     const body = JSON.stringify({ indicators, defaultCountries });
     worldbankCache.set(cacheKey, { data: body, timestamp: Date.now() });
-    return sendCompressed(req, res, 200, {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=86400',
-      'X-Cache': 'MISS',
-    }, body);
+    return sendCompressed(
+      req,
+      res,
+      200,
+      {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=86400',
+        'X-Cache': 'MISS',
+      },
+      body,
+    );
   }
 
   const indicator = wbParams.get('indicator');
@@ -1693,13 +1981,59 @@ function handleWorldBankRequest(req, res) {
   const country = wbParams.get('country');
   const countries = wbParams.get('countries');
   const years = parseInt(wbParams.get('years') || '5', 10);
-  let countryList = country || (countries ? countries.split(',').join(';') : [
-    'USA','CHN','JPN','DEU','KOR','GBR','IND','ISR','SGP','TWN',
-    'FRA','CAN','SWE','NLD','CHE','FIN','IRL','AUS','BRA','IDN',
-    'ARE','SAU','QAT','BHR','EGY','TUR','MYS','THA','VNM','PHL',
-    'ESP','ITA','POL','CZE','DNK','NOR','AUT','BEL','PRT','EST',
-    'MEX','ARG','CHL','COL','ZAF','NGA','KEN',
-  ].join(';'));
+  let countryList =
+    country ||
+    (countries
+      ? countries.split(',').join(';')
+      : [
+          'USA',
+          'CHN',
+          'JPN',
+          'DEU',
+          'KOR',
+          'GBR',
+          'IND',
+          'ISR',
+          'SGP',
+          'TWN',
+          'FRA',
+          'CAN',
+          'SWE',
+          'NLD',
+          'CHE',
+          'FIN',
+          'IRL',
+          'AUS',
+          'BRA',
+          'IDN',
+          'ARE',
+          'SAU',
+          'QAT',
+          'BHR',
+          'EGY',
+          'TUR',
+          'MYS',
+          'THA',
+          'VNM',
+          'PHL',
+          'ESP',
+          'ITA',
+          'POL',
+          'CZE',
+          'DNK',
+          'NOR',
+          'AUT',
+          'BEL',
+          'PRT',
+          'EST',
+          'MEX',
+          'ARG',
+          'CHL',
+          'COL',
+          'ZAF',
+          'NGA',
+          'KEN',
+        ].join(';'));
 
   const currentYear = new Date().getFullYear();
   const startYear = currentYear - years;
@@ -1726,83 +2060,113 @@ function handleWorldBankRequest(req, res) {
 
   console.log('[Relay] World Bank request (MISS):', indicator);
 
-  const request = https.get(wbUrl, {
-    headers: {
-      'Accept': 'application/json',
-      'User-Agent': 'Mozilla/5.0 (compatible; WorldMonitor/1.0; +https://worldmonitor.app)',
+  const request = https.get(
+    wbUrl,
+    {
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': 'Mozilla/5.0 (compatible; WorldMonitor/1.0; +https://worldmonitor.app)',
+      },
+      timeout: 15000,
     },
-    timeout: 15000,
-  }, (response) => {
-    if (response.statusCode !== 200) {
-      res.writeHead(response.statusCode, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ error: `World Bank API ${response.statusCode}` }));
-    }
-    let rawData = '';
-    response.on('data', chunk => rawData += chunk);
-    response.on('end', () => {
-      try {
-        const parsed = JSON.parse(rawData);
-        // Transform raw World Bank response to match client-expected format
-        if (!parsed || !Array.isArray(parsed) || parsed.length < 2 || !parsed[1]) {
-          const empty = JSON.stringify({
-            indicator,
-            indicatorName: TECH_INDICATORS[indicator] || indicator,
-            metadata: { page: 1, pages: 1, total: 0 },
-            byCountry: {}, latestByCountry: {}, timeSeries: [],
-          });
-          worldbankCache.set(cacheKey, { data: empty, timestamp: Date.now() });
-          return sendCompressed(req, res, 200, {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'public, max-age=1800',
-            'X-Cache': 'MISS',
-          }, empty);
-        }
-
-        const [metadata, records] = parsed;
-        const transformed = {
-          indicator,
-          indicatorName: TECH_INDICATORS[indicator] || (records[0]?.indicator?.value || indicator),
-          metadata: { page: metadata.page, pages: metadata.pages, total: metadata.total },
-          byCountry: {}, latestByCountry: {}, timeSeries: [],
-        };
-
-        for (const record of records || []) {
-          const cc = record.countryiso3code || record.country?.id;
-          const cn = record.country?.value;
-          const yr = record.date;
-          const val = record.value;
-          if (!cc || val === null) continue;
-          if (!transformed.byCountry[cc]) transformed.byCountry[cc] = { code: cc, name: cn, values: [] };
-          transformed.byCountry[cc].values.push({ year: yr, value: val });
-          if (!transformed.latestByCountry[cc] || yr > transformed.latestByCountry[cc].year) {
-            transformed.latestByCountry[cc] = { code: cc, name: cn, year: yr, value: val };
-          }
-          transformed.timeSeries.push({ countryCode: cc, countryName: cn, year: yr, value: val });
-        }
-        for (const c of Object.values(transformed.byCountry)) c.values.sort((a, b) => a.year - b.year);
-        transformed.timeSeries.sort((a, b) => b.year - a.year || a.countryCode.localeCompare(b.countryCode));
-
-        const body = JSON.stringify(transformed);
-        worldbankCache.set(cacheKey, { data: body, timestamp: Date.now() });
-        sendCompressed(req, res, 200, {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'public, max-age=1800',
-          'X-Cache': 'MISS',
-        }, body);
-      } catch (e) {
-        console.error('[Relay] World Bank parse error:', e.message);
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Parse error' }));
+    (response) => {
+      if (response.statusCode !== 200) {
+        res.writeHead(response.statusCode, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ error: `World Bank API ${response.statusCode}` }));
       }
-    });
-  });
+      let rawData = '';
+      response.on('data', (chunk) => (rawData += chunk));
+      response.on('end', () => {
+        try {
+          const parsed = JSON.parse(rawData);
+          // Transform raw World Bank response to match client-expected format
+          if (!parsed || !Array.isArray(parsed) || parsed.length < 2 || !parsed[1]) {
+            const empty = JSON.stringify({
+              indicator,
+              indicatorName: TECH_INDICATORS[indicator] || indicator,
+              metadata: { page: 1, pages: 1, total: 0 },
+              byCountry: {},
+              latestByCountry: {},
+              timeSeries: [],
+            });
+            worldbankCache.set(cacheKey, { data: empty, timestamp: Date.now() });
+            return sendCompressed(
+              req,
+              res,
+              200,
+              {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'public, max-age=1800',
+                'X-Cache': 'MISS',
+              },
+              empty,
+            );
+          }
+
+          const [metadata, records] = parsed;
+          const transformed = {
+            indicator,
+            indicatorName: TECH_INDICATORS[indicator] || records[0]?.indicator?.value || indicator,
+            metadata: { page: metadata.page, pages: metadata.pages, total: metadata.total },
+            byCountry: {},
+            latestByCountry: {},
+            timeSeries: [],
+          };
+
+          for (const record of records || []) {
+            const cc = record.countryiso3code || record.country?.id;
+            const cn = record.country?.value;
+            const yr = record.date;
+            const val = record.value;
+            if (!cc || val === null) continue;
+            if (!transformed.byCountry[cc])
+              transformed.byCountry[cc] = { code: cc, name: cn, values: [] };
+            transformed.byCountry[cc].values.push({ year: yr, value: val });
+            if (!transformed.latestByCountry[cc] || yr > transformed.latestByCountry[cc].year) {
+              transformed.latestByCountry[cc] = { code: cc, name: cn, year: yr, value: val };
+            }
+            transformed.timeSeries.push({ countryCode: cc, countryName: cn, year: yr, value: val });
+          }
+          for (const c of Object.values(transformed.byCountry))
+            c.values.sort((a, b) => a.year - b.year);
+          transformed.timeSeries.sort(
+            (a, b) => b.year - a.year || a.countryCode.localeCompare(b.countryCode),
+          );
+
+          const body = JSON.stringify(transformed);
+          worldbankCache.set(cacheKey, { data: body, timestamp: Date.now() });
+          sendCompressed(
+            req,
+            res,
+            200,
+            {
+              'Content-Type': 'application/json',
+              'Cache-Control': 'public, max-age=1800',
+              'X-Cache': 'MISS',
+            },
+            body,
+          );
+        } catch (e) {
+          console.error('[Relay] World Bank parse error:', e.message);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Parse error' }));
+        }
+      });
+    },
+  );
   request.on('error', (err) => {
     console.error('[Relay] World Bank error:', err.message);
     if (cached) {
-      return sendCompressed(req, res, 200, {
-        'Content-Type': 'application/json',
-        'X-Cache': 'STALE',
-      }, cached.data);
+      return sendCompressed(
+        req,
+        res,
+        200,
+        {
+          'Content-Type': 'application/json',
+          'X-Cache': 'STALE',
+        },
+        cached.data,
+      );
     }
     res.writeHead(502, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: err.message }));
@@ -1810,10 +2174,16 @@ function handleWorldBankRequest(req, res) {
   request.on('timeout', () => {
     request.destroy();
     if (cached) {
-      return sendCompressed(req, res, 200, {
-        'Content-Type': 'application/json',
-        'X-Cache': 'STALE',
-      }, cached.data);
+      return sendCompressed(
+        req,
+        res,
+        200,
+        {
+          'Content-Type': 'application/json',
+          'X-Cache': 'STALE',
+        },
+        cached.data,
+      );
     }
     res.writeHead(504, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'World Bank request timeout' }));
@@ -1830,12 +2200,18 @@ function handlePolymarketRequest(req, res) {
 
   const cached = polymarketCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < POLYMARKET_CACHE_TTL_MS) {
-    return sendCompressed(req, res, 200, {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=120',
-      'X-Cache': 'HIT',
-      'X-Polymarket-Source': 'railway-cache',
-    }, cached.data);
+    return sendCompressed(
+      req,
+      res,
+      200,
+      {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=120',
+        'X-Cache': 'HIT',
+        'X-Polymarket-Source': 'railway-cache',
+      },
+      cached.data,
+    );
   }
 
   const endpoint = url.searchParams.get('endpoint') || 'markets';
@@ -1843,43 +2219,63 @@ function handlePolymarketRequest(req, res) {
   params.set('closed', url.searchParams.get('closed') || 'false');
   params.set('order', url.searchParams.get('order') || 'volume');
   params.set('ascending', url.searchParams.get('ascending') || 'false');
-  const limit = Math.max(1, Math.min(100, parseInt(url.searchParams.get('limit') || '50', 10) || 50));
+  const limit = Math.max(
+    1,
+    Math.min(100, parseInt(url.searchParams.get('limit') || '50', 10) || 50),
+  );
   params.set('limit', String(limit));
   const tag = url.searchParams.get('tag') || url.searchParams.get('tag_slug');
-  if (tag && endpoint === 'events') params.set('tag_slug', tag.replace(/[^a-z0-9-]/gi, '').slice(0, 100));
+  if (tag && endpoint === 'events')
+    params.set('tag_slug', tag.replace(/[^a-z0-9-]/gi, '').slice(0, 100));
 
   const gammaUrl = `https://gamma-api.polymarket.com/${endpoint}?${params}`;
   console.log('[Relay] Polymarket request (MISS):', endpoint, tag || '');
 
-  const request = https.get(gammaUrl, {
-    headers: { 'Accept': 'application/json' },
-    timeout: 10000,
-  }, (response) => {
-    if (response.statusCode !== 200) {
-      console.error(`[Relay] Polymarket upstream ${response.statusCode}`);
-      res.writeHead(response.statusCode, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify([]));
-    }
-    let data = '';
-    response.on('data', chunk => data += chunk);
-    response.on('end', () => {
-      polymarketCache.set(cacheKey, { data, timestamp: Date.now() });
-      sendCompressed(req, res, 200, {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=120',
-        'X-Cache': 'MISS',
-        'X-Polymarket-Source': 'railway',
-      }, data);
-    });
-  });
+  const request = https.get(
+    gammaUrl,
+    {
+      headers: { Accept: 'application/json' },
+      timeout: 10000,
+    },
+    (response) => {
+      if (response.statusCode !== 200) {
+        console.error(`[Relay] Polymarket upstream ${response.statusCode}`);
+        res.writeHead(response.statusCode, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify([]));
+      }
+      let data = '';
+      response.on('data', (chunk) => (data += chunk));
+      response.on('end', () => {
+        polymarketCache.set(cacheKey, { data, timestamp: Date.now() });
+        sendCompressed(
+          req,
+          res,
+          200,
+          {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'public, max-age=120',
+            'X-Cache': 'MISS',
+            'X-Polymarket-Source': 'railway',
+          },
+          data,
+        );
+      });
+    },
+  );
   request.on('error', (err) => {
     console.error('[Relay] Polymarket error:', err.message);
     if (cached) {
-      return sendCompressed(req, res, 200, {
-        'Content-Type': 'application/json',
-        'X-Cache': 'STALE',
-        'X-Polymarket-Source': 'railway-stale',
-      }, cached.data);
+      return sendCompressed(
+        req,
+        res,
+        200,
+        {
+          'Content-Type': 'application/json',
+          'X-Cache': 'STALE',
+          'X-Polymarket-Source': 'railway-stale',
+        },
+        cached.data,
+      );
     }
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify([]));
@@ -1887,11 +2283,17 @@ function handlePolymarketRequest(req, res) {
   request.on('timeout', () => {
     request.destroy();
     if (cached) {
-      return sendCompressed(req, res, 200, {
-        'Content-Type': 'application/json',
-        'X-Cache': 'STALE',
-        'X-Polymarket-Source': 'railway-stale',
-      }, cached.data);
+      return sendCompressed(
+        req,
+        res,
+        200,
+        {
+          'Content-Type': 'application/json',
+          'X-Cache': 'STALE',
+          'X-Polymarket-Source': 'railway-stale',
+        },
+        cached.data,
+      );
     }
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify([]));
@@ -1908,8 +2310,10 @@ setInterval(() => {
     if (now - entry.timestamp > OPENSKY_NEGATIVE_CACHE_TTL_MS * 2) openskyNegativeCache.delete(key);
   }
   for (const [key, entry] of rssResponseCache) {
-    const maxAge = (entry.statusCode && entry.statusCode >= 200 && entry.statusCode < 300)
-      ? RSS_CACHE_TTL_MS * 2 : RSS_NEGATIVE_CACHE_TTL_MS * 2;
+    const maxAge =
+      entry.statusCode && entry.statusCode >= 200 && entry.statusCode < 300
+        ? RSS_CACHE_TTL_MS * 2
+        : RSS_NEGATIVE_CACHE_TTL_MS * 2;
     if (now - entry.timestamp > maxAge) rssResponseCache.delete(key);
   }
   for (const [key, entry] of worldbankCache) {
@@ -1931,11 +2335,11 @@ const ALLOWED_ORIGINS = [
   'https://worldmonitor.app',
   'https://tech.worldmonitor.app',
   'https://finance.worldmonitor.app',
-  'http://localhost:5173',   // Vite dev
-  'http://localhost:5174',   // Vite dev alt port
-  'http://localhost:4173',   // Vite preview
-  'https://localhost',       // Tauri desktop
-  'tauri://localhost',       // Tauri iOS/macOS
+  'http://localhost:5173', // Vite dev
+  'http://localhost:5174', // Vite dev alt port
+  'http://localhost:4173', // Vite preview
+  'https://localhost', // Tauri desktop
+  'tauri://localhost', // Tauri iOS/macOS
 ];
 
 function getCorsOrigin(req) {
@@ -1954,7 +2358,10 @@ const server = http.createServer(async (req, res) => {
     res.setHeader('Vary', 'Origin');
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', `Content-Type, Authorization, ${RELAY_AUTH_HEADER}`);
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    `Content-Type, Authorization, ${RELAY_AUTH_HEADER}`,
+  );
 
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -1965,70 +2372,93 @@ const server = http.createServer(async (req, res) => {
   const isPublicRoute = pathname === '/health' || pathname === '/';
   if (!isPublicRoute) {
     if (!isAuthorizedRequest(req)) {
-      return safeEnd(res, 401, { 'Content-Type': 'application/json' },
-        JSON.stringify({ error: 'Unauthorized', time: Date.now() }));
+      return safeEnd(
+        res,
+        401,
+        { 'Content-Type': 'application/json' },
+        JSON.stringify({ error: 'Unauthorized', time: Date.now() }),
+      );
     }
     const rl = consumeRateLimit(req, pathname);
     if (rl.limited) {
       const retryAfterSec = Math.max(1, Math.ceil(rl.resetInMs / 1000));
-      return safeEnd(res, 429, {
-        'Content-Type': 'application/json',
-        'Retry-After': String(retryAfterSec),
-        'X-RateLimit-Limit': String(rl.limit),
-        'X-RateLimit-Remaining': String(rl.remaining),
-        'X-RateLimit-Reset': String(retryAfterSec),
-      }, JSON.stringify({ error: 'Too many requests', time: Date.now() }));
+      return safeEnd(
+        res,
+        429,
+        {
+          'Content-Type': 'application/json',
+          'Retry-After': String(retryAfterSec),
+          'X-RateLimit-Limit': String(rl.limit),
+          'X-RateLimit-Remaining': String(rl.remaining),
+          'X-RateLimit-Reset': String(retryAfterSec),
+        },
+        JSON.stringify({ error: 'Too many requests', time: Date.now() }),
+      );
     }
   }
 
   if (pathname === '/health' || pathname === '/') {
     const mem = process.memoryUsage();
-    sendCompressed(req, res, 200, { 'Content-Type': 'application/json' }, JSON.stringify({
-      status: 'ok',
-      clients: clients.size,
-      messages: messageCount,
-      droppedMessages,
-      connected: upstreamSocket?.readyState === WebSocket.OPEN,
-      upstreamPaused,
-      vessels: vessels.size,
-      densityZones: Array.from(densityGrid.values()).filter(c => c.vessels.size >= 2).length,
-      telegram: {
-        enabled: TELEGRAM_ENABLED,
-        channels: telegramState.channels?.length || 0,
-        items: telegramState.items?.length || 0,
-        lastPollAt: telegramState.lastPollAt ? new Date(telegramState.lastPollAt).toISOString() : null,
-        hasError: !!telegramState.lastError,
-      },
-      memory: {
-        rss: `${(mem.rss / 1024 / 1024).toFixed(0)}MB`,
-        heapUsed: `${(mem.heapUsed / 1024 / 1024).toFixed(0)}MB`,
-        heapTotal: `${(mem.heapTotal / 1024 / 1024).toFixed(0)}MB`,
-      },
-      cache: {
-        opensky: openskyResponseCache.size,
-        opensky_neg: openskyNegativeCache.size,
-        rss: rssResponseCache.size,
-        ucdp: ucdpCache.data ? 'warm' : 'cold',
-        worldbank: worldbankCache.size,
-        polymarket: polymarketCache.size,
-      },
-      auth: {
-        sharedSecretEnabled: !!RELAY_SHARED_SECRET,
-        authHeader: RELAY_AUTH_HEADER,
-        allowVercelPreviewOrigins: ALLOW_VERCEL_PREVIEW_ORIGINS,
-      },
-      rateLimit: {
-        windowMs: RELAY_RATE_LIMIT_WINDOW_MS,
-        defaultMax: RELAY_RATE_LIMIT_MAX,
-        openskyMax: RELAY_OPENSKY_RATE_LIMIT_MAX,
-        rssMax: RELAY_RSS_RATE_LIMIT_MAX,
-      },
-    }));
+    sendCompressed(
+      req,
+      res,
+      200,
+      { 'Content-Type': 'application/json' },
+      JSON.stringify({
+        status: 'ok',
+        clients: clients.size,
+        messages: messageCount,
+        droppedMessages,
+        connected: upstreamSocket?.readyState === WebSocket.OPEN,
+        upstreamPaused,
+        vessels: vessels.size,
+        densityZones: Array.from(densityGrid.values()).filter((c) => c.vessels.size >= 2).length,
+        telegram: {
+          enabled: TELEGRAM_ENABLED,
+          channels: telegramState.channels?.length || 0,
+          items: telegramState.items?.length || 0,
+          lastPollAt: telegramState.lastPollAt
+            ? new Date(telegramState.lastPollAt).toISOString()
+            : null,
+          hasError: !!telegramState.lastError,
+        },
+        memory: {
+          rss: `${(mem.rss / 1024 / 1024).toFixed(0)}MB`,
+          heapUsed: `${(mem.heapUsed / 1024 / 1024).toFixed(0)}MB`,
+          heapTotal: `${(mem.heapTotal / 1024 / 1024).toFixed(0)}MB`,
+        },
+        cache: {
+          opensky: openskyResponseCache.size,
+          opensky_neg: openskyNegativeCache.size,
+          rss: rssResponseCache.size,
+          ucdp: ucdpCache.data ? 'warm' : 'cold',
+          worldbank: worldbankCache.size,
+          polymarket: polymarketCache.size,
+        },
+        auth: {
+          sharedSecretEnabled: !!RELAY_SHARED_SECRET,
+          authHeader: RELAY_AUTH_HEADER,
+          allowVercelPreviewOrigins: ALLOW_VERCEL_PREVIEW_ORIGINS,
+        },
+        rateLimit: {
+          windowMs: RELAY_RATE_LIMIT_WINDOW_MS,
+          defaultMax: RELAY_RATE_LIMIT_MAX,
+          openskyMax: RELAY_OPENSKY_RATE_LIMIT_MAX,
+          rssMax: RELAY_RSS_RATE_LIMIT_MAX,
+        },
+      }),
+    );
   } else if (pathname === '/metrics') {
-    return sendCompressed(req, res, 200, {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'no-store',
-    }, JSON.stringify(getRelayRollingMetrics()));
+    return sendCompressed(
+      req,
+      res,
+      200,
+      {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store',
+      },
+      JSON.stringify(getRelayRollingMetrics()),
+    );
   } else if (pathname.startsWith('/ais/snapshot')) {
     // Aggregated AIS snapshot for server-side fanout — serve pre-serialized + pre-gzipped
     connectUpstream();
@@ -2039,17 +2469,33 @@ const server = http.createServer(async (req, res) => {
     const gz = includeCandidates ? lastSnapshotWithCandGzip : lastSnapshotGzip;
 
     if (json) {
-      sendPreGzipped(req, res, 200, {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=2',
-      }, json, gz);
+      sendPreGzipped(
+        req,
+        res,
+        200,
+        {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=2',
+        },
+        json,
+        gz,
+      );
     } else {
       // Cold start fallback
-      const payload = { ...lastSnapshot, candidateReports: includeCandidates ? getCandidateReportsSnapshot() : [] };
-      sendCompressed(req, res, 200, {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=2',
-      }, JSON.stringify(payload));
+      const payload = {
+        ...lastSnapshot,
+        candidateReports: includeCandidates ? getCandidateReportsSnapshot() : [],
+      };
+      sendCompressed(
+        req,
+        res,
+        200,
+        {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=2',
+        },
+        JSON.stringify(payload),
+      );
     }
   } else if (pathname === '/opensky-reset') {
     openskyToken = null;
@@ -2061,13 +2507,19 @@ const server = http.createServer(async (req, res) => {
     console.log('[Relay] OpenSky auth + rate-limit state reset via /opensky-reset');
     const tokenStart = Date.now();
     const token = await getOpenSkyToken();
-    return sendCompressed(req, res, 200, { 'Content-Type': 'application/json' }, JSON.stringify({
-      reset: true,
-      tokenAcquired: !!token,
-      latencyMs: Date.now() - tokenStart,
-      negativeCacheCleared: true,
-      rateLimitCooldownCleared: true,
-    }));
+    return sendCompressed(
+      req,
+      res,
+      200,
+      { 'Content-Type': 'application/json' },
+      JSON.stringify({
+        reset: true,
+        tokenAcquired: !!token,
+        latencyMs: Date.now() - tokenStart,
+        negativeCacheCleared: true,
+        rateLimitCooldownCleared: true,
+      }),
+    );
   } else if (pathname === '/opensky-diag') {
     // Temporary diagnostic route with safe output only (no token payloads).
     const now = Date.now();
@@ -2076,7 +2528,11 @@ const server = http.createServer(async (req, res) => {
     const clientId = process.env.OPENSKY_CLIENT_ID;
     const clientSecret = process.env.OPENSKY_CLIENT_SECRET;
 
-    diag.steps.push({ step: 'env_check', hasClientId: !!clientId, hasClientSecret: !!clientSecret });
+    diag.steps.push({
+      step: 'env_check',
+      hasClientId: !!clientId,
+      hasClientSecret: !!clientSecret,
+    });
     diag.steps.push({
       step: 'auth_state',
       cachedToken: !!openskyToken,
@@ -2089,7 +2545,10 @@ const server = http.createServer(async (req, res) => {
     });
 
     if (!clientId || !clientSecret) {
-      diag.steps.push({ step: 'FAILED', reason: 'Missing OPENSKY_CLIENT_ID or OPENSKY_CLIENT_SECRET' });
+      diag.steps.push({
+        step: 'FAILED',
+        reason: 'Missing OPENSKY_CLIENT_ID or OPENSKY_CLIENT_SECRET',
+      });
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
       return res.end(JSON.stringify(diag, null, 2));
     }
@@ -2109,26 +2568,41 @@ const server = http.createServer(async (req, res) => {
     if (token) {
       const apiResult = await new Promise((resolve) => {
         const start = Date.now();
-        const apiReq = https.get('https://opensky-network.org/api/states/all?lamin=47&lomin=5&lamax=48&lomax=6', {
-          family: 4,
-          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
-          timeout: 15000,
-        }, (apiRes) => {
-          let data = '';
-          apiRes.on('data', chunk => data += chunk);
-          apiRes.on('end', () => resolve({
-            status: apiRes.statusCode,
-            latencyMs: Date.now() - start,
-            bodyLength: data.length,
-            statesCount: (data.match(/"states":\s*\[/) ? 'present' : 'missing'),
-          }));
+        const apiReq = https.get(
+          'https://opensky-network.org/api/states/all?lamin=47&lomin=5&lamax=48&lomax=6',
+          {
+            family: 4,
+            headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+            timeout: 15000,
+          },
+          (apiRes) => {
+            let data = '';
+            apiRes.on('data', (chunk) => (data += chunk));
+            apiRes.on('end', () =>
+              resolve({
+                status: apiRes.statusCode,
+                latencyMs: Date.now() - start,
+                bodyLength: data.length,
+                statesCount: data.match(/"states":\s*\[/) ? 'present' : 'missing',
+              }),
+            );
+          },
+        );
+        apiReq.on('error', (err) =>
+          resolve({ error: err.message, code: err.code, latencyMs: Date.now() - start }),
+        );
+        apiReq.on('timeout', () => {
+          apiReq.destroy();
+          resolve({ error: 'timeout', latencyMs: Date.now() - start });
         });
-        apiReq.on('error', (err) => resolve({ error: err.message, code: err.code, latencyMs: Date.now() - start }));
-        apiReq.on('timeout', () => { apiReq.destroy(); resolve({ error: 'timeout', latencyMs: Date.now() - start }); });
       });
       diag.steps.push({ step: 'api_request', ...apiResult });
     } else {
-      diag.steps.push({ step: 'api_request', skipped: true, reason: 'No token available (auth failure or cooldown active)' });
+      diag.steps.push({
+        step: 'api_request',
+        skipped: true,
+        reason: 'No token available (auth failure or cooldown active)',
+      });
     }
 
     res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
@@ -2142,23 +2616,33 @@ const server = http.createServer(async (req, res) => {
       const channel = (url.searchParams.get('channel') || '').trim().toLowerCase();
 
       const items = Array.isArray(telegramState.items) ? telegramState.items : [];
-      const filtered = items.filter((it) => {
-        if (topic && String(it.topic || '').toLowerCase() !== topic) return false;
-        if (channel && String(it.channel || '').toLowerCase() !== channel) return false;
-        return true;
-      }).slice(0, limit);
+      const filtered = items
+        .filter((it) => {
+          if (topic && String(it.topic || '').toLowerCase() !== topic) return false;
+          if (channel && String(it.channel || '').toLowerCase() !== channel) return false;
+          return true;
+        })
+        .slice(0, limit);
 
-      sendCompressed(req, res, 200, {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=10',
-      }, JSON.stringify({
-        source: 'telegram',
-        earlySignal: true,
-        enabled: TELEGRAM_ENABLED,
-        count: filtered.length,
-        updatedAt: telegramState.lastPollAt ? new Date(telegramState.lastPollAt).toISOString() : null,
-        items: filtered,
-      }));
+      sendCompressed(
+        req,
+        res,
+        200,
+        {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=10',
+        },
+        JSON.stringify({
+          source: 'telegram',
+          earlySignal: true,
+          enabled: TELEGRAM_ENABLED,
+          count: filtered.length,
+          updatedAt: telegramState.lastPollAt
+            ? new Date(telegramState.lastPollAt).toISOString()
+            : null,
+          items: filtered,
+        }),
+      );
     } catch (e) {
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Internal error' }));
@@ -2196,7 +2680,7 @@ const server = http.createServer(async (req, res) => {
         'www.themoscowtimes.com',
         // Africa
         'feeds.24.com',
-        'feeds.capi24.com',  // News24 redirect destination
+        'feeds.capi24.com', // News24 redirect destination
         'islandtimes.org',
         'www.atlanticcouncil.org',
         // RSSHub (NHK, MIIT, MOFCOM)
@@ -2211,14 +2695,25 @@ const server = http.createServer(async (req, res) => {
       // Serve from cache if fresh (5 min for success, 1 min for failures)
       const rssCached = rssResponseCache.get(feedUrl);
       if (rssCached) {
-        const ttl = (rssCached.statusCode && rssCached.statusCode >= 200 && rssCached.statusCode < 300)
-          ? RSS_CACHE_TTL_MS : RSS_NEGATIVE_CACHE_TTL_MS;
+        const ttl =
+          rssCached.statusCode && rssCached.statusCode >= 200 && rssCached.statusCode < 300
+            ? RSS_CACHE_TTL_MS
+            : RSS_NEGATIVE_CACHE_TTL_MS;
         if (Date.now() - rssCached.timestamp < ttl) {
-          return sendCompressed(req, res, rssCached.statusCode || 200, {
-            'Content-Type': rssCached.contentType || 'application/xml',
-            'Cache-Control': rssCached.statusCode >= 200 && rssCached.statusCode < 300 ? 'public, max-age=300' : 'no-cache',
-            'X-Cache': 'HIT',
-          }, rssCached.data);
+          return sendCompressed(
+            req,
+            res,
+            rssCached.statusCode || 200,
+            {
+              'Content-Type': rssCached.contentType || 'application/xml',
+              'Cache-Control':
+                rssCached.statusCode >= 200 && rssCached.statusCode < 300
+                  ? 'public, max-age=300'
+                  : 'no-cache',
+              'X-Cache': 'HIT',
+            },
+            rssCached.data,
+          );
         }
       }
 
@@ -2230,119 +2725,194 @@ const server = http.createServer(async (req, res) => {
           await existing;
           const deduped = rssResponseCache.get(feedUrl);
           if (deduped) {
-            return sendCompressed(req, res, deduped.statusCode || 200, {
-              'Content-Type': deduped.contentType || 'application/xml',
-              'Cache-Control': deduped.statusCode >= 200 && deduped.statusCode < 300 ? 'public, max-age=300' : 'no-cache',
-              'X-Cache': 'DEDUP',
-            }, deduped.data);
+            return sendCompressed(
+              req,
+              res,
+              deduped.statusCode || 200,
+              {
+                'Content-Type': deduped.contentType || 'application/xml',
+                'Cache-Control':
+                  deduped.statusCode >= 200 && deduped.statusCode < 300
+                    ? 'public, max-age=300'
+                    : 'no-cache',
+                'X-Cache': 'DEDUP',
+              },
+              deduped.data,
+            );
           }
           // In-flight completed but nothing cached — serve 502 instead of cascading
-          return safeEnd(res, 502, { 'Content-Type': 'application/json' },
-            JSON.stringify({ error: 'Upstream fetch completed but not cached' }));
+          return safeEnd(
+            res,
+            502,
+            { 'Content-Type': 'application/json' },
+            JSON.stringify({ error: 'Upstream fetch completed but not cached' }),
+          );
         } catch {
           // In-flight fetch failed — serve 502 instead of starting another fetch
-          return safeEnd(res, 502, { 'Content-Type': 'application/json' },
-            JSON.stringify({ error: 'Upstream fetch failed' }));
+          return safeEnd(
+            res,
+            502,
+            { 'Content-Type': 'application/json' },
+            JSON.stringify({ error: 'Upstream fetch failed' }),
+          );
         }
       }
 
       logThrottled('log', `rss-miss:${feedUrl}`, '[Relay] RSS request (MISS):', feedUrl);
 
       const fetchPromise = new Promise((resolveInFlight, rejectInFlight) => {
-      let responseHandled = false;
+        let responseHandled = false;
 
-      const sendError = (statusCode, message) => {
-        if (responseHandled || res.headersSent) return;
-        responseHandled = true;
-        res.writeHead(statusCode, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: message }));
-        rejectInFlight(new Error(message));
-      };
+        const sendError = (statusCode, message) => {
+          if (responseHandled || res.headersSent) return;
+          responseHandled = true;
+          res.writeHead(statusCode, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: message }));
+          rejectInFlight(new Error(message));
+        };
 
-      const fetchWithRedirects = (url, redirectCount = 0) => {
-        if (redirectCount > 3) {
-          return sendError(502, 'Too many redirects');
-        }
-
-        const protocol = url.startsWith('https') ? https : http;
-        const request = protocol.get(url, {
-          headers: {
-            'Accept': 'application/rss+xml, application/xml, text/xml, */*',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept-Language': 'en-US,en;q=0.9',
-          },
-          timeout: 15000
-        }, (response) => {
-          if ([301, 302, 303, 307, 308].includes(response.statusCode) && response.headers.location) {
-            const redirectUrl = response.headers.location.startsWith('http')
-              ? response.headers.location
-              : new URL(response.headers.location, url).href;
-            logThrottled('log', `rss-redirect:${feedUrl}:${redirectUrl}`, `[Relay] Following redirect to: ${redirectUrl}`);
-            return fetchWithRedirects(redirectUrl, redirectCount + 1);
+        const fetchWithRedirects = (url, redirectCount = 0) => {
+          if (redirectCount > 3) {
+            return sendError(502, 'Too many redirects');
           }
 
-          const encoding = response.headers['content-encoding'];
-          let stream = response;
-          if (encoding === 'gzip' || encoding === 'deflate') {
-            stream = encoding === 'gzip' ? response.pipe(zlib.createGunzip()) : response.pipe(zlib.createInflate());
-          }
+          const protocol = url.startsWith('https') ? https : http;
+          const request = protocol.get(
+            url,
+            {
+              headers: {
+                Accept: 'application/rss+xml, application/xml, text/xml, */*',
+                'User-Agent':
+                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept-Language': 'en-US,en;q=0.9',
+              },
+              timeout: 15000,
+            },
+            (response) => {
+              if (
+                [301, 302, 303, 307, 308].includes(response.statusCode) &&
+                response.headers.location
+              ) {
+                const redirectUrl = response.headers.location.startsWith('http')
+                  ? response.headers.location
+                  : new URL(response.headers.location, url).href;
+                logThrottled(
+                  'log',
+                  `rss-redirect:${feedUrl}:${redirectUrl}`,
+                  `[Relay] Following redirect to: ${redirectUrl}`,
+                );
+                return fetchWithRedirects(redirectUrl, redirectCount + 1);
+              }
 
-          const chunks = [];
-          stream.on('data', chunk => chunks.push(chunk));
-          stream.on('end', () => {
-            if (responseHandled || res.headersSent) return;
-            responseHandled = true;
-            const data = Buffer.concat(chunks);
-            // Cache all responses: 2xx with full TTL, non-2xx with short TTL (negative cache)
-            // FIFO eviction: drop oldest-inserted entry if at capacity
-            if (rssResponseCache.size >= RSS_CACHE_MAX_ENTRIES && !rssResponseCache.has(feedUrl)) {
-              const oldest = rssResponseCache.keys().next().value;
-              if (oldest) rssResponseCache.delete(oldest);
-            }
-            rssResponseCache.set(feedUrl, { data, contentType: 'application/xml', statusCode: response.statusCode, timestamp: Date.now() });
-            if (response.statusCode < 200 || response.statusCode >= 300) {
-              logThrottled('warn', `rss-upstream:${feedUrl}:${response.statusCode}`, `[Relay] RSS upstream ${response.statusCode} for ${feedUrl}`);
-            }
-            resolveInFlight();
-            sendCompressed(req, res, response.statusCode, {
-              'Content-Type': 'application/xml',
-              'Cache-Control': response.statusCode >= 200 && response.statusCode < 300 ? 'public, max-age=300' : 'no-cache',
-              'X-Cache': 'MISS',
-            }, data);
-          });
-          stream.on('error', (err) => {
-            logThrottled('error', `rss-decompress:${feedUrl}:${err.code || err.message}`, '[Relay] Decompression error:', err.message);
-            sendError(502, 'Decompression failed: ' + err.message);
-          });
-        });
+              const encoding = response.headers['content-encoding'];
+              let stream = response;
+              if (encoding === 'gzip' || encoding === 'deflate') {
+                stream =
+                  encoding === 'gzip'
+                    ? response.pipe(zlib.createGunzip())
+                    : response.pipe(zlib.createInflate());
+              }
 
-        request.on('error', (err) => {
-          logThrottled('error', `rss-error:${feedUrl}:${err.code || err.message}`, '[Relay] RSS error:', err.message);
-          // Serve stale on error
-          if (rssCached) {
-            if (!responseHandled && !res.headersSent) {
+              const chunks = [];
+              stream.on('data', (chunk) => chunks.push(chunk));
+              stream.on('end', () => {
+                if (responseHandled || res.headersSent) return;
+                responseHandled = true;
+                const data = Buffer.concat(chunks);
+                // Cache all responses: 2xx with full TTL, non-2xx with short TTL (negative cache)
+                // FIFO eviction: drop oldest-inserted entry if at capacity
+                if (
+                  rssResponseCache.size >= RSS_CACHE_MAX_ENTRIES &&
+                  !rssResponseCache.has(feedUrl)
+                ) {
+                  const oldest = rssResponseCache.keys().next().value;
+                  if (oldest) rssResponseCache.delete(oldest);
+                }
+                rssResponseCache.set(feedUrl, {
+                  data,
+                  contentType: 'application/xml',
+                  statusCode: response.statusCode,
+                  timestamp: Date.now(),
+                });
+                if (response.statusCode < 200 || response.statusCode >= 300) {
+                  logThrottled(
+                    'warn',
+                    `rss-upstream:${feedUrl}:${response.statusCode}`,
+                    `[Relay] RSS upstream ${response.statusCode} for ${feedUrl}`,
+                  );
+                }
+                resolveInFlight();
+                sendCompressed(
+                  req,
+                  res,
+                  response.statusCode,
+                  {
+                    'Content-Type': 'application/xml',
+                    'Cache-Control':
+                      response.statusCode >= 200 && response.statusCode < 300
+                        ? 'public, max-age=300'
+                        : 'no-cache',
+                    'X-Cache': 'MISS',
+                  },
+                  data,
+                );
+              });
+              stream.on('error', (err) => {
+                logThrottled(
+                  'error',
+                  `rss-decompress:${feedUrl}:${err.code || err.message}`,
+                  '[Relay] Decompression error:',
+                  err.message,
+                );
+                sendError(502, 'Decompression failed: ' + err.message);
+              });
+            },
+          );
+
+          request.on('error', (err) => {
+            logThrottled(
+              'error',
+              `rss-error:${feedUrl}:${err.code || err.message}`,
+              '[Relay] RSS error:',
+              err.message,
+            );
+            // Serve stale on error
+            if (rssCached) {
+              if (!responseHandled && !res.headersSent) {
+                responseHandled = true;
+                sendCompressed(
+                  req,
+                  res,
+                  200,
+                  { 'Content-Type': 'application/xml', 'X-Cache': 'STALE' },
+                  rssCached.data,
+                );
+              }
+              resolveInFlight();
+              return;
+            }
+            sendError(502, err.message);
+          });
+
+          request.on('timeout', () => {
+            request.destroy();
+            if (rssCached && !responseHandled && !res.headersSent) {
               responseHandled = true;
-              sendCompressed(req, res, 200, { 'Content-Type': 'application/xml', 'X-Cache': 'STALE' }, rssCached.data);
+              sendCompressed(
+                req,
+                res,
+                200,
+                { 'Content-Type': 'application/xml', 'X-Cache': 'STALE' },
+                rssCached.data,
+              );
+              resolveInFlight();
+              return;
             }
-            resolveInFlight();
-            return;
-          }
-          sendError(502, err.message);
-        });
+            sendError(504, 'Request timeout');
+          });
+        };
 
-        request.on('timeout', () => {
-          request.destroy();
-          if (rssCached && !responseHandled && !res.headersSent) {
-            responseHandled = true;
-            sendCompressed(req, res, 200, { 'Content-Type': 'application/xml', 'X-Cache': 'STALE' }, rssCached.data);
-            resolveInFlight();
-            return;
-          }
-          sendError(504, 'Request timeout');
-        });
-      };
-
-      fetchWithRedirects(feedUrl);
+        fetchWithRedirects(feedUrl);
       }); // end fetchPromise
 
       rssInFlight.set(feedUrl, fetchPromise);
@@ -2370,8 +2940,11 @@ const server = http.createServer(async (req, res) => {
 
 function connectUpstream() {
   // Skip if already connected or connecting
-  if (upstreamSocket?.readyState === WebSocket.OPEN ||
-      upstreamSocket?.readyState === WebSocket.CONNECTING) return;
+  if (
+    upstreamSocket?.readyState === WebSocket.OPEN ||
+    upstreamSocket?.readyState === WebSocket.CONNECTING
+  )
+    return;
 
   console.log('[Relay] Connecting to aisstream.io...');
   const socket = new WebSocket(AISSTREAM_URL);
@@ -2396,9 +2969,11 @@ function connectUpstream() {
     const startedAt = Date.now();
     let processed = 0;
 
-    while (processed < UPSTREAM_DRAIN_BATCH &&
-           getUpstreamQueueSize() > 0 &&
-           Date.now() - startedAt < UPSTREAM_DRAIN_BUDGET_MS) {
+    while (
+      processed < UPSTREAM_DRAIN_BATCH &&
+      getUpstreamQueueSize() > 0 &&
+      Date.now() - startedAt < UPSTREAM_DRAIN_BUDGET_MS
+    ) {
       const raw = dequeueUpstreamMessage();
       if (!raw) break;
       processRawUpstreamMessage(raw);
@@ -2427,11 +3002,18 @@ function connectUpstream() {
       return;
     }
     console.log('[Relay] Connected to aisstream.io');
-    socket.send(JSON.stringify({
-      APIKey: API_KEY,
-      BoundingBoxes: [[[-90, -180], [90, 180]]],
-      FilterMessageTypes: ['PositionReport'],
-    }));
+    socket.send(
+      JSON.stringify({
+        APIKey: API_KEY,
+        BoundingBoxes: [
+          [
+            [-90, -180],
+            [90, 180],
+          ],
+        ],
+        FilterMessageTypes: ['PositionReport'],
+      }),
+    );
   });
 
   socket.on('message', (data) => {
@@ -2448,7 +3030,9 @@ function connectUpstream() {
     if (!upstreamPaused && getUpstreamQueueSize() >= UPSTREAM_QUEUE_HIGH_WATER) {
       upstreamPaused = true;
       socket.pause();
-      console.warn(`[Relay] Upstream paused (queue=${getUpstreamQueueSize()}, dropped=${droppedMessages})`);
+      console.warn(
+        `[Relay] Upstream paused (queue=${getUpstreamQueueSize()}, dropped=${droppedMessages})`,
+      );
     }
     scheduleUpstreamDrain();
   });
@@ -2510,7 +3094,9 @@ wss.on('connection', (ws, req) => {
 setInterval(() => {
   const mem = process.memoryUsage();
   const rssGB = mem.rss / 1024 / 1024 / 1024;
-  console.log(`[Monitor] rss=${(mem.rss / 1024 / 1024).toFixed(0)}MB heap=${(mem.heapUsed / 1024 / 1024).toFixed(0)}MB/${(mem.heapTotal / 1024 / 1024).toFixed(0)}MB external=${(mem.external / 1024 / 1024).toFixed(0)}MB vessels=${vessels.size} density=${densityGrid.size} candidates=${candidateReports.size} msgs=${messageCount} dropped=${droppedMessages}`);
+  console.log(
+    `[Monitor] rss=${(mem.rss / 1024 / 1024).toFixed(0)}MB heap=${(mem.heapUsed / 1024 / 1024).toFixed(0)}MB/${(mem.heapTotal / 1024 / 1024).toFixed(0)}MB external=${(mem.external / 1024 / 1024).toFixed(0)}MB vessels=${vessels.size} density=${densityGrid.size} candidates=${candidateReports.size} msgs=${messageCount} dropped=${droppedMessages}`,
+  );
   // Emergency cleanup if memory exceeds 450MB RSS
   if (rssGB > 0.45) {
     console.warn('[Monitor] High memory — forcing aggressive cleanup');

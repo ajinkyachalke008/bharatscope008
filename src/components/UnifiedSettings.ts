@@ -2,7 +2,13 @@ import { FEEDS, INTEL_SOURCES, SOURCE_REGION_MAP } from '@/config/feeds';
 import { PANEL_CATEGORY_MAP } from '@/config/panels';
 import { SITE_VARIANT } from '@/config/variant';
 import { LANGUAGES, changeLanguage, getCurrentLanguage, t } from '@/services/i18n';
-import { getAiFlowSettings, setAiFlowSetting, getStreamQuality, setStreamQuality, STREAM_QUALITY_OPTIONS } from '@/services/ai-flow-settings';
+import {
+  getAiFlowSettings,
+  setAiFlowSetting,
+  getStreamQuality,
+  setStreamQuality,
+  STREAM_QUALITY_OPTIONS,
+} from '@/services/ai-flow-settings';
 import type { StreamQuality } from '@/services/ai-flow-settings';
 import { escapeHtml } from '@/utils/sanitize';
 import { trackLanguageChange } from '@/services/analytics';
@@ -10,7 +16,7 @@ import type { PanelConfig } from '@/types';
 
 const GEAR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`;
 
-const DESKTOP_RELEASES_URL = 'https://github.com/koala73/worldmonitor/releases';
+const DESKTOP_RELEASES_URL = 'https://github.com/ajinkyachalke008/worldmonitor/releases';
 
 export interface UnifiedSettingsConfig {
   getPanelSettings: () => Record<string, PanelConfig>;
@@ -268,12 +274,12 @@ export class UnifiedSettings {
     this.activeTab = tab;
 
     // Update tab buttons
-    this.overlay.querySelectorAll('.unified-settings-tab').forEach(el => {
+    this.overlay.querySelectorAll('.unified-settings-tab').forEach((el) => {
       el.classList.toggle('active', (el as HTMLElement).dataset.tab === tab);
     });
 
     // Update tab panels
-    this.overlay.querySelectorAll('.unified-settings-tab-panel').forEach(el => {
+    this.overlay.querySelectorAll('.unified-settings-tab-panel').forEach((el) => {
       el.classList.toggle('active', (el as HTMLElement).dataset.panelId === tab);
     });
   }
@@ -286,14 +292,29 @@ export class UnifiedSettings {
 
     // Map section
     html += `<div class="ai-flow-section-label">${t('components.insights.sectionMap')}</div>`;
-    html += this.toggleRowHtml('us-map-flash', t('components.insights.mapFlashLabel'), t('components.insights.mapFlashDesc'), settings.mapNewsFlash);
+    html += this.toggleRowHtml(
+      'us-map-flash',
+      t('components.insights.mapFlashLabel'),
+      t('components.insights.mapFlashDesc'),
+      settings.mapNewsFlash,
+    );
 
     // AI Analysis section (web-only)
     if (!this.config.isDesktopApp) {
       html += `<div class="ai-flow-section-label">${t('components.insights.sectionAi')}</div>`;
-      html += this.toggleRowHtml('us-cloud', t('components.insights.aiFlowCloudLabel'), t('components.insights.aiFlowCloudDesc'), settings.cloudLlm);
+      html += this.toggleRowHtml(
+        'us-cloud',
+        t('components.insights.aiFlowCloudLabel'),
+        t('components.insights.aiFlowCloudDesc'),
+        settings.cloudLlm,
+      );
 
-      html += this.toggleRowHtml('us-browser', t('components.insights.aiFlowBrowserLabel'), t('components.insights.aiFlowBrowserDesc'), settings.browserModel);
+      html += this.toggleRowHtml(
+        'us-browser',
+        t('components.insights.aiFlowBrowserLabel'),
+        t('components.insights.aiFlowBrowserDesc'),
+        settings.browserModel,
+      );
       html += `<div class="ai-flow-toggle-warn" style="display:${settings.browserModel ? 'block' : 'none'}">${t('components.insights.aiFlowBrowserWarn')}</div>`;
 
       // Ollama CTA
@@ -380,12 +401,12 @@ export class UnifiedSettings {
     const panelKeys = new Set(Object.keys(this.config.getPanelSettings()));
     const variant = SITE_VARIANT || 'full';
     const categories: Array<{ key: string; label: string }> = [
-      { key: 'all', label: t('header.sourceRegionAll') }
+      { key: 'all', label: t('header.sourceRegionAll') },
     ];
 
     for (const [catKey, catDef] of Object.entries(PANEL_CATEGORY_MAP)) {
       if (catDef.variants && !catDef.variants.includes(variant)) continue;
-      const hasPanel = catDef.panelKeys.some(pk => panelKeys.has(pk));
+      const hasPanel = catDef.panelKeys.some((pk) => panelKeys.has(pk));
       if (hasPanel) {
         categories.push({ key: catKey, label: t(catDef.labelKey) });
       }
@@ -397,8 +418,9 @@ export class UnifiedSettings {
   private getVisiblePanelEntries(): Array<[string, PanelConfig]> {
     const panelSettings = this.config.getPanelSettings();
     const variant = SITE_VARIANT || 'full';
-    let entries = Object.entries(panelSettings)
-      .filter(([key]) => key !== 'runtime-config' || this.config.isDesktopApp);
+    let entries = Object.entries(panelSettings).filter(
+      ([key]) => key !== 'runtime-config' || this.config.isDesktopApp,
+    );
 
     if (this.activePanelCategory !== 'all') {
       const catDef = PANEL_CATEGORY_MAP[this.activePanelCategory];
@@ -410,10 +432,11 @@ export class UnifiedSettings {
 
     if (this.panelFilter) {
       const lower = this.panelFilter.toLowerCase();
-      entries = entries.filter(([key, panel]) =>
-        key.toLowerCase().includes(lower) ||
-        panel.name.toLowerCase().includes(lower) ||
-        this.config.getLocalizedPanelName(key, panel.name).toLowerCase().includes(lower)
+      entries = entries.filter(
+        ([key, panel]) =>
+          key.toLowerCase().includes(lower) ||
+          panel.name.toLowerCase().includes(lower) ||
+          this.config.getLocalizedPanelName(key, panel.name).toLowerCase().includes(lower),
       );
     }
 
@@ -425,9 +448,12 @@ export class UnifiedSettings {
     if (!bar) return;
 
     const categories = this.getAvailablePanelCategories();
-    bar.innerHTML = categories.map(c =>
-      `<button class="unified-settings-region-pill${this.activePanelCategory === c.key ? ' active' : ''}" data-panel-cat="${c.key}">${escapeHtml(c.label)}</button>`
-    ).join('');
+    bar.innerHTML = categories
+      .map(
+        (c) =>
+          `<button class="unified-settings-region-pill${this.activePanelCategory === c.key ? ' active' : ''}" data-panel-cat="${c.key}">${escapeHtml(c.label)}</button>`,
+      )
+      .join('');
   }
 
   private renderPanelsTab(): void {
@@ -435,18 +461,22 @@ export class UnifiedSettings {
     if (!container) return;
 
     const entries = this.getVisiblePanelEntries();
-    container.innerHTML = entries.map(([key, panel]) => `
+    container.innerHTML = entries
+      .map(
+        ([key, panel]) => `
       <div class="panel-toggle-item ${panel.enabled ? 'active' : ''}" data-panel="${escapeHtml(key)}">
         <div class="panel-toggle-checkbox">${panel.enabled ? '✓' : ''}</div>
         <span class="panel-toggle-label">${escapeHtml(this.config.getLocalizedPanelName(key, panel.name))}</span>
       </div>
-    `).join('');
+    `,
+      )
+      .join('');
   }
 
   private getAvailableRegions(): Array<{ key: string; label: string }> {
     const feedKeys = new Set(Object.keys(FEEDS));
     const regions: Array<{ key: string; label: string }> = [
-      { key: 'all', label: t('header.sourceRegionAll') }
+      { key: 'all', label: t('header.sourceRegionAll') },
     ];
 
     for (const [regionKey, regionDef] of Object.entries(SOURCE_REGION_MAP)) {
@@ -456,7 +486,7 @@ export class UnifiedSettings {
         }
         continue;
       }
-      const hasFeeds = regionDef.feedKeys.some(fk => feedKeys.has(fk));
+      const hasFeeds = regionDef.feedKeys.some((fk) => feedKeys.has(fk));
       if (hasFeeds) {
         regions.push({ key: regionKey, label: t(regionDef.labelKey) });
       }
@@ -472,16 +502,19 @@ export class UnifiedSettings {
     for (const [regionKey, regionDef] of Object.entries(SOURCE_REGION_MAP)) {
       const sources: string[] = [];
       if (regionKey === 'intel') {
-        INTEL_SOURCES.forEach(f => sources.push(f.name));
+        INTEL_SOURCES.forEach((f) => sources.push(f.name));
       } else {
         for (const fk of regionDef.feedKeys) {
           if (feedKeys.has(fk)) {
-            FEEDS[fk]!.forEach(f => sources.push(f.name));
+            FEEDS[fk]!.forEach((f) => sources.push(f.name));
           }
         }
       }
       if (sources.length > 0) {
-        map.set(regionKey, sources.sort((a, b) => a.localeCompare(b)));
+        map.set(
+          regionKey,
+          sources.sort((a, b) => a.localeCompare(b)),
+        );
       }
     }
 
@@ -499,7 +532,7 @@ export class UnifiedSettings {
 
     if (this.sourceFilter) {
       const lower = this.sourceFilter.toLowerCase();
-      sources = sources.filter(s => s.toLowerCase().includes(lower));
+      sources = sources.filter((s) => s.toLowerCase().includes(lower));
     }
 
     return sources;
@@ -510,9 +543,12 @@ export class UnifiedSettings {
     if (!bar) return;
 
     const regions = this.getAvailableRegions();
-    bar.innerHTML = regions.map(r =>
-      `<button class="unified-settings-region-pill${this.activeSourceRegion === r.key ? ' active' : ''}" data-region="${r.key}">${escapeHtml(r.label)}</button>`
-    ).join('');
+    bar.innerHTML = regions
+      .map(
+        (r) =>
+          `<button class="unified-settings-region-pill${this.activeSourceRegion === r.key ? ' active' : ''}" data-region="${r.key}">${escapeHtml(r.label)}</button>`,
+      )
+      .join('');
   }
 
   private renderSourcesGrid(): void {
@@ -522,16 +558,18 @@ export class UnifiedSettings {
     const sources = this.getVisibleSourceNames();
     const disabled = this.config.getDisabledSources();
 
-    container.innerHTML = sources.map(source => {
-      const isEnabled = !disabled.has(source);
-      const escaped = escapeHtml(source);
-      return `
+    container.innerHTML = sources
+      .map((source) => {
+        const isEnabled = !disabled.has(source);
+        const escaped = escapeHtml(source);
+        return `
         <div class="source-toggle-item ${isEnabled ? 'active' : ''}" data-source="${escaped}">
           <div class="source-toggle-checkbox">${isEnabled ? '✓' : ''}</div>
           <span class="source-toggle-label">${escaped}</span>
         </div>
       `;
-    }).join('');
+      })
+      .join('');
   }
 
   private updateSourcesCounter(): void {
@@ -542,6 +580,9 @@ export class UnifiedSettings {
     const allSources = this.config.getAllSourceNames();
     const enabledTotal = allSources.length - disabled.size;
 
-    counter.textContent = t('header.sourcesEnabled', { enabled: String(enabledTotal), total: String(allSources.length) });
+    counter.textContent = t('header.sourcesEnabled', {
+      enabled: String(enabledTotal),
+      total: String(allSources.length),
+    });
   }
 }

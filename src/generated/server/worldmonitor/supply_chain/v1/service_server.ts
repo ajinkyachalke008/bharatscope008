@@ -79,8 +79,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -91,7 +91,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -115,9 +115,18 @@ export interface RouteDescriptor {
 }
 
 export interface SupplyChainServiceHandler {
-  getShippingRates(ctx: ServerContext, req: GetShippingRatesRequest): Promise<GetShippingRatesResponse>;
-  getChokepointStatus(ctx: ServerContext, req: GetChokepointStatusRequest): Promise<GetChokepointStatusResponse>;
-  getCriticalMinerals(ctx: ServerContext, req: GetCriticalMineralsRequest): Promise<GetCriticalMineralsResponse>;
+  getShippingRates(
+    ctx: ServerContext,
+    req: GetShippingRatesRequest,
+  ): Promise<GetShippingRatesResponse>;
+  getChokepointStatus(
+    ctx: ServerContext,
+    req: GetChokepointStatusRequest,
+  ): Promise<GetChokepointStatusResponse>;
+  getCriticalMinerals(
+    ctx: ServerContext,
+    req: GetCriticalMineralsRequest,
+  ): Promise<GetCriticalMineralsResponse>;
 }
 
 export function createSupplyChainServiceRoutes(
@@ -126,14 +135,14 @@ export function createSupplyChainServiceRoutes(
 ): RouteDescriptor[] {
   return [
     {
-      method: "POST",
-      path: "/api/supply-chain/v1/get-shipping-rates",
+      method: 'POST',
+      path: '/api/supply-chain/v1/get-shipping-rates',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetShippingRatesRequest;
+          const body = (await req.json()) as GetShippingRatesRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getShippingRates", body);
+            const bodyViolations = options.validateRequest('getShippingRates', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -148,13 +157,13 @@ export function createSupplyChainServiceRoutes(
           const result = await handler.getShippingRates(ctx, body);
           return new Response(JSON.stringify(result as GetShippingRatesResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -163,20 +172,20 @@ export function createSupplyChainServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/supply-chain/v1/get-chokepoint-status",
+      method: 'POST',
+      path: '/api/supply-chain/v1/get-chokepoint-status',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetChokepointStatusRequest;
+          const body = (await req.json()) as GetChokepointStatusRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getChokepointStatus", body);
+            const bodyViolations = options.validateRequest('getChokepointStatus', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -191,13 +200,13 @@ export function createSupplyChainServiceRoutes(
           const result = await handler.getChokepointStatus(ctx, body);
           return new Response(JSON.stringify(result as GetChokepointStatusResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -206,20 +215,20 @@ export function createSupplyChainServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/supply-chain/v1/get-critical-minerals",
+      method: 'POST',
+      path: '/api/supply-chain/v1/get-critical-minerals',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetCriticalMineralsRequest;
+          const body = (await req.json()) as GetCriticalMineralsRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getCriticalMinerals", body);
+            const bodyViolations = options.validateRequest('getCriticalMinerals', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -234,13 +243,13 @@ export function createSupplyChainServiceRoutes(
           const result = await handler.getCriticalMinerals(ctx, body);
           return new Response(JSON.stringify(result as GetCriticalMineralsResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -249,7 +258,7 @@ export function createSupplyChainServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },

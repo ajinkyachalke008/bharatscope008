@@ -1,9 +1,29 @@
-import type { NewsItem, Monitor, PanelConfig, MapLayers, InternetOutage, SocialUnrestEvent, MilitaryFlight, MilitaryFlightCluster, MilitaryVessel, MilitaryVesselCluster, CyberThreat, USNIFleetReport } from '@/types';
-import type { MapContainer, Panel, NewsPanel, SignalModal, StatusPanel, SearchModal } from '@/components';
+import type {
+  NewsItem,
+  Monitor,
+  PanelConfig,
+  MapLayers,
+  InternetOutage,
+  SocialUnrestEvent,
+  MilitaryFlight,
+  MilitaryFlightCluster,
+  MilitaryVessel,
+  MilitaryVesselCluster,
+  CyberThreat,
+  USNIFleetReport,
+} from '@/types';
+import type {
+  MapContainer,
+  Panel,
+  NewsPanel,
+  SignalModal,
+  StatusPanel,
+  SearchModal,
+} from '@/components';
 import type { IntelligenceGapBadge } from '@/components';
 import type { MarketData, ClusteredEvent } from '@/types';
 import type { PredictionMarket } from '@/services/prediction';
-import type { TimeRange } from '@/components';
+import type { MapView, TimeRange } from '@/components';
 import type { Earthquake } from '@/services/earthquakes';
 import type { CountryBriefPage } from '@/components/CountryBriefPage';
 import type { CountryTimeline } from '@/components/CountryTimeline';
@@ -37,7 +57,12 @@ export interface CountryBriefSignals {
 export interface IntelligenceCache {
   outages?: InternetOutage[];
   protests?: { events: SocialUnrestEvent[]; sources: { acled: number; gdelt: number } };
-  military?: { flights: MilitaryFlight[]; flightClusters: MilitaryFlightCluster[]; vessels: MilitaryVessel[]; vesselClusters: MilitaryVesselCluster[] };
+  military?: {
+    flights: MilitaryFlight[];
+    flightClusters: MilitaryFlightCluster[];
+    vessels: MilitaryVessel[];
+    vesselClusters: MilitaryVesselCluster[];
+  };
   earthquakes?: Earthquake[];
   usniFleet?: USNIFleetReport;
 }
@@ -105,4 +130,6 @@ export interface AppContext {
   initialUrlState: ParsedMapUrlState | null;
   readonly PANEL_ORDER_KEY: string;
   readonly PANEL_SPANS_KEY: string;
+
+  activeRegion: MapView;
 }

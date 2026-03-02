@@ -55,10 +55,18 @@ export function openStoryModal(data: StoryData): void {
   });
   modalEl.querySelector('.story-close-x')?.addEventListener('click', closeStoryModal);
   modalEl.querySelector('.story-save')?.addEventListener('click', downloadStory);
-  modalEl.querySelector('.story-whatsapp')?.addEventListener('click', () => currentData && shareWhatsApp(currentData));
-  modalEl.querySelector('.story-twitter')?.addEventListener('click', () => currentData && shareTwitter(currentData));
-  modalEl.querySelector('.story-linkedin')?.addEventListener('click', () => currentData && shareLinkedIn(currentData));
-  modalEl.querySelector('.story-copy')?.addEventListener('click', () => currentData && copyDeepLink(currentData));
+  modalEl
+    .querySelector('.story-whatsapp')
+    ?.addEventListener('click', () => currentData && shareWhatsApp(currentData));
+  modalEl
+    .querySelector('.story-twitter')
+    ?.addEventListener('click', () => currentData && shareTwitter(currentData));
+  modalEl
+    .querySelector('.story-linkedin')
+    ?.addEventListener('click', () => currentData && shareLinkedIn(currentData));
+  modalEl
+    .querySelector('.story-copy')
+    ?.addEventListener('click', () => currentData && copyDeepLink(currentData));
 
   document.body.appendChild(modalEl);
 
@@ -122,23 +130,25 @@ async function shareWhatsApp(data: StoryData): Promise<void> {
     return;
   }
 
-  const file = new File([currentBlob], `${data.countryCode.toLowerCase()}-worldmonitor.png`, { type: 'image/png' });
+  const file = new File([currentBlob], `${data.countryCode.toLowerCase()}-worldmonitor.png`, {
+    type: 'image/png',
+  });
   const urls = getShareUrls(data);
 
   if (navigator.share && navigator.canShare?.({ files: [file] })) {
     try {
       await navigator.share({
         text: shareTexts.whatsapp(data).replace('\n\n', '\n'),
-        files: [file]
+        files: [file],
       });
       return;
-    } catch { /* user cancelled */ }
+    } catch {
+      /* user cancelled */
+    }
   }
 
   try {
-    await navigator.clipboard.write([
-      new ClipboardItem({ 'image/png': currentBlob }),
-    ]);
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': currentBlob })]);
     flashButton('.story-whatsapp', t('modals.story.copied'), t('modals.story.whatsapp'));
   } catch {
     downloadStory();
@@ -171,6 +181,8 @@ function flashButton(selector: string, flashText: string, originalText: string):
   const span = btn.querySelector('span');
   if (span) {
     span.textContent = flashText;
-    setTimeout(() => { if (span) span.textContent = originalText; }, 2500);
+    setTimeout(() => {
+      if (span) span.textContent = originalText;
+    }, 2500);
   }
 }

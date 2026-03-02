@@ -25,7 +25,12 @@ import {
   type RuntimeFeatureId,
   type RuntimeSecretKey,
 } from '@/services/runtime-config';
-import { getApiBaseUrl, getRemoteApiBaseUrl, isDesktopRuntime, resolveLocalApiPort } from '@/services/runtime';
+import {
+  getApiBaseUrl,
+  getRemoteApiBaseUrl,
+  isDesktopRuntime,
+  resolveLocalApiPort,
+} from '@/services/runtime';
 import { tryInvokeTauri, invokeTauri } from '@/services/tauri-bridge';
 import { escapeHtml } from '@/utils/sanitize';
 import { initI18n, t } from '@/services/i18n';
@@ -54,7 +59,10 @@ async function invokeDesktopAction(command: string, successLabel: string): Promi
 }
 
 function closeSettingsWindow(): void {
-  void tryInvokeTauri<void>('close_settings_window').then(() => { }, () => window.close());
+  void tryInvokeTauri<void>('close_settings_window').then(
+    () => {},
+    () => window.close(),
+  );
 }
 
 function getSidecarBase(): string {
@@ -67,7 +75,9 @@ async function diagFetch(path: string, init?: RequestInit): Promise<Response> {
   if (!_diagToken) {
     try {
       _diagToken = await tryInvokeTauri<string>('get_local_api_token');
-    } catch { /* token unavailable */ }
+    } catch {
+      /* token unavailable */
+    }
   }
   const headers = new Headers(init?.headers);
   if (_diagToken) headers.set('Authorization', `Bearer ${_diagToken}`);
@@ -77,13 +87,19 @@ async function diagFetch(path: string, init?: RequestInit): Promise<Response> {
 // ── Sidebar icons ──
 
 const SIDEBAR_ICONS: Record<string, string> = {
-  overview: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95a15.65 15.65 0 00-1.38-3.56A8.03 8.03 0 0118.92 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.987 7.987 0 015.08 16zm2.95-8H5.08a7.987 7.987 0 014.33-3.56A15.65 15.65 0 008.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 01-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></svg>',
+  overview:
+    '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95a15.65 15.65 0 00-1.38-3.56A8.03 8.03 0 0118.92 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2 0 .68.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.987 7.987 0 015.08 16zm2.95-8H5.08a7.987 7.987 0 014.33-3.56A15.65 15.65 0 008.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2 0-.68.07-1.35.16-2h4.68c.09.65.16 1.32.16 2 0 .68-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 01-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2 0-.68-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></svg>',
   ai: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M21 10.12h-6.78l2.74-2.82c-2.73-2.7-7.15-2.8-9.88-.1s-2.73 7.08 0 9.79 7.15 2.71 9.88 0C18.32 15.65 19 14.08 19 12.1h2c0 1.98-.88 4.55-2.64 6.29-3.51 3.48-9.21 3.48-12.72 0-3.5-3.47-3.53-9.11-.02-12.58s9.14-3.49 12.65 0L21 3v7.12zM12.5 8v4.25l3.5 2.08-.72 1.21L11 13V8h1.5z"/></svg>',
-  economy: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/></svg>',
-  markets: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z"/></svg>',
-  security: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>',
-  tracking: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>',
-  debug: '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5c-.49 0-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z"/></svg>',
+  economy:
+    '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/></svg>',
+  markets:
+    '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z"/></svg>',
+  security:
+    '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>',
+  tracking:
+    '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>',
+  debug:
+    '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5c-.49 0-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z"/></svg>',
 };
 
 // ── Sidebar ──
@@ -111,7 +127,8 @@ function renderSidebar(): void {
   const items: string[] = [];
 
   const progress = getTotalProgress();
-  const overviewDotClass = progress.ready === progress.total ? 'dot-ok' : progress.ready > 0 ? 'dot-partial' : 'dot-warn';
+  const overviewDotClass =
+    progress.ready === progress.total ? 'dot-ok' : progress.ready > 0 ? 'dot-partial' : 'dot-warn';
   items.push(`
     <button class="settings-nav-item${activeSection === 'overview' ? ' active' : ''}" data-section="overview" role="tab" aria-selected="${activeSection === 'overview'}">
       ${SIDEBAR_ICONS.overview}
@@ -153,7 +170,10 @@ function renderSection(sectionId: string): void {
   const area = document.getElementById('contentArea');
   if (!area) return;
 
-  if (_diagCleanup) { _diagCleanup(); _diagCleanup = null; }
+  if (_diagCleanup) {
+    _diagCleanup();
+    _diagCleanup = null;
+  }
   activeSection = sectionId;
   renderSidebar();
 
@@ -166,7 +186,7 @@ function renderSection(sectionId: string): void {
     } else if (sectionId === 'debug') {
       renderDebug(area);
     } else {
-      const cat = SETTINGS_CATEGORIES.find(c => c.id === sectionId);
+      const cat = SETTINGS_CATEGORIES.find((c) => c.id === sectionId);
       if (cat) renderFeatureSection(area, cat);
     }
 
@@ -184,16 +204,22 @@ function renderOverview(area: HTMLElement): void {
   const pct = total > 0 ? (ready / total) * 100 : 0;
   const circumference = 2 * Math.PI * 40;
   const dashOffset = circumference - (pct / 100) * circumference;
-  const ringColor = ready === total ? 'var(--settings-green)' : ready > 0 ? 'var(--settings-blue)' : 'var(--settings-yellow)';
+  const ringColor =
+    ready === total
+      ? 'var(--settings-green)'
+      : ready > 0
+        ? 'var(--settings-blue)'
+        : 'var(--settings-yellow)';
 
   const wmState = getSecretState('WORLDMONITOR_API_KEY');
   const wmStatusText = wmState.present ? 'Active' : 'Not set';
   const wmStatusClass = wmState.present ? 'ok' : 'warn';
   const alreadyRegistered = localStorage.getItem('wm-waitlist-registered') === '1';
 
-  const catCards = SETTINGS_CATEGORIES.map(cat => {
+  const catCards = SETTINGS_CATEGORIES.map((cat) => {
     const { ready: catReady, total: catTotal } = getFeatureStatusCounts(cat);
-    const cls = catReady === catTotal ? 'ov-cat-ok' : catReady > 0 ? 'ov-cat-partial' : 'ov-cat-warn';
+    const cls =
+      catReady === catTotal ? 'ov-cat-ok' : catReady > 0 ? 'ov-cat-partial' : 'ov-cat-warn';
     return `<button class="settings-ov-cat ${cls}" data-section="${cat.id}">
       <span class="settings-ov-cat-label">${escapeHtml(cat.label)}</span>
       <span class="settings-ov-cat-count">${catReady}/${catTotal} ready</span>
@@ -238,9 +264,12 @@ function renderOverview(area: HTMLElement): void {
       <section class="wm-section">
         <h2 class="wm-section-title">${t('modals.settingsWindow.worldMonitor.register.title')}</h2>
         <p class="wm-section-desc">${t('modals.settingsWindow.worldMonitor.register.description')}</p>
-        ${alreadyRegistered ? `
+        ${
+          alreadyRegistered
+            ? `
         <p class="wm-reg-status ok">${t('modals.settingsWindow.worldMonitor.register.alreadyRegistered')}</p>
-        ` : `
+        `
+            : `
         <div class="wm-register-row">
           <input type="email" class="wm-input wm-email" data-wm-email
             placeholder="${t('modals.settingsWindow.worldMonitor.register.emailPlaceholder')}" />
@@ -249,7 +278,8 @@ function renderOverview(area: HTMLElement): void {
           </button>
         </div>
         <p class="wm-reg-status" data-wm-reg-status></p>
-        `}
+        `
+        }
       </section>
     </div>
   `;
@@ -293,15 +323,17 @@ function initOverviewListeners(area: HTMLElement): void {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, source: 'desktop-settings' }),
       });
-      const data = await res.json() as { status?: string; error?: string };
+      const data = (await res.json()) as { status?: string; error?: string };
       if (data.status === 'already_registered' || data.status === 'registered') {
         localStorage.setItem('wm-waitlist-registered', '1');
-        regStatus.textContent = data.status === 'already_registered'
-          ? t('modals.settingsWindow.worldMonitor.register.alreadyRegistered')
-          : t('modals.settingsWindow.worldMonitor.register.success');
+        regStatus.textContent =
+          data.status === 'already_registered'
+            ? t('modals.settingsWindow.worldMonitor.register.alreadyRegistered')
+            : t('modals.settingsWindow.worldMonitor.register.success');
         regStatus.className = 'wm-reg-status ok';
       } else {
-        regStatus.textContent = data.error || t('modals.settingsWindow.worldMonitor.register.error');
+        regStatus.textContent =
+          data.error || t('modals.settingsWindow.worldMonitor.register.error');
         regStatus.className = 'wm-reg-status error';
       }
     } catch {
@@ -313,7 +345,7 @@ function initOverviewListeners(area: HTMLElement): void {
     }
   });
 
-  area.querySelectorAll<HTMLButtonElement>('.settings-ov-cat[data-section]').forEach(btn => {
+  area.querySelectorAll<HTMLButtonElement>('.settings-ov-cat[data-section]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const section = btn.dataset.section;
       if (section) renderSection(section);
@@ -325,23 +357,32 @@ function initOverviewListeners(area: HTMLElement): void {
 
 function renderFeatureSection(area: HTMLElement, cat: SettingsCategory): void {
   const features = cat.features
-    .map(fid => RUNTIME_FEATURES.find(f => f.id === fid))
+    .map((fid) => RUNTIME_FEATURES.find((f) => f.id === fid))
     .filter(Boolean) as RuntimeFeatureDefinition[];
 
-  const featureCards = features.map(feature => {
-    const enabled = isFeatureEnabled(feature.id);
-    const available = isFeatureAvailable(feature.id);
-    const effectiveSecrets = getEffectiveSecrets(feature);
-    const allStaged = !available && effectiveSecrets.every(
-      k => getSecretState(k).valid || (settingsManager.hasPending(k) && settingsManager.getValidationState(k).validated !== false)
-    );
-    const borderClass = available ? 'ready' : allStaged ? 'staged' : 'needs';
-    const pillClass = available ? 'ok' : allStaged ? 'staged' : 'warn';
-    const pillLabel = available ? 'Ready' : allStaged ? 'Staged' : 'Needs keys';
-    const secretRows = effectiveSecrets.map(key => renderSecretInput(key, feature.id)).join('');
-    const fallbackHtml = (available || allStaged) ? '' : `<p class="settings-feat-fallback">${escapeHtml(feature.fallback)}</p>`;
+  const featureCards = features
+    .map((feature) => {
+      const enabled = isFeatureEnabled(feature.id);
+      const available = isFeatureAvailable(feature.id);
+      const effectiveSecrets = getEffectiveSecrets(feature);
+      const allStaged =
+        !available &&
+        effectiveSecrets.every(
+          (k) =>
+            getSecretState(k).valid ||
+            (settingsManager.hasPending(k) &&
+              settingsManager.getValidationState(k).validated !== false),
+        );
+      const borderClass = available ? 'ready' : allStaged ? 'staged' : 'needs';
+      const pillClass = available ? 'ok' : allStaged ? 'staged' : 'warn';
+      const pillLabel = available ? 'Ready' : allStaged ? 'Staged' : 'Needs keys';
+      const secretRows = effectiveSecrets.map((key) => renderSecretInput(key, feature.id)).join('');
+      const fallbackHtml =
+        available || allStaged
+          ? ''
+          : `<p class="settings-feat-fallback">${escapeHtml(feature.fallback)}</p>`;
 
-    return `
+      return `
       <div class="settings-feat ${borderClass}" data-feature-id="${feature.id}">
         <div class="settings-feat-header" data-feat-toggle-expand="${feature.id}">
           <label class="settings-feat-toggle-label" data-click-stop>
@@ -363,7 +404,8 @@ function renderFeatureSection(area: HTMLElement, cat: SettingsCategory): void {
         </div>
       </div>
     `;
-  }).join('');
+    })
+    .join('');
 
   area.innerHTML = `
     <div class="settings-section-header">
@@ -385,13 +427,23 @@ function renderSecretInput(key: RuntimeSecretKey, _featureId: RuntimeFeatureId):
   const showGetKey = signupUrl && !state.present && !pending;
 
   const statusText = pending
-    ? (validated === false ? 'Invalid' : 'Staged')
-    : !state.present ? 'Missing' : state.valid ? 'Valid' : 'Looks invalid';
+    ? validated === false
+      ? 'Invalid'
+      : 'Staged'
+    : !state.present
+      ? 'Missing'
+      : state.valid
+        ? 'Valid'
+        : 'Looks invalid';
   const statusClass = pending
-    ? (validated === false ? 'warn' : 'staged')
-    : state.valid ? 'ok' : 'warn';
+    ? validated === false
+      ? 'warn'
+      : 'staged'
+    : state.valid
+      ? 'ok'
+      : 'warn';
   const inputClass = pending ? (validated === false ? 'invalid' : 'valid-staged') : '';
-  const hintText = pending && validated === false ? (message || 'Invalid value') : null;
+  const hintText = pending && validated === false ? message || 'Invalid value' : null;
 
   if (key === 'OLLAMA_MODEL') {
     const storedModel = pending
@@ -423,7 +475,7 @@ function renderSecretInput(key: RuntimeSecretKey, _featureId: RuntimeFeatureId):
       <div class="settings-input-wrapper${showGetKey ? ' has-suffix' : ''}">
         <input type="${isPlaintext ? 'text' : 'password'}" data-secret="${key}" data-feature="${_featureId}"
           placeholder="${pending ? 'Staged' : 'Enter value...'}" autocomplete="off" class="${inputClass}"
-          ${pending ? `value="${isPlaintext ? escapeHtml(settingsManager.getPending(key) || '') : MASKED_SENTINEL}"` : (isPlaintext && state.present ? `value="${escapeHtml(getRuntimeConfigSnapshot().secrets[key]?.value || '')}"` : '')}>
+          ${pending ? `value="${isPlaintext ? escapeHtml(settingsManager.getPending(key) || '') : MASKED_SENTINEL}"` : isPlaintext && state.present ? `value="${escapeHtml(getRuntimeConfigSnapshot().secrets[key]?.value || '')}"` : ''}>
         ${getKeyHtml}
       </div>
       ${hintText ? `<span class="settings-secret-hint">${escapeHtml(hintText)}</span>` : ''}
@@ -432,7 +484,7 @@ function renderSecretInput(key: RuntimeSecretKey, _featureId: RuntimeFeatureId):
 }
 
 function initFeatureSectionListeners(area: HTMLElement): void {
-  area.querySelectorAll<HTMLElement>('[data-feat-toggle-expand]').forEach(header => {
+  area.querySelectorAll<HTMLElement>('[data-feat-toggle-expand]').forEach((header) => {
     header.addEventListener('click', (e) => {
       if ((e.target as HTMLElement).closest('[data-click-stop]')) return;
       const card = header.closest('.settings-feat');
@@ -440,7 +492,7 @@ function initFeatureSectionListeners(area: HTMLElement): void {
     });
   });
 
-  area.querySelectorAll<HTMLInputElement>('input[data-toggle]').forEach(input => {
+  area.querySelectorAll<HTMLInputElement>('input[data-toggle]').forEach((input) => {
     input.addEventListener('change', () => {
       const featureId = input.dataset.toggle as RuntimeFeatureId;
       if (!featureId) return;
@@ -450,7 +502,7 @@ function initFeatureSectionListeners(area: HTMLElement): void {
     });
   });
 
-  area.querySelectorAll<HTMLInputElement>('input[data-secret]').forEach(input => {
+  area.querySelectorAll<HTMLInputElement>('input[data-secret]').forEach((input) => {
     input.addEventListener('input', () => {
       const key = input.dataset.secret as RuntimeSecretKey;
       if (!key) return;
@@ -495,7 +547,9 @@ function initFeatureSectionListeners(area: HTMLElement): void {
       input.classList.remove('valid-staged', 'invalid');
       input.classList.add(result.valid ? 'valid-staged' : 'invalid');
 
-      const statusEl = input.closest('.settings-secret-row')?.querySelector('.settings-secret-status');
+      const statusEl = input
+        .closest('.settings-secret-row')
+        ?.querySelector('.settings-secret-status');
       if (statusEl) {
         statusEl.textContent = result.valid ? 'Staged' : 'Invalid';
         statusEl.className = `settings-secret-status ${result.valid ? 'staged' : 'warn'}`;
@@ -522,7 +576,7 @@ function initFeatureSectionListeners(area: HTMLElement): void {
     });
   });
 
-  area.querySelectorAll<HTMLAnchorElement>('a[data-signup-url]').forEach(link => {
+  area.querySelectorAll<HTMLAnchorElement>('a[data-signup-url]').forEach((link) => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
       const url = link.dataset.signupUrl;
@@ -553,16 +607,23 @@ function initFeatureSectionListeners(area: HTMLElement): void {
 }
 
 function updateFeatureCardStatus(featureId: RuntimeFeatureId): void {
-  const card = document.querySelector<HTMLElement>(`.settings-feat[data-feature-id="${featureId}"]`);
+  const card = document.querySelector<HTMLElement>(
+    `.settings-feat[data-feature-id="${featureId}"]`,
+  );
   if (!card) return;
-  const feature = RUNTIME_FEATURES.find(f => f.id === featureId);
+  const feature = RUNTIME_FEATURES.find((f) => f.id === featureId);
   if (!feature) return;
 
   const available = isFeatureAvailable(featureId);
   const effectiveSecrets = getEffectiveSecrets(feature);
-  const allStaged = !available && effectiveSecrets.every(
-    k => getSecretState(k).valid || (settingsManager.hasPending(k) && settingsManager.getValidationState(k).validated !== false)
-  );
+  const allStaged =
+    !available &&
+    effectiveSecrets.every(
+      (k) =>
+        getSecretState(k).valid ||
+        (settingsManager.hasPending(k) &&
+          settingsManager.getValidationState(k).validated !== false),
+    );
 
   const wasExpanded = card.classList.contains('expanded');
   card.className = `settings-feat ${available ? 'ready' : allStaged ? 'staged' : 'needs'}${wasExpanded ? ' expanded' : ''}`;
@@ -576,22 +637,22 @@ function updateFeatureCardStatus(featureId: RuntimeFeatureId): void {
 
 async function loadOllamaModelsIntoSelect(select: HTMLSelectElement): Promise<void> {
   const snapshot = getRuntimeConfigSnapshot();
-  const ollamaUrl = settingsManager.getPending('OLLAMA_API_URL')
-    || snapshot.secrets['OLLAMA_API_URL']?.value
-    || '';
+  const ollamaUrl =
+    settingsManager.getPending('OLLAMA_API_URL') || snapshot.secrets['OLLAMA_API_URL']?.value || '';
   if (!ollamaUrl) {
     select.innerHTML = '<option value="" disabled selected>Set Ollama URL first</option>';
     return;
   }
 
-  const currentModel = settingsManager.getPending('OLLAMA_MODEL')
-    || snapshot.secrets['OLLAMA_MODEL']?.value
-    || '';
+  const currentModel =
+    settingsManager.getPending('OLLAMA_MODEL') || snapshot.secrets['OLLAMA_MODEL']?.value || '';
 
   const models = await fetchOllamaModels(ollamaUrl);
 
   if (models.length === 0) {
-    const manual = select.parentElement?.querySelector<HTMLInputElement>('input[data-model-manual]');
+    const manual = select.parentElement?.querySelector<HTMLInputElement>(
+      'input[data-model-manual]',
+    );
     if (manual) {
       select.style.display = 'none';
       manual.classList.remove('hidden-input');
@@ -613,10 +674,17 @@ async function loadOllamaModelsIntoSelect(select: HTMLSelectElement): Promise<vo
     return;
   }
 
-  const options = currentModel ? '' : '<option value="" selected disabled>Select a model...</option>';
-  select.innerHTML = options + models.map(name =>
-    `<option value="${escapeHtml(name)}" ${name === currentModel ? 'selected' : ''}>${escapeHtml(name)}</option>`
-  ).join('');
+  const options = currentModel
+    ? ''
+    : '<option value="" selected disabled>Select a model...</option>';
+  select.innerHTML =
+    options +
+    models
+      .map(
+        (name) =>
+          `<option value="${escapeHtml(name)}" ${name === currentModel ? 'selected' : ''}>${escapeHtml(name)}</option>`,
+      )
+      .join('');
 }
 
 // ── Debug section ──
@@ -683,7 +751,9 @@ function initDiagnostics(): void {
       const res = await diagFetch('/api/local-debug-toggle');
       const data = await res.json();
       verboseToggle.checked = data.verboseMode;
-    } catch { /* sidecar not running */ }
+    } catch {
+      /* sidecar not running */
+    }
   }
 
   verboseToggle?.addEventListener('change', async () => {
@@ -691,7 +761,12 @@ function initDiagnostics(): void {
       const res = await diagFetch('/api/local-debug-toggle', { method: 'POST' });
       const data = await res.json();
       if (verboseToggle) verboseToggle.checked = data.verboseMode;
-      setActionStatus(data.verboseMode ? t('modals.settingsWindow.verboseOn') : t('modals.settingsWindow.verboseOff'), 'ok');
+      setActionStatus(
+        data.verboseMode
+          ? t('modals.settingsWindow.verboseOn')
+          : t('modals.settingsWindow.verboseOff'),
+        'ok',
+      );
     } catch {
       setActionStatus(t('modals.settingsWindow.sidecarError'), 'error');
     }
@@ -704,7 +779,13 @@ function initDiagnostics(): void {
     try {
       const res = await diagFetch('/api/local-traffic-log');
       const data = await res.json();
-      const entries: Array<{ timestamp: string; method: string; path: string; status: number; durationMs: number }> = data.entries || [];
+      const entries: Array<{
+        timestamp: string;
+        method: string;
+        path: string;
+        status: number;
+        durationMs: number;
+      }> = data.entries || [];
       if (trafficCount) trafficCount.textContent = `(${entries.length})`;
 
       if (entries.length === 0) {
@@ -712,11 +793,15 @@ function initDiagnostics(): void {
         return;
       }
 
-      const rows = entries.slice().reverse().map((e) => {
-        const ts = e.timestamp.split('T')[1]?.replace('Z', '') || e.timestamp;
-        const cls = e.status < 300 ? 'ok' : e.status < 500 ? 'warn' : 'err';
-        return `<tr class="diag-${cls}"><td>${escapeHtml(ts)}</td><td>${e.method}</td><td title="${escapeHtml(e.path)}">${escapeHtml(e.path)}</td><td>${e.status}</td><td>${e.durationMs}ms</td></tr>`;
-      }).join('');
+      const rows = entries
+        .slice()
+        .reverse()
+        .map((e) => {
+          const ts = e.timestamp.split('T')[1]?.replace('Z', '') || e.timestamp;
+          const cls = e.status < 300 ? 'ok' : e.status < 500 ? 'warn' : 'err';
+          return `<tr class="diag-${cls}"><td>${escapeHtml(ts)}</td><td>${e.method}</td><td title="${escapeHtml(e.path)}">${escapeHtml(e.path)}</td><td>${e.status}</td><td>${e.durationMs}ms</td></tr>`;
+        })
+        .join('');
 
       trafficLogEl.innerHTML = `<table class="diag-table"><thead><tr><th>${t('modals.settingsWindow.table.time')}</th><th>${t('modals.settingsWindow.table.method')}</th><th>${t('modals.settingsWindow.table.path')}</th><th>${t('modals.settingsWindow.table.status')}</th><th>${t('modals.settingsWindow.table.duration')}</th></tr></thead><tbody>${rows}</tbody></table>`;
     } catch {
@@ -727,8 +812,13 @@ function initDiagnostics(): void {
   refreshBtn?.addEventListener('click', () => void refreshTrafficLog());
 
   clearBtn?.addEventListener('click', async () => {
-    try { await diagFetch('/api/local-traffic-log', { method: 'DELETE' }); } catch { /* ignore */ }
-    if (trafficLogEl) trafficLogEl.innerHTML = `<p class="diag-empty">${t('modals.settingsWindow.logCleared')}</p>`;
+    try {
+      await diagFetch('/api/local-traffic-log', { method: 'DELETE' });
+    } catch {
+      /* ignore */
+    }
+    if (trafficLogEl)
+      trafficLogEl.innerHTML = `<p class="diag-empty">${t('modals.settingsWindow.logCleared')}</p>`;
     if (trafficCount) trafficCount.textContent = '(0)';
   });
 
@@ -740,11 +830,15 @@ function initDiagnostics(): void {
   }
 
   function stopAutoRefresh(): void {
-    if (refreshInterval) { clearInterval(refreshInterval); refreshInterval = null; }
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+      refreshInterval = null;
+    }
   }
 
   autoRefreshToggle?.addEventListener('change', () => {
-    if (autoRefreshToggle.checked) startAutoRefresh(); else stopAutoRefresh();
+    if (autoRefreshToggle.checked) startAutoRefresh();
+    else stopAutoRefresh();
   });
 
   void refreshTrafficLog();
@@ -777,13 +871,15 @@ function handleSearch(query: string): void {
 
   for (const cat of SETTINGS_CATEGORIES) {
     for (const fid of cat.features) {
-      const feature = RUNTIME_FEATURES.find(f => f.id === fid);
+      const feature = RUNTIME_FEATURES.find((f) => f.id === fid);
       if (!feature) continue;
       const searchable = [
         feature.name,
         feature.description,
-        ...getEffectiveSecrets(feature).map(k => HUMAN_LABELS[k] || k),
-      ].join(' ').toLowerCase();
+        ...getEffectiveSecrets(feature).map((k) => HUMAN_LABELS[k] || k),
+      ]
+        .join(' ')
+        .toLowerCase();
       if (searchable.includes(q)) {
         matches.push({ feature, catLabel: cat.label });
       }
@@ -795,19 +891,25 @@ function handleSearch(query: string): void {
     return;
   }
 
-  const cards = matches.map(({ feature, catLabel }) => {
-    const enabled = isFeatureEnabled(feature.id);
-    const available = isFeatureAvailable(feature.id);
-    const effectiveSecrets = getEffectiveSecrets(feature);
-    const allStaged = !available && effectiveSecrets.every(
-      k => getSecretState(k).valid || (settingsManager.hasPending(k) && settingsManager.getValidationState(k).validated !== false)
-    );
-    const borderClass = available ? 'ready' : allStaged ? 'staged' : 'needs';
-    const pillClass = available ? 'ok' : allStaged ? 'staged' : 'warn';
-    const pillLabel = available ? 'Ready' : allStaged ? 'Staged' : 'Needs keys';
-    const secretRows = effectiveSecrets.map(key => renderSecretInput(key, feature.id)).join('');
+  const cards = matches
+    .map(({ feature, catLabel }) => {
+      const enabled = isFeatureEnabled(feature.id);
+      const available = isFeatureAvailable(feature.id);
+      const effectiveSecrets = getEffectiveSecrets(feature);
+      const allStaged =
+        !available &&
+        effectiveSecrets.every(
+          (k) =>
+            getSecretState(k).valid ||
+            (settingsManager.hasPending(k) &&
+              settingsManager.getValidationState(k).validated !== false),
+        );
+      const borderClass = available ? 'ready' : allStaged ? 'staged' : 'needs';
+      const pillClass = available ? 'ok' : allStaged ? 'staged' : 'warn';
+      const pillLabel = available ? 'Ready' : allStaged ? 'Staged' : 'Needs keys';
+      const secretRows = effectiveSecrets.map((key) => renderSecretInput(key, feature.id)).join('');
 
-    return `
+      return `
       <div class="settings-feat ${borderClass} expanded" data-feature-id="${feature.id}">
         <div class="settings-feat-header" data-feat-toggle-expand="${feature.id}">
           <label class="settings-feat-toggle-label" data-click-stop>
@@ -829,7 +931,8 @@ function handleSearch(query: string): void {
         </div>
       </div>
     `;
-  }).join('');
+    })
+    .join('');
 
   area.innerHTML = `
     <div class="settings-section-header">
@@ -847,7 +950,11 @@ async function initSettingsWindow(): Promise<void> {
   await initI18n();
   applyStoredTheme();
 
-  try { await resolveLocalApiPort(); } catch { /* use default */ }
+  try {
+    await resolveLocalApiPort();
+  } catch {
+    /* use default */
+  }
 
   requestAnimationFrame(() => {
     document.documentElement.classList.remove('no-transition');
@@ -877,7 +984,11 @@ async function initSettingsWindow(): Promise<void> {
       try {
         const wmKeyInput = document.querySelector<HTMLInputElement>('[data-wm-key-input]');
         const wmKeyValue = wmKeyInput?.value.trim();
-        const hasWmKeyChange = !!(wmKeyValue && wmKeyValue !== MASKED_SENTINEL && wmKeyValue.length > 0);
+        const hasWmKeyChange = !!(
+          wmKeyValue &&
+          wmKeyValue !== MASKED_SENTINEL &&
+          wmKeyValue.length > 0
+        );
 
         const contentArea = document.getElementById('contentArea');
         if (contentArea) settingsManager.captureUnsavedInputs(contentArea);
@@ -901,7 +1012,10 @@ async function initSettingsWindow(): Promise<void> {
           }
           const errors = await settingsManager.verifyPendingSecrets();
           if (errors.length > 0) {
-            setActionStatus(t('modals.settingsWindow.verifyFailed', { errors: errors.join(', ') }), 'error');
+            setActionStatus(
+              t('modals.settingsWindow.verifyFailed', { errors: errors.join(', ') }),
+              'error',
+            );
             return;
           }
           await settingsManager.commitVerifiedSecrets();

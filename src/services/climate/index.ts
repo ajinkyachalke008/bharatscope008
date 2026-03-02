@@ -28,7 +28,11 @@ export interface ClimateFetchResult {
 }
 
 const client = new ClimateServiceClient('', { fetch: (...args) => globalThis.fetch(...args) });
-const breaker = createCircuitBreaker<ListClimateAnomaliesResponse>({ name: 'Climate Anomalies', cacheTtlMs: 10 * 60 * 1000, persistCache: true });
+const breaker = createCircuitBreaker<ListClimateAnomaliesResponse>({
+  name: 'Climate Anomalies',
+  cacheTtlMs: 10 * 60 * 1000,
+  persistCache: true,
+});
 
 const emptyClimateFallback: ListClimateAnomaliesResponse = { anomalies: [] };
 
@@ -38,19 +42,25 @@ export async function fetchClimateAnomalies(): Promise<ClimateFetchResult> {
   }, emptyClimateFallback);
   const anomalies = (response.anomalies ?? [])
     .map(toDisplayAnomaly)
-    .filter(a => a.severity !== 'normal');
+    .filter((a) => a.severity !== 'normal');
   return { ok: true, anomalies };
 }
 
 // Presentation helpers (used by ClimateAnomalyPanel)
 export function getSeverityIcon(anomaly: ClimateAnomaly): string {
   switch (anomaly.type) {
-    case 'warm': return '\u{1F321}\u{FE0F}';   // thermometer
-    case 'cold': return '\u{2744}\u{FE0F}';     // snowflake
-    case 'wet': return '\u{1F327}\u{FE0F}';     // rain
-    case 'dry': return '\u{2600}\u{FE0F}';      // sun
-    case 'mixed': return '\u{26A1}';             // lightning
-    default: return '\u{1F321}\u{FE0F}';         // thermometer
+    case 'warm':
+      return '\u{1F321}\u{FE0F}'; // thermometer
+    case 'cold':
+      return '\u{2744}\u{FE0F}'; // snowflake
+    case 'wet':
+      return '\u{1F327}\u{FE0F}'; // rain
+    case 'dry':
+      return '\u{2600}\u{FE0F}'; // sun
+    case 'mixed':
+      return '\u{26A1}'; // lightning
+    default:
+      return '\u{1F321}\u{FE0F}'; // thermometer
   }
 }
 
@@ -75,19 +85,28 @@ function toDisplayAnomaly(proto: ProtoClimateAnomaly): ClimateAnomaly {
 
 function mapSeverity(s: ProtoAnomalySeverity): ClimateAnomaly['severity'] {
   switch (s) {
-    case 'ANOMALY_SEVERITY_EXTREME': return 'extreme';
-    case 'ANOMALY_SEVERITY_MODERATE': return 'moderate';
-    default: return 'normal';
+    case 'ANOMALY_SEVERITY_EXTREME':
+      return 'extreme';
+    case 'ANOMALY_SEVERITY_MODERATE':
+      return 'moderate';
+    default:
+      return 'normal';
   }
 }
 
 function mapType(t: ProtoAnomalyType): ClimateAnomaly['type'] {
   switch (t) {
-    case 'ANOMALY_TYPE_WARM': return 'warm';
-    case 'ANOMALY_TYPE_COLD': return 'cold';
-    case 'ANOMALY_TYPE_WET': return 'wet';
-    case 'ANOMALY_TYPE_DRY': return 'dry';
-    case 'ANOMALY_TYPE_MIXED': return 'mixed';
-    default: return 'warm';
+    case 'ANOMALY_TYPE_WARM':
+      return 'warm';
+    case 'ANOMALY_TYPE_COLD':
+      return 'cold';
+    case 'ANOMALY_TYPE_WET':
+      return 'wet';
+    case 'ANOMALY_TYPE_DRY':
+      return 'dry';
+    case 'ANOMALY_TYPE_MIXED':
+      return 'mixed';
+    default:
+      return 'warm';
   }
 }

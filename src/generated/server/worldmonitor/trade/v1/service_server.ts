@@ -103,8 +103,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -115,7 +115,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -139,10 +139,19 @@ export interface RouteDescriptor {
 }
 
 export interface TradeServiceHandler {
-  getTradeRestrictions(ctx: ServerContext, req: GetTradeRestrictionsRequest): Promise<GetTradeRestrictionsResponse>;
-  getTariffTrends(ctx: ServerContext, req: GetTariffTrendsRequest): Promise<GetTariffTrendsResponse>;
+  getTradeRestrictions(
+    ctx: ServerContext,
+    req: GetTradeRestrictionsRequest,
+  ): Promise<GetTradeRestrictionsResponse>;
+  getTariffTrends(
+    ctx: ServerContext,
+    req: GetTariffTrendsRequest,
+  ): Promise<GetTariffTrendsResponse>;
   getTradeFlows(ctx: ServerContext, req: GetTradeFlowsRequest): Promise<GetTradeFlowsResponse>;
-  getTradeBarriers(ctx: ServerContext, req: GetTradeBarriersRequest): Promise<GetTradeBarriersResponse>;
+  getTradeBarriers(
+    ctx: ServerContext,
+    req: GetTradeBarriersRequest,
+  ): Promise<GetTradeBarriersResponse>;
 }
 
 export function createTradeServiceRoutes(
@@ -151,14 +160,14 @@ export function createTradeServiceRoutes(
 ): RouteDescriptor[] {
   return [
     {
-      method: "POST",
-      path: "/api/trade/v1/get-trade-restrictions",
+      method: 'POST',
+      path: '/api/trade/v1/get-trade-restrictions',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetTradeRestrictionsRequest;
+          const body = (await req.json()) as GetTradeRestrictionsRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getTradeRestrictions", body);
+            const bodyViolations = options.validateRequest('getTradeRestrictions', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -173,13 +182,13 @@ export function createTradeServiceRoutes(
           const result = await handler.getTradeRestrictions(ctx, body);
           return new Response(JSON.stringify(result as GetTradeRestrictionsResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -188,20 +197,20 @@ export function createTradeServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/trade/v1/get-tariff-trends",
+      method: 'POST',
+      path: '/api/trade/v1/get-tariff-trends',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetTariffTrendsRequest;
+          const body = (await req.json()) as GetTariffTrendsRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getTariffTrends", body);
+            const bodyViolations = options.validateRequest('getTariffTrends', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -216,13 +225,13 @@ export function createTradeServiceRoutes(
           const result = await handler.getTariffTrends(ctx, body);
           return new Response(JSON.stringify(result as GetTariffTrendsResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -231,20 +240,20 @@ export function createTradeServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/trade/v1/get-trade-flows",
+      method: 'POST',
+      path: '/api/trade/v1/get-trade-flows',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetTradeFlowsRequest;
+          const body = (await req.json()) as GetTradeFlowsRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getTradeFlows", body);
+            const bodyViolations = options.validateRequest('getTradeFlows', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -259,13 +268,13 @@ export function createTradeServiceRoutes(
           const result = await handler.getTradeFlows(ctx, body);
           return new Response(JSON.stringify(result as GetTradeFlowsResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -274,20 +283,20 @@ export function createTradeServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/trade/v1/get-trade-barriers",
+      method: 'POST',
+      path: '/api/trade/v1/get-trade-barriers',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetTradeBarriersRequest;
+          const body = (await req.json()) as GetTradeBarriersRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getTradeBarriers", body);
+            const bodyViolations = options.validateRequest('getTradeBarriers', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -302,13 +311,13 @@ export function createTradeServiceRoutes(
           const result = await handler.getTradeBarriers(ctx, body);
           return new Response(JSON.stringify(result as GetTradeBarriersResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -317,7 +326,7 @@ export function createTradeServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },

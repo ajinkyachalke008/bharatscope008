@@ -29,10 +29,7 @@ import {
   generateDedupeKey,
 } from '@/utils/analysis-constants';
 
-import {
-  extractEntitiesFromClusters,
-  findNewsForMarketSymbol,
-} from './entity-extraction';
+import { extractEntitiesFromClusters, findNewsForMarketSymbol } from './entity-extraction';
 import { getEntityIndex } from './entity-index';
 import { aggregateThreats } from './threat-classifier';
 
@@ -46,13 +43,7 @@ interface TopicVelocityPoint {
 }
 
 // Re-export for convenience
-export {
-  SIMILARITY_THRESHOLD,
-  tokenize,
-  jaccardSimilarity,
-  generateSignalId,
-  generateDedupeKey,
-};
+export { SIMILARITY_THRESHOLD, tokenize, jaccardSimilarity, generateSignalId, generateDedupeKey };
 
 // ============================================================================
 // TYPES
@@ -172,11 +163,11 @@ function generateClusterId(items: NewsItemWithTier[]): string {
  */
 export function clusterNewsCore(
   items: NewsItemCore[],
-  getSourceTier: (source: string) => number
+  getSourceTier: (source: string) => number,
 ): ClusteredEventCore[] {
   if (items.length === 0) return [];
 
-  const itemsWithTier: NewsItemWithTier[] = items.map(item => ({
+  const itemsWithTier: NewsItemWithTier[] = items.map((item) => ({
     ...item,
     tier: item.tier ?? getSourceTier(item.source),
   }));
@@ -243,60 +234,62 @@ export function clusterNewsCore(
     clusters.push(cluster);
   }
 
-  return clusters.map(cluster => {
-    const sorted = [...cluster].sort((a, b) => {
-      const tierDiff = a.tier - b.tier;
-      if (tierDiff !== 0) return tierDiff;
-      return b.pubDate.getTime() - a.pubDate.getTime();
-    });
+  return clusters
+    .map((cluster) => {
+      const sorted = [...cluster].sort((a, b) => {
+        const tierDiff = a.tier - b.tier;
+        if (tierDiff !== 0) return tierDiff;
+        return b.pubDate.getTime() - a.pubDate.getTime();
+      });
 
-    const primary = sorted[0]!;
-    const dates = cluster.map(i => i.pubDate.getTime());
+      const primary = sorted[0]!;
+      const dates = cluster.map((i) => i.pubDate.getTime());
 
-    const topSources = sorted
-      .slice(0, 3)
-      .map(item => ({
+      const topSources = sorted.slice(0, 3).map((item) => ({
         name: item.source,
         tier: item.tier,
         url: item.link,
       }));
 
-    const threat = aggregateThreats(cluster);
+      const threat = aggregateThreats(cluster);
 
-    // Pick most common geo location across items
-    const locItems = cluster.filter((i): i is NewsItemWithTier & { lat: number; lon: number } => i.lat != null && i.lon != null);
-    let clusterLat: number | undefined;
-    let clusterLon: number | undefined;
-    if (locItems.length > 0) {
-      const locCounts = new Map<string, { lat: number; lon: number; count: number }>();
-      for (const li of locItems) {
-        const key = `${li.lat},${li.lon}`;
-        const entry = locCounts.get(key) || { lat: li.lat, lon: li.lon, count: 0 };
-        entry.count++;
-        locCounts.set(key, entry);
+      // Pick most common geo location across items
+      const locItems = cluster.filter(
+        (i): i is NewsItemWithTier & { lat: number; lon: number } => i.lat != null && i.lon != null,
+      );
+      let clusterLat: number | undefined;
+      let clusterLon: number | undefined;
+      if (locItems.length > 0) {
+        const locCounts = new Map<string, { lat: number; lon: number; count: number }>();
+        for (const li of locItems) {
+          const key = `${li.lat},${li.lon}`;
+          const entry = locCounts.get(key) || { lat: li.lat, lon: li.lon, count: 0 };
+          entry.count++;
+          locCounts.set(key, entry);
+        }
+        const best = Array.from(locCounts.values()).sort((a, b) => b.count - a.count)[0]!;
+        clusterLat = best.lat;
+        clusterLon = best.lon;
       }
-      const best = Array.from(locCounts.values()).sort((a, b) => b.count - a.count)[0]!;
-      clusterLat = best.lat;
-      clusterLon = best.lon;
-    }
 
-    return {
-      id: generateClusterId(cluster),
-      primaryTitle: primary.title,
-      primarySource: primary.source,
-      primaryLink: primary.link,
-      sourceCount: cluster.length,
-      topSources,
-      allItems: cluster,
-      firstSeen: new Date(Math.min(...dates)),
-      lastUpdated: new Date(Math.max(...dates)),
-      isAlert: cluster.some(i => i.isAlert),
-      monitorColor: cluster.find(i => i.monitorColor)?.monitorColor,
-      threat,
-      ...(clusterLat != null && { lat: clusterLat, lon: clusterLon }),
-      lang: primary.lang,
-    };
-  }).sort((a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime());
+      return {
+        id: generateClusterId(cluster),
+        primaryTitle: primary.title,
+        primarySource: primary.source,
+        primaryLink: primary.link,
+        sourceCount: cluster.length,
+        topSources,
+        allItems: cluster,
+        firstSeen: new Date(Math.min(...dates)),
+        lastUpdated: new Date(Math.max(...dates)),
+        isAlert: cluster.some((i) => i.isAlert),
+        monitorColor: cluster.find((i) => i.monitorColor)?.monitorColor,
+        threat,
+        ...(clusterLat != null && { lat: clusterLat, lon: clusterLon }),
+        lang: primary.lang,
+      };
+    })
+    .sort((a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime());
 }
 
 // ============================================================================
@@ -320,7 +313,7 @@ function extractTopics(events: ClusteredEventCore[]): Map<string, number> {
 }
 
 function pruneVelocityHistory(history: TopicVelocityPoint[], now: number): TopicVelocityPoint[] {
-  return history.filter(point => now - point.timestamp <= TOPIC_BASELINE_WINDOW_MS);
+  return history.filter((point) => now - point.timestamp <= TOPIC_BASELINE_WINDOW_MS);
 }
 
 function averageVelocity(history: TopicVelocityPoint[]): number {
@@ -332,20 +325,17 @@ function averageVelocity(history: TopicVelocityPoint[]): number {
 export function detectPipelineFlowDrops(
   events: ClusteredEventCore[],
   isRecentDuplicate: (key: string) => boolean,
-  markSignalSeen: (key: string) => void
+  markSignalSeen: (key: string) => void,
 ): CorrelationSignalCore[] {
   const signals: CorrelationSignalCore[] = [];
 
   for (const event of events) {
-    const titles = [
-      event.primaryTitle,
-      ...(event.allItems?.map(item => item.title) ?? []),
-    ]
-      .map(title => title.toLowerCase())
+    const titles = [event.primaryTitle, ...(event.allItems?.map((item) => item.title) ?? [])]
+      .map((title) => title.toLowerCase())
       .filter(Boolean);
 
-    const hasPipeline = titles.some(title => includesKeyword(title, PIPELINE_KEYWORDS));
-    const hasFlowDrop = titles.some(title => includesKeyword(title, FLOW_DROP_KEYWORDS));
+    const hasPipeline = titles.some((title) => includesKeyword(title, PIPELINE_KEYWORDS));
+    const hasFlowDrop = titles.some((title) => includesKeyword(title, FLOW_DROP_KEYWORDS));
 
     if (hasPipeline && hasFlowDrop) {
       const dedupeKey = generateDedupeKey('flow_drop', event.id, event.sourceCount);
@@ -374,7 +364,7 @@ export function detectConvergence(
   events: ClusteredEventCore[],
   getSourceType: (source: string) => SourceType,
   isRecentDuplicate: (key: string) => boolean,
-  markSignalSeen: (key: string) => void
+  markSignalSeen: (key: string) => void,
 ): CorrelationSignalCore[] {
   const signals: CorrelationSignalCore[] = [];
   const WINDOW_MS = 60 * 60 * 1000;
@@ -383,9 +373,7 @@ export function detectConvergence(
   for (const event of events) {
     if (!event.allItems || event.allItems.length < 3) continue;
 
-    const recentItems = event.allItems.filter(
-      item => now - item.pubDate.getTime() < WINDOW_MS
-    );
+    const recentItems = event.allItems.filter((item) => now - item.pubDate.getTime() < WINDOW_MS);
     if (recentItems.length < 3) continue;
 
     const sourceTypes = new Set<SourceType>();
@@ -395,7 +383,7 @@ export function detectConvergence(
     }
 
     if (sourceTypes.size >= 3) {
-      const types = Array.from(sourceTypes).filter(t => t !== 'other');
+      const types = Array.from(sourceTypes).filter((t) => t !== 'other');
       const dedupeKey = generateDedupeKey('convergence', event.id, sourceTypes.size);
 
       if (!isRecentDuplicate(dedupeKey) && types.length >= 3) {
@@ -423,7 +411,7 @@ export function detectTriangulation(
   events: ClusteredEventCore[],
   getSourceType: (source: string) => SourceType,
   isRecentDuplicate: (key: string) => boolean,
-  markSignalSeen: (key: string) => void
+  markSignalSeen: (key: string) => void,
 ): CorrelationSignalCore[] {
   const signals: CorrelationSignalCore[] = [];
   const CRITICAL_TYPES: SourceType[] = ['wire', 'gov', 'intel'];
@@ -474,7 +462,7 @@ export function analyzeCorrelationsCore(
   previousSnapshot: StreamSnapshot | null,
   getSourceType: (source: string) => SourceType,
   isRecentDuplicate: (key: string) => boolean,
-  markSignalSeen: (key: string) => void
+  markSignalSeen: (key: string) => void,
 ): { signals: CorrelationSignalCore[]; snapshot: StreamSnapshot } {
   const signals: CorrelationSignalCore[] = [];
   const now = Date.now();
@@ -486,12 +474,10 @@ export function analyzeCorrelationsCore(
   const entityIndex = getEntityIndex();
   const newsEntityContexts = extractEntitiesFromClusters(events);
 
-  const previousHistory = previousSnapshot?.topicVelocityHistory ?? new Map<string, TopicVelocityPoint[]>();
+  const previousHistory =
+    previousSnapshot?.topicVelocityHistory ?? new Map<string, TopicVelocityPoint[]>();
   const currentHistory = new Map<string, TopicVelocityPoint[]>();
-  const topicUniverse = new Set<string>([
-    ...previousHistory.keys(),
-    ...newsTopics.keys(),
-  ]);
+  const topicUniverse = new Set<string>([...previousHistory.keys(), ...newsTopics.keys()]);
 
   for (const topic of topicUniverse) {
     const prior = pruneVelocityHistory(previousHistory.get(topic) ?? [], now);
@@ -504,8 +490,8 @@ export function analyzeCorrelationsCore(
 
   const currentSnapshot: StreamSnapshot = {
     newsVelocity: newsTopics,
-    marketChanges: new Map(markets.map(m => [m.symbol, m.change ?? 0])),
-    predictionChanges: new Map(predictions.map(p => [p.title.slice(0, 50), p.yesPrice])),
+    marketChanges: new Map(markets.map((m) => [m.symbol, m.change ?? 0])),
+    predictionChanges: new Map(predictions.map((p) => [p.title.slice(0, 50), p.yesPrice])),
     topicVelocityHistory: currentHistory,
     timestamp: now,
   };
@@ -551,9 +537,10 @@ export function analyzeCorrelationsCore(
     const baselineHistory = pruneVelocityHistory(previousHistory.get(topic) ?? [], now);
     const baseline = averageVelocity(baselineHistory);
     const exceedsAbsoluteThreshold = velocity > NEWS_VELOCITY_THRESHOLD * 2;
-    const exceedsBaseline = baseline > 0
-      ? velocity > baseline * TOPIC_BASELINE_SPIKE_MULTIPLIER
-      : exceedsAbsoluteThreshold;
+    const exceedsBaseline =
+      baseline > 0
+        ? velocity > baseline * TOPIC_BASELINE_SPIKE_MULTIPLIER
+        : exceedsAbsoluteThreshold;
 
     if (!exceedsAbsoluteThreshold || !exceedsBaseline) continue;
 
@@ -561,9 +548,10 @@ export function analyzeCorrelationsCore(
     const dedupeKey = generateDedupeKey('velocity_spike', topic, velocity);
     if (!isRecentDuplicate(dedupeKey)) {
       markSignalSeen(dedupeKey);
-      const baselineText = baseline > 0
-        ? `${baseline.toFixed(1)} baseline (${multiplier.toFixed(1)}x)`
-        : 'cold-start baseline';
+      const baselineText =
+        baseline > 0
+          ? `${baseline.toFixed(1)} baseline (${multiplier.toFixed(1)}x)`
+          : 'cold-start baseline';
       signals.push({
         id: generateSignalId(),
         type: 'velocity_spike',
@@ -576,9 +564,10 @@ export function analyzeCorrelationsCore(
           relatedTopics: [topic],
           baseline,
           multiplier: baseline > 0 ? multiplier : undefined,
-          explanation: baseline > 0
-            ? `Velocity ${velocity.toFixed(1)} is ${multiplier.toFixed(1)}x above baseline ${baseline.toFixed(1)}`
-            : `Velocity ${velocity.toFixed(1)} exceeded cold-start threshold`,
+          explanation:
+            baseline > 0
+              ? `Velocity ${velocity.toFixed(1)} is ${multiplier.toFixed(1)}x above baseline ${baseline.toFixed(1)}`
+              : `Velocity ${velocity.toFixed(1)} exceeded cold-start threshold`,
         },
       });
     }
@@ -603,20 +592,22 @@ export function analyzeCorrelationsCore(
           type: 'explained_market_move',
           title: 'Market Move Explained',
           description: `${market.name} ${direction}${market.change!.toFixed(2)}% correlates with: "${topNews.title.slice(0, 60)}..."`,
-          confidence: Math.min(0.9, 0.5 + (relatedNews.length * 0.1) + (change / 20)),
+          confidence: Math.min(0.9, 0.5 + relatedNews.length * 0.1 + change / 20),
           timestamp: new Date(),
           data: {
             marketChange: market.change!,
             newsVelocity: relatedNews.length,
             correlatedEntities: [market.symbol],
-            correlatedNews: relatedNews.map(n => n.clusterId),
+            correlatedNews: relatedNews.map((n) => n.clusterId),
             explanation: `${relatedNews.length} related news item${relatedNews.length > 1 ? 's' : ''} found`,
           },
         });
       }
     } else {
       const oldRelatedNews = Array.from(newsTopics.entries())
-        .filter(([k]) => market.name.toLowerCase().includes(k) || k.includes(market.symbol.toLowerCase()))
+        .filter(
+          ([k]) => market.name.toLowerCase().includes(k) || k.includes(market.symbol.toLowerCase()),
+        )
         .reduce((sum, [, v]) => sum + v, 0);
 
       const dedupeKey = generateDedupeKey('silent_divergence', market.symbol, change);
@@ -649,7 +640,9 @@ export function analyzeCorrelationsCore(
     const change = market.change ?? 0;
     if (change >= FLOW_PRICE_THRESHOLD) {
       const relatedNews = Array.from(newsTopics.entries())
-        .filter(([k]) => market.name.toLowerCase().includes(k) || k.includes(market.symbol.toLowerCase()))
+        .filter(
+          ([k]) => market.name.toLowerCase().includes(k) || k.includes(market.symbol.toLowerCase()),
+        )
         .reduce((sum, [, v]) => sum + v, 0);
 
       const dedupeKey = generateDedupeKey('flow_price_divergence', market.symbol, change);
@@ -678,13 +671,13 @@ export function analyzeCorrelationsCore(
   signals.push(...pipelineFlowSignals);
 
   // Dedupe by type to avoid spam
-  const uniqueSignals = signals.filter((sig, idx) =>
-    signals.findIndex(s => s.type === sig.type) === idx
+  const uniqueSignals = signals.filter(
+    (sig, idx) => signals.findIndex((s) => s.type === sig.type) === idx,
   );
 
   // Only return high-confidence signals
   return {
-    signals: uniqueSignals.filter(s => s.confidence >= 0.6),
+    signals: uniqueSignals.filter((s) => s.confidence >= 0.6),
     snapshot: currentSnapshot,
   };
 }

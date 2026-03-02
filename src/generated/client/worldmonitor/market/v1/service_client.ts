@@ -100,8 +100,7 @@ export interface Stablecoin {
   image: string;
 }
 
-export interface ListEtfFlowsRequest {
-}
+export interface ListEtfFlowsRequest {}
 
 export interface ListEtfFlowsResponse {
   timestamp: string;
@@ -155,8 +154,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -167,7 +166,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -189,23 +188,26 @@ export class MarketServiceClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string, options?: MarketServiceClientOptions) {
-    this.baseURL = baseURL.replace(/\/+$/, "");
+    this.baseURL = baseURL.replace(/\/+$/, '');
     this.fetchFn = options?.fetch ?? globalThis.fetch;
     this.defaultHeaders = { ...options?.defaultHeaders };
   }
 
-  async listMarketQuotes(req: ListMarketQuotesRequest, options?: MarketServiceCallOptions): Promise<ListMarketQuotesResponse> {
-    let path = "/api/market/v1/list-market-quotes";
+  async listMarketQuotes(
+    req: ListMarketQuotesRequest,
+    options?: MarketServiceCallOptions,
+  ): Promise<ListMarketQuotesResponse> {
+    const path = '/api/market/v1/list-market-quotes';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -215,21 +217,24 @@ export class MarketServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as ListMarketQuotesResponse;
+    return (await resp.json()) as ListMarketQuotesResponse;
   }
 
-  async listCryptoQuotes(req: ListCryptoQuotesRequest, options?: MarketServiceCallOptions): Promise<ListCryptoQuotesResponse> {
-    let path = "/api/market/v1/list-crypto-quotes";
+  async listCryptoQuotes(
+    req: ListCryptoQuotesRequest,
+    options?: MarketServiceCallOptions,
+  ): Promise<ListCryptoQuotesResponse> {
+    const path = '/api/market/v1/list-crypto-quotes';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -239,21 +244,24 @@ export class MarketServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as ListCryptoQuotesResponse;
+    return (await resp.json()) as ListCryptoQuotesResponse;
   }
 
-  async listCommodityQuotes(req: ListCommodityQuotesRequest, options?: MarketServiceCallOptions): Promise<ListCommodityQuotesResponse> {
-    let path = "/api/market/v1/list-commodity-quotes";
+  async listCommodityQuotes(
+    req: ListCommodityQuotesRequest,
+    options?: MarketServiceCallOptions,
+  ): Promise<ListCommodityQuotesResponse> {
+    const path = '/api/market/v1/list-commodity-quotes';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -263,21 +271,24 @@ export class MarketServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as ListCommodityQuotesResponse;
+    return (await resp.json()) as ListCommodityQuotesResponse;
   }
 
-  async getSectorSummary(req: GetSectorSummaryRequest, options?: MarketServiceCallOptions): Promise<GetSectorSummaryResponse> {
-    let path = "/api/market/v1/get-sector-summary";
+  async getSectorSummary(
+    req: GetSectorSummaryRequest,
+    options?: MarketServiceCallOptions,
+  ): Promise<GetSectorSummaryResponse> {
+    const path = '/api/market/v1/get-sector-summary';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -287,21 +298,24 @@ export class MarketServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetSectorSummaryResponse;
+    return (await resp.json()) as GetSectorSummaryResponse;
   }
 
-  async listStablecoinMarkets(req: ListStablecoinMarketsRequest, options?: MarketServiceCallOptions): Promise<ListStablecoinMarketsResponse> {
-    let path = "/api/market/v1/list-stablecoin-markets";
+  async listStablecoinMarkets(
+    req: ListStablecoinMarketsRequest,
+    options?: MarketServiceCallOptions,
+  ): Promise<ListStablecoinMarketsResponse> {
+    const path = '/api/market/v1/list-stablecoin-markets';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -311,21 +325,24 @@ export class MarketServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as ListStablecoinMarketsResponse;
+    return (await resp.json()) as ListStablecoinMarketsResponse;
   }
 
-  async listEtfFlows(req: ListEtfFlowsRequest, options?: MarketServiceCallOptions): Promise<ListEtfFlowsResponse> {
-    let path = "/api/market/v1/list-etf-flows";
+  async listEtfFlows(
+    req: ListEtfFlowsRequest,
+    options?: MarketServiceCallOptions,
+  ): Promise<ListEtfFlowsResponse> {
+    const path = '/api/market/v1/list-etf-flows';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -335,21 +352,24 @@ export class MarketServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as ListEtfFlowsResponse;
+    return (await resp.json()) as ListEtfFlowsResponse;
   }
 
-  async getCountryStockIndex(req: GetCountryStockIndexRequest, options?: MarketServiceCallOptions): Promise<GetCountryStockIndexResponse> {
-    let path = "/api/market/v1/get-country-stock-index";
+  async getCountryStockIndex(
+    req: GetCountryStockIndexRequest,
+    options?: MarketServiceCallOptions,
+  ): Promise<GetCountryStockIndexResponse> {
+    const path = '/api/market/v1/get-country-stock-index';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -359,7 +379,7 @@ export class MarketServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetCountryStockIndexResponse;
+    return (await resp.json()) as GetCountryStockIndexResponse;
   }
 
   private async handleError(resp: Response): Promise<never> {
@@ -377,4 +397,3 @@ export class MarketServiceClient {
     throw new ApiError(resp.status, `Request failed with status ${resp.status}`, body);
   }
 }
-

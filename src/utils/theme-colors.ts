@@ -15,8 +15,7 @@ export function getCSSColor(varName: string): string {
   }
   const cached = colorCache.get(varName);
   if (cached) return cached;
-  const value = getComputedStyle(document.documentElement)
-    .getPropertyValue(varName).trim();
+  const value = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
   colorCache.set(varName, value);
   return value;
 }

@@ -4,18 +4,66 @@ import { getTechReadinessRankings, type TechReadinessScore } from '@/services/ec
 import { escapeHtml } from '@/utils/sanitize';
 
 const COUNTRY_FLAGS: Record<string, string> = {
-  'USA': '🇺🇸', 'CHN': '🇨🇳', 'JPN': '🇯🇵', 'DEU': '🇩🇪', 'KOR': '🇰🇷',
-  'GBR': '🇬🇧', 'IND': '🇮🇳', 'ISR': '🇮🇱', 'SGP': '🇸🇬', 'TWN': '🇹🇼',
-  'FRA': '🇫🇷', 'CAN': '🇨🇦', 'SWE': '🇸🇪', 'NLD': '🇳🇱', 'CHE': '🇨🇭',
-  'FIN': '🇫🇮', 'IRL': '🇮🇪', 'AUS': '🇦🇺', 'BRA': '🇧🇷', 'IDN': '🇮🇩',
-  'ESP': '🇪🇸', 'ITA': '🇮🇹', 'MEX': '🇲🇽', 'RUS': '🇷🇺', 'TUR': '🇹🇷',
-  'SAU': '🇸🇦', 'ARE': '🇦🇪', 'POL': '🇵🇱', 'THA': '🇹🇭', 'MYS': '🇲🇾',
-  'VNM': '🇻🇳', 'PHL': '🇵🇭', 'NZL': '🇳🇿', 'AUT': '🇦🇹', 'BEL': '🇧🇪',
-  'DNK': '🇩🇰', 'NOR': '🇳🇴', 'PRT': '🇵🇹', 'CZE': '🇨🇿', 'ZAF': '🇿🇦',
-  'NGA': '🇳🇬', 'KEN': '🇰🇪', 'EGY': '🇪🇬', 'ARG': '🇦🇷', 'CHL': '🇨🇱',
-  'COL': '🇨🇴', 'PAK': '🇵🇰', 'BGD': '🇧🇩', 'UKR': '🇺🇦', 'ROU': '🇷🇴',
-  'EST': '🇪🇪', 'LVA': '🇱🇻', 'LTU': '🇱🇹', 'HUN': '🇭🇺', 'GRC': '🇬🇷',
-  'QAT': '🇶🇦', 'BHR': '🇧🇭', 'KWT': '🇰🇼', 'OMN': '🇴🇲', 'JOR': '🇯🇴',
+  USA: '🇺🇸',
+  CHN: '🇨🇳',
+  JPN: '🇯🇵',
+  DEU: '🇩🇪',
+  KOR: '🇰🇷',
+  GBR: '🇬🇧',
+  IND: '🇮🇳',
+  ISR: '🇮🇱',
+  SGP: '🇸🇬',
+  TWN: '🇹🇼',
+  FRA: '🇫🇷',
+  CAN: '🇨🇦',
+  SWE: '🇸🇪',
+  NLD: '🇳🇱',
+  CHE: '🇨🇭',
+  FIN: '🇫🇮',
+  IRL: '🇮🇪',
+  AUS: '🇦🇺',
+  BRA: '🇧🇷',
+  IDN: '🇮🇩',
+  ESP: '🇪🇸',
+  ITA: '🇮🇹',
+  MEX: '🇲🇽',
+  RUS: '🇷🇺',
+  TUR: '🇹🇷',
+  SAU: '🇸🇦',
+  ARE: '🇦🇪',
+  POL: '🇵🇱',
+  THA: '🇹🇭',
+  MYS: '🇲🇾',
+  VNM: '🇻🇳',
+  PHL: '🇵🇭',
+  NZL: '🇳🇿',
+  AUT: '🇦🇹',
+  BEL: '🇧🇪',
+  DNK: '🇩🇰',
+  NOR: '🇳🇴',
+  PRT: '🇵🇹',
+  CZE: '🇨🇿',
+  ZAF: '🇿🇦',
+  NGA: '🇳🇬',
+  KEN: '🇰🇪',
+  EGY: '🇪🇬',
+  ARG: '🇦🇷',
+  CHL: '🇨🇱',
+  COL: '🇨🇴',
+  PAK: '🇵🇰',
+  BGD: '🇧🇩',
+  UKR: '🇺🇦',
+  ROU: '🇷🇴',
+  EST: '🇪🇪',
+  LVA: '🇱🇻',
+  LTU: '🇱🇹',
+  HUN: '🇭🇺',
+  GRC: '🇬🇷',
+  QAT: '🇶🇦',
+  BHR: '🇧🇭',
+  KWT: '🇰🇼',
+  OMN: '🇴🇲',
+  JOR: '🇯🇴',
 };
 
 export class TechReadinessPanel extends Panel {
@@ -116,9 +164,10 @@ export class TechReadinessPanel extends Panel {
 
     const html = `
       <div class="tech-readiness-list">
-        ${top.map(country => {
-      const scoreClass = this.getScoreClass(country.score);
-      return `
+        ${top
+          .map((country) => {
+            const scoreClass = this.getScoreClass(country.score);
+            return `
             <div class="readiness-item ${scoreClass}" data-country="${escapeHtml(country.country)}">
               <div class="readiness-rank">#${country.rank}</div>
               <div class="readiness-flag">${this.getFlag(country.country)}</div>
@@ -133,7 +182,8 @@ export class TechReadinessPanel extends Panel {
               <div class="readiness-score ${scoreClass}">${country.score}</div>
             </div>
           `;
-    }).join('')}
+          })
+          .join('')}
       </div>
       <div class="readiness-footer">
         <span class="readiness-source">${t('components.techReadiness.source')}</span>

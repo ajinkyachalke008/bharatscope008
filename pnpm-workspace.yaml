@@ -1,0 +1,9 @@
+packages:
+  - packages/*
+
+onlyBuiltDependencies:
+  - '@vaadin/vaadin-usage-statistics'
+  - core-js
+  - esbuild
+  - protobufjs
+  - sharp

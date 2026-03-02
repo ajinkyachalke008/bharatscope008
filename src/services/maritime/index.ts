@@ -12,7 +12,11 @@ import { isFeatureAvailable } from '../runtime-config';
 // ---- Proto fallback (desktop safety when relay URL is unavailable) ----
 
 const client = new MaritimeServiceClient('', { fetch: (...args) => globalThis.fetch(...args) });
-const snapshotBreaker = createCircuitBreaker<GetVesselSnapshotResponse>({ name: 'Maritime Snapshot', cacheTtlMs: 5 * 60 * 1000, persistCache: true });
+const snapshotBreaker = createCircuitBreaker<GetVesselSnapshotResponse>({
+  name: 'Maritime Snapshot',
+  cacheTtlMs: 5 * 60 * 1000,
+  persistCache: true,
+});
 const emptySnapshotFallback: GetVesselSnapshotResponse = { snapshot: undefined };
 
 const DISRUPTION_TYPE_REVERSE: Record<string, AisDisruptionType> = {
@@ -137,7 +141,8 @@ const MAX_CALLBACK_TRACKED_VESSELS = 20000;
 const SNAPSHOT_PROXY_URL = '/api/ais-snapshot';
 const wsRelayUrl = import.meta.env.VITE_WS_RELAY_URL || '';
 const DIRECT_RAILWAY_SNAPSHOT_URL = wsRelayUrl
-  ? wsRelayUrl.replace('wss://', 'https://').replace('ws://', 'http://').replace(/\/$/, '') + '/ais/snapshot'
+  ? wsRelayUrl.replace('wss://', 'https://').replace('ws://', 'http://').replace(/\/$/, '') +
+    '/ais/snapshot'
   : '';
 const LOCAL_SNAPSHOT_FALLBACK = 'http://localhost:3004/ais/snapshot';
 const isLocalhost = isClientRuntime && window.location.hostname === 'localhost';
@@ -180,20 +185,30 @@ async function fetchRawRelaySnapshot(includeCandidates: boolean): Promise<unknow
   const query = `?candidates=${includeCandidates ? 'true' : 'false'}`;
 
   try {
-    const proxied = await fetch(`${SNAPSHOT_PROXY_URL}${query}`, { headers: { Accept: 'application/json' } });
+    const proxied = await fetch(`${SNAPSHOT_PROXY_URL}${query}`, {
+      headers: { Accept: 'application/json' },
+    });
     if (proxied.ok) return proxied.json();
-  } catch { /* Proxy unavailable -- fall through */ }
+  } catch {
+    /* Proxy unavailable -- fall through */
+  }
 
   // Local development fallback only.
   if (isLocalhost && DIRECT_RAILWAY_SNAPSHOT_URL) {
     try {
-      const railway = await fetch(`${DIRECT_RAILWAY_SNAPSHOT_URL}${query}`, { headers: { Accept: 'application/json' } });
+      const railway = await fetch(`${DIRECT_RAILWAY_SNAPSHOT_URL}${query}`, {
+        headers: { Accept: 'application/json' },
+      });
       if (railway.ok) return railway.json();
-    } catch { /* Railway unavailable -- fall through */ }
+    } catch {
+      /* Railway unavailable -- fall through */
+    }
   }
 
   if (isLocalhost) {
-    const local = await fetch(`${LOCAL_SNAPSHOT_FALLBACK}${query}`, { headers: { Accept: 'application/json' } });
+    const local = await fetch(`${LOCAL_SNAPSHOT_FALLBACK}${query}`, {
+      headers: { Accept: 'application/json' },
+    });
     if (local.ok) return local.json();
   }
 
@@ -247,8 +262,7 @@ function pruneCallbackTimestampIndex(now: number): void {
     return;
   }
 
-  const oldest = Array.from(lastCallbackTimestampByMmsi.entries())
-    .sort((a, b) => a[1] - b[1]);
+  const oldest = Array.from(lastCallbackTimestampByMmsi.entries()).sort((a, b) => a[1] - b[1]);
   const toDelete = lastCallbackTimestampByMmsi.size - MAX_CALLBACK_TRACKED_VESSELS;
   for (let i = 0; i < toDelete; i++) {
     const entry = oldest[i];
@@ -412,7 +426,10 @@ export function getAisStatus(): { connected: boolean; vessels: number; messages:
   };
 }
 
-export async function fetchAisSignals(): Promise<{ disruptions: AisDisruptionEvent[]; density: AisDensityZone[] }> {
+export async function fetchAisSignals(): Promise<{
+  disruptions: AisDisruptionEvent[];
+  density: AisDensityZone[];
+}> {
   if (!aisConfigured) {
     return { disruptions: [], density: [] };
   }

@@ -60,7 +60,14 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number)
 /**
  * Draw a rounded rectangle path (does not fill/stroke -- caller does that).
  */
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+): void {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.lineTo(x + w - r, y);
@@ -83,7 +90,9 @@ export async function renderHappyShareCard(item: NewsItem): Promise<HTMLCanvasEl
   await Promise.all([
     document.fonts.load('700 48px Nunito'),
     document.fonts.load('400 26px Nunito'),
-  ]).catch(() => { /* proceed with system font fallback if fonts fail */ });
+  ]).catch(() => {
+    /* proceed with system font fallback if fonts fail */
+  });
 
   const canvas = document.createElement('canvas');
   canvas.width = SIZE;
@@ -155,8 +164,18 @@ export async function renderHappyShareCard(item: NewsItem): Promise<HTMLCanvasEl
   ctx.font = '400 22px Nunito, system-ui, sans-serif';
   ctx.fillStyle = '#A0AEC0';
   const dateStr = item.pubDate
-    ? item.pubDate.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-    : new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    ? item.pubDate.toLocaleDateString(undefined, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : new Date().toLocaleDateString(undefined, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
   ctx.fillText(dateStr, PAD, y);
 
   // -- Decorative accent line (separator above branding) --
@@ -213,9 +232,7 @@ export async function shareHappyCard(item: NewsItem): Promise<void> {
 
   // Attempt 2: Copy image to clipboard
   try {
-    await navigator.clipboard.write([
-      new ClipboardItem({ 'image/png': blob }),
-    ]);
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
     return;
   } catch {
     /* clipboard write failed — fall through to download */

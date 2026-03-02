@@ -56,7 +56,9 @@ async function importPatchedTsModule(relPath, replacements) {
   const tempPath = join(tempDir, basename(sourcePath));
   writeFileSync(tempPath, source);
 
-  const module = await import(`${pathToFileURL(tempPath).href}?t=${Date.now()}-${Math.random().toString(16).slice(2)}`);
+  const module = await import(
+    `${pathToFileURL(tempPath).href}?t=${Date.now()}-${Math.random().toString(16).slice(2)}`
+  );
   return {
     module,
     cleanup() {
@@ -132,7 +134,10 @@ describe('redis caching behavior', { concurrency: 1 }, () => {
       pipelineCalls += 1;
       const pipeline = JSON.parse(String(init.body));
       assert.equal(pipeline.length, 3);
-      assert.deepEqual(pipeline.map((cmd) => cmd[0]), ['GET', 'GET', 'GET']);
+      assert.deepEqual(
+        pipeline.map((cmd) => cmd[0]),
+        ['GET', 'GET', 'GET'],
+      );
       return jsonResponse([
         { result: JSON.stringify({ details: { id: 'a1' } }) },
         { result: '{ malformed json' },
@@ -174,10 +179,14 @@ describe('cachedFetchJsonWithMeta source labeling', { concurrency: 1 }, () => {
 
     try {
       let fetcherCalled = false;
-      const { data, source } = await redis.cachedFetchJsonWithMeta('meta:test:hit', 60, async () => {
-        fetcherCalled = true;
-        return { value: 'fresh-data' };
-      });
+      const { data, source } = await redis.cachedFetchJsonWithMeta(
+        'meta:test:hit',
+        60,
+        async () => {
+          fetcherCalled = true;
+          return { value: 'fresh-data' };
+        },
+      );
 
       assert.equal(source, 'cache', 'should report source=cache on Redis hit');
       assert.deepEqual(data, { value: 'cached-data' });
@@ -206,9 +215,13 @@ describe('cachedFetchJsonWithMeta source labeling', { concurrency: 1 }, () => {
     };
 
     try {
-      const { data, source } = await redis.cachedFetchJsonWithMeta('meta:test:miss', 60, async () => {
-        return { value: 'fresh-data' };
-      });
+      const { data, source } = await redis.cachedFetchJsonWithMeta(
+        'meta:test:miss',
+        60,
+        async () => {
+          return { value: 'fresh-data' };
+        },
+      );
 
       assert.equal(source, 'fresh', 'should report source=fresh on cache miss');
       assert.deepEqual(data, { value: 'fresh-data' });
@@ -387,7 +400,18 @@ describe('theater posture caching behavior', { concurrency: 1 }, () => {
     });
     const originalFetch = globalThis.fetch;
 
-    const staleData = { theaters: [{ theater: 'stale-test', postureLevel: 'normal', activeFlights: 1, trackedVessels: 0, activeOperations: [], assessedAt: 1 }] };
+    const staleData = {
+      theaters: [
+        {
+          theater: 'stale-test',
+          postureLevel: 'normal',
+          activeFlights: 1,
+          trackedVessels: 0,
+          activeOperations: [],
+          assessedAt: 1,
+        },
+      ],
+    };
 
     globalThis.fetch = async (url) => {
       const raw = String(url);

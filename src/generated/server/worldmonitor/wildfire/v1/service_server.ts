@@ -49,7 +49,11 @@ export interface PaginationResponse {
   totalCount: number;
 }
 
-export type FireConfidence = "FIRE_CONFIDENCE_UNSPECIFIED" | "FIRE_CONFIDENCE_LOW" | "FIRE_CONFIDENCE_NOMINAL" | "FIRE_CONFIDENCE_HIGH";
+export type FireConfidence =
+  | 'FIRE_CONFIDENCE_UNSPECIFIED'
+  | 'FIRE_CONFIDENCE_LOW'
+  | 'FIRE_CONFIDENCE_NOMINAL'
+  | 'FIRE_CONFIDENCE_HIGH';
 
 export interface FieldViolation {
   field: string;
@@ -60,8 +64,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -72,7 +76,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -96,7 +100,10 @@ export interface RouteDescriptor {
 }
 
 export interface WildfireServiceHandler {
-  listFireDetections(ctx: ServerContext, req: ListFireDetectionsRequest): Promise<ListFireDetectionsResponse>;
+  listFireDetections(
+    ctx: ServerContext,
+    req: ListFireDetectionsRequest,
+  ): Promise<ListFireDetectionsResponse>;
 }
 
 export function createWildfireServiceRoutes(
@@ -105,14 +112,14 @@ export function createWildfireServiceRoutes(
 ): RouteDescriptor[] {
   return [
     {
-      method: "POST",
-      path: "/api/wildfire/v1/list-fire-detections",
+      method: 'POST',
+      path: '/api/wildfire/v1/list-fire-detections',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as ListFireDetectionsRequest;
+          const body = (await req.json()) as ListFireDetectionsRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("listFireDetections", body);
+            const bodyViolations = options.validateRequest('listFireDetections', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -127,13 +134,13 @@ export function createWildfireServiceRoutes(
           const result = await handler.listFireDetections(ctx, body);
           return new Response(JSON.stringify(result as ListFireDetectionsResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -142,11 +149,10 @@ export function createWildfireServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
   ];
 }
-

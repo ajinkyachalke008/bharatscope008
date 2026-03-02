@@ -47,13 +47,15 @@ export class StablecoinPanel extends Panel {
   private async fetchData(): Promise<void> {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        const client = new MarketServiceClient('', { fetch: (...args) => globalThis.fetch(...args) });
+        const client = new MarketServiceClient('', {
+          fetch: (...args) => globalThis.fetch(...args),
+        });
         this.data = await client.listStablecoinMarkets({ coins: [] });
         this.error = null;
 
         if (this.data && this.data.stablecoins.length === 0 && attempt < 2) {
           this.showRetrying();
-          await new Promise(r => setTimeout(r, 20_000));
+          await new Promise((r) => setTimeout(r, 20_000));
           continue;
         }
         break;
@@ -61,7 +63,7 @@ export class StablecoinPanel extends Panel {
         if (this.isAbortError(err)) return;
         if (attempt < 2) {
           this.showRetrying();
-          await new Promise(r => setTimeout(r, 20_000));
+          await new Promise((r) => setTimeout(r, 20_000));
           continue;
         }
         this.error = err instanceof Error ? err.message : 'Failed to fetch';
@@ -84,13 +86,23 @@ export class StablecoinPanel extends Panel {
 
     const d = this.data;
     if (!d.stablecoins.length) {
-      this.setContent(`<div class="panel-loading-text">${t('components.stablecoins.unavailable')}</div>`);
+      this.setContent(
+        `<div class="panel-loading-text">${t('components.stablecoins.unavailable')}</div>`,
+      );
       return;
     }
 
-    const s = d.summary || { totalMarketCap: 0, totalVolume24h: 0, coinCount: 0, depeggedCount: 0, healthStatus: 'UNAVAILABLE' };
+    const s = d.summary || {
+      totalMarketCap: 0,
+      totalVolume24h: 0,
+      coinCount: 0,
+      depeggedCount: 0,
+      healthStatus: 'UNAVAILABLE',
+    };
 
-    const pegRows = d.stablecoins.map(c => `
+    const pegRows = d.stablecoins
+      .map(
+        (c) => `
       <div class="stable-row">
         <div class="stable-info">
           <span class="stable-symbol">${escapeHtml(c.symbol)}</span>
@@ -102,16 +114,22 @@ export class StablecoinPanel extends Panel {
           <span class="peg-dev">${c.deviation.toFixed(2)}%</span>
         </div>
       </div>
-    `).join('');
+    `,
+      )
+      .join('');
 
-    const supplyRows = d.stablecoins.map(c => `
+    const supplyRows = d.stablecoins
+      .map(
+        (c) => `
       <div class="stable-supply-row">
         <span class="stable-symbol">${escapeHtml(c.symbol)}</span>
         <span class="stable-mcap">${formatLargeNum(c.marketCap)}</span>
         <span class="stable-vol">${formatLargeNum(c.volume24h)}</span>
         <span class="stable-change ${c.change24h >= 0 ? 'change-positive' : 'change-negative'}">${c.change24h >= 0 ? '+' : ''}${c.change24h.toFixed(2)}%</span>
       </div>
-    `).join('');
+    `,
+      )
+      .join('');
 
     const html = `
       <div class="stablecoin-container">

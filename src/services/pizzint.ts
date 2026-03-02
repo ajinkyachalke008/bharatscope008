@@ -71,7 +71,9 @@ function toLocation(proto: ProtoLocation): PizzIntLocation {
 }
 
 function toStatus(proto: ProtoPizzintStatus): PizzIntStatus {
-  const level = (proto.defconLevel >= 1 && proto.defconLevel <= 5 ? proto.defconLevel : 5) as PizzIntDefconLevel;
+  const level = (
+    proto.defconLevel >= 1 && proto.defconLevel <= 5 ? proto.defconLevel : 5
+  ) as PizzIntDefconLevel;
   return {
     defconLevel: level,
     defconLabel: t(DEFCON_LABELS[level] ?? DEFCON_LABELS[5]!),
@@ -108,7 +110,7 @@ const defaultStatus: PizzIntStatus = {
   locationsOpen: 0,
   lastUpdate: new Date(),
   dataFreshness: 'stale',
-  locations: []
+  locations: [],
 };
 
 // ---- Public API ----

@@ -36,12 +36,16 @@ async function fetchViaRailway(feedUrl, timeoutMs) {
   const relayBaseUrl = getRelayBaseUrl();
   if (!relayBaseUrl) return null;
   const relayUrl = `${relayBaseUrl}/rss?url=${encodeURIComponent(feedUrl)}`;
-  return fetchWithTimeout(relayUrl, {
-    headers: getRelayHeaders({
-      'Accept': 'application/rss+xml, application/xml, text/xml, */*',
-      'User-Agent': 'WorldMonitor-RSS-Proxy/1.0',
-    }),
-  }, timeoutMs);
+  return fetchWithTimeout(
+    relayUrl,
+    {
+      headers: getRelayHeaders({
+        Accept: 'application/rss+xml, application/xml, text/xml, */*',
+        'User-Agent': 'WorldMonitor-RSS-Proxy/1.0',
+      }),
+    },
+    timeoutMs,
+  );
 }
 
 // Allowed RSS feed domains for security
@@ -166,7 +170,7 @@ const ALLOWED_DOMAINS = [
   'kyivindependent.com',
   'www.themoscowtimes.com',
   'feeds.24.com',
-  'feeds.capi24.com',  // News24 redirect destination
+  'feeds.capi24.com', // News24 redirect destination
   // International News Sources
   'www.france24.com',
   'www.euronews.com',
@@ -326,7 +330,11 @@ export default async function handler(req) {
     const hostname = parsedUrl.hostname;
     const bare = hostname.replace(/^www\./, '');
     const withWww = hostname.startsWith('www.') ? hostname : `www.${hostname}`;
-    if (!ALLOWED_DOMAINS.includes(hostname) && !ALLOWED_DOMAINS.includes(bare) && !ALLOWED_DOMAINS.includes(withWww)) {
+    if (
+      !ALLOWED_DOMAINS.includes(hostname) &&
+      !ALLOWED_DOMAINS.includes(bare) &&
+      !ALLOWED_DOMAINS.includes(withWww)
+    ) {
       return new Response(JSON.stringify({ error: 'Domain not allowed' }), {
         status: 403,
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
@@ -338,14 +346,19 @@ export default async function handler(req) {
     const timeout = isGoogleNews ? 20000 : 12000;
 
     const fetchDirect = async () => {
-      const response = await fetchWithTimeout(feedUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'application/rss+xml, application/xml, text/xml, */*',
-          'Accept-Language': 'en-US,en;q=0.9',
+      const response = await fetchWithTimeout(
+        feedUrl,
+        {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            Accept: 'application/rss+xml, application/xml, text/xml, */*',
+            'Accept-Language': 'en-US,en;q=0.9',
+          },
+          redirect: 'manual',
         },
-        redirect: 'manual',
-      }, timeout);
+        timeout,
+      );
 
       if (response.status >= 300 && response.status < 400) {
         const location = response.headers.get('location');
@@ -354,13 +367,18 @@ export default async function handler(req) {
           if (!ALLOWED_DOMAINS.includes(redirectUrl.hostname)) {
             throw new Error('Redirect to disallowed domain');
           }
-          return fetchWithTimeout(redirectUrl.href, {
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-              'Accept': 'application/rss+xml, application/xml, text/xml, */*',
-              'Accept-Language': 'en-US,en;q=0.9',
+          return fetchWithTimeout(
+            redirectUrl.href,
+            {
+              headers: {
+                'User-Agent':
+                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                Accept: 'application/rss+xml, application/xml, text/xml, */*',
+                'Accept-Language': 'en-US,en;q=0.9',
+              },
             },
-          }, timeout);
+            timeout,
+          );
         }
       }
 
@@ -389,20 +407,25 @@ export default async function handler(req) {
       status: response.status,
       headers: {
         'Content-Type': response.headers.get('content-type') || 'application/xml',
-        'Cache-Control': response.headers.get('cache-control') || 'public, max-age=600, s-maxage=600, stale-while-revalidate=300',
+        'Cache-Control':
+          response.headers.get('cache-control') ||
+          'public, max-age=600, s-maxage=600, stale-while-revalidate=300',
         ...corsHeaders,
       },
     });
   } catch (error) {
     const isTimeout = error.name === 'AbortError';
     console.error('RSS proxy error:', feedUrl, error.message);
-    return new Response(JSON.stringify({
-      error: isTimeout ? 'Feed timeout' : 'Failed to fetch feed',
-      details: error.message,
-      url: feedUrl
-    }), {
-      status: isTimeout ? 504 : 502,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
-    });
+    return new Response(
+      JSON.stringify({
+        error: isTimeout ? 'Feed timeout' : 'Failed to fetch feed',
+        details: error.message,
+        url: feedUrl,
+      }),
+      {
+        status: isTimeout ? 504 : 502,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      },
+    );
   }
 }

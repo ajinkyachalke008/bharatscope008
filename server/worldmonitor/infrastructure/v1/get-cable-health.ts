@@ -38,9 +38,15 @@ interface NgaWarning {
 // ========================================================================
 
 const CABLE_KEYWORDS = [
-  'CABLE', 'CABLESHIP', 'CABLE SHIP', 'CABLE LAYING',
-  'CABLE OPERATIONS', 'SUBMARINE CABLE', 'UNDERSEA CABLE',
-  'FIBER OPTIC', 'TELECOMMUNICATIONS CABLE',
+  'CABLE',
+  'CABLESHIP',
+  'CABLE SHIP',
+  'CABLE LAYING',
+  'CABLE OPERATIONS',
+  'SUBMARINE CABLE',
+  'UNDERSEA CABLE',
+  'FIBER OPTIC',
+  'TELECOMMUNICATIONS CABLE',
 ];
 
 const FAULT_KEYWORDS = /FAULT|BREAK|CUT|DAMAGE|SEVERED|RUPTURE|OUTAGE|FAILURE/i;
@@ -54,50 +60,137 @@ const ON_STATION_RE = /ON STATION|OPERATIONS IN PROGRESS|LAYING|REPAIRING|WORKIN
 
 // Known cable names -> cableId mapping
 const CABLE_NAME_MAP: Record<string, string> = {
-  'MAREA': 'marea',
+  MAREA: 'marea',
   'GRACE HOPPER': 'grace_hopper',
-  'HAVFRUE': 'havfrue',
-  'FASTER': 'faster',
+  HAVFRUE: 'havfrue',
+  FASTER: 'faster',
   'SOUTHERN CROSS': 'southern_cross',
-  'CURIE': 'curie',
+  CURIE: 'curie',
   'SEA-ME-WE': 'seamewe6',
-  'SEAMEWE': 'seamewe6',
-  'SMW6': 'seamewe6',
-  'FLAG': 'flag',
+  SEAMEWE: 'seamewe6',
+  SMW6: 'seamewe6',
+  FLAG: 'flag',
   '2AFRICA': '2africa',
-  'WACS': 'wacs',
-  'EASSY': 'eassy',
+  WACS: 'wacs',
+  EASSY: 'eassy',
   'SAM-1': 'sam1',
-  'SAM1': 'sam1',
-  'ELLALINK': 'ellalink',
+  SAM1: 'sam1',
+  ELLALINK: 'ellalink',
   'ELLA LINK': 'ellalink',
-  'APG': 'apg',
-  'INDIGO': 'indigo',
-  'SJC': 'sjc',
-  'FARICE': 'farice',
-  'FALCON': 'falcon',
+  APG: 'apg',
+  INDIGO: 'indigo',
+  SJC: 'sjc',
+  FARICE: 'farice',
+  FALCON: 'falcon',
 };
 
 // Minimal cable geometry for proximity matching (landing coords: [lat, lon])
 const CABLE_LANDINGS: Record<string, [number, number][]> = {
-  marea: [[36.85, -75.98], [43.26, -2.93]],
-  grace_hopper: [[40.57, -73.97], [50.83, -4.55], [43.26, -2.93]],
-  havfrue: [[40.22, -74.01], [58.15, 8.0], [55.56, 8.13]],
-  faster: [[43.37, -124.22], [34.95, 139.95], [34.32, 136.85]],
-  southern_cross: [[-33.87, 151.21], [-36.85, 174.76], [33.74, -118.27]],
-  curie: [[33.74, -118.27], [-33.05, -71.62]],
-  seamewe6: [[1.35, 103.82], [19.08, 72.88], [25.13, 56.34], [21.49, 39.19], [29.97, 32.55], [43.30, 5.37]],
-  flag: [[50.04, -5.66], [31.20, 29.92], [25.20, 55.27], [19.08, 72.88], [1.35, 103.82], [35.69, 139.69]],
-  '2africa': [[50.83, -4.55], [38.72, -9.14], [14.69, -17.44], [6.52, 3.38], [-33.93, 18.42], [-4.04, 39.67], [21.49, 39.19], [31.26, 32.30]],
-  wacs: [[-33.93, 18.42], [6.52, 3.38], [14.69, -17.44], [38.72, -9.14], [51.51, -0.13]],
-  eassy: [[-29.85, 31.02], [-25.97, 32.58], [-6.80, 39.28], [-4.04, 39.67], [11.59, 43.15]],
-  sam1: [[-22.91, -43.17], [-34.60, -58.38], [26.36, -80.08]],
-  ellalink: [[38.72, -9.14], [-3.72, -38.52]],
-  apg: [[35.69, 139.69], [25.15, 121.44], [22.29, 114.17], [1.35, 103.82]],
-  indigo: [[-31.95, 115.86], [1.35, 103.82], [-6.21, 106.85]],
-  sjc: [[35.69, 139.69], [36.07, 120.32], [1.35, 103.82], [22.29, 114.17]],
-  farice: [[64.13, -21.90], [62.01, -6.77], [55.95, -3.19]],
-  falcon: [[25.13, 56.34], [23.59, 58.38], [26.23, 50.59], [29.38, 47.98]],
+  marea: [
+    [36.85, -75.98],
+    [43.26, -2.93],
+  ],
+  grace_hopper: [
+    [40.57, -73.97],
+    [50.83, -4.55],
+    [43.26, -2.93],
+  ],
+  havfrue: [
+    [40.22, -74.01],
+    [58.15, 8.0],
+    [55.56, 8.13],
+  ],
+  faster: [
+    [43.37, -124.22],
+    [34.95, 139.95],
+    [34.32, 136.85],
+  ],
+  southern_cross: [
+    [-33.87, 151.21],
+    [-36.85, 174.76],
+    [33.74, -118.27],
+  ],
+  curie: [
+    [33.74, -118.27],
+    [-33.05, -71.62],
+  ],
+  seamewe6: [
+    [1.35, 103.82],
+    [19.08, 72.88],
+    [25.13, 56.34],
+    [21.49, 39.19],
+    [29.97, 32.55],
+    [43.3, 5.37],
+  ],
+  flag: [
+    [50.04, -5.66],
+    [31.2, 29.92],
+    [25.2, 55.27],
+    [19.08, 72.88],
+    [1.35, 103.82],
+    [35.69, 139.69],
+  ],
+  '2africa': [
+    [50.83, -4.55],
+    [38.72, -9.14],
+    [14.69, -17.44],
+    [6.52, 3.38],
+    [-33.93, 18.42],
+    [-4.04, 39.67],
+    [21.49, 39.19],
+    [31.26, 32.3],
+  ],
+  wacs: [
+    [-33.93, 18.42],
+    [6.52, 3.38],
+    [14.69, -17.44],
+    [38.72, -9.14],
+    [51.51, -0.13],
+  ],
+  eassy: [
+    [-29.85, 31.02],
+    [-25.97, 32.58],
+    [-6.8, 39.28],
+    [-4.04, 39.67],
+    [11.59, 43.15],
+  ],
+  sam1: [
+    [-22.91, -43.17],
+    [-34.6, -58.38],
+    [26.36, -80.08],
+  ],
+  ellalink: [
+    [38.72, -9.14],
+    [-3.72, -38.52],
+  ],
+  apg: [
+    [35.69, 139.69],
+    [25.15, 121.44],
+    [22.29, 114.17],
+    [1.35, 103.82],
+  ],
+  indigo: [
+    [-31.95, 115.86],
+    [1.35, 103.82],
+    [-6.21, 106.85],
+  ],
+  sjc: [
+    [35.69, 139.69],
+    [36.07, 120.32],
+    [1.35, 103.82],
+    [22.29, 114.17],
+  ],
+  farice: [
+    [64.13, -21.9],
+    [62.01, -6.77],
+    [55.95, -3.19],
+  ],
+  falcon: [
+    [25.13, 56.34],
+    [23.59, 58.38],
+    [26.23, 50.59],
+    [29.38, 47.98],
+  ],
 };
 
 // ========================================================================
@@ -126,7 +219,7 @@ async function fetchNgaWarnings(): Promise<NgaWarning[]> {
     );
     if (!res.ok) return [];
     const data = await res.json();
-    return Array.isArray(data) ? data : (data as { warnings?: NgaWarning[] })?.warnings ?? [];
+    return Array.isArray(data) ? data : ((data as { warnings?: NgaWarning[] })?.warnings ?? []);
   } catch {
     return [];
   }
@@ -163,12 +256,15 @@ export function matchCableByName(text: string): string | null {
   return null;
 }
 
-export function findNearestCable(lat: number, lon: number): { cableId: string; distanceKm: number } | null {
+export function findNearestCable(
+  lat: number,
+  lon: number,
+): { cableId: string; distanceKm: number } | null {
   let bestId: string | null = null;
   let bestDist = Infinity;
   const MAX_DIST_KM = 555; // ~5 degrees at equator
 
-  const cosLat = Math.cos(lat * Math.PI / 180);
+  const cosLat = Math.cos((lat * Math.PI) / 180);
 
   for (const [cableId, landings] of Object.entries(CABLE_LANDINGS)) {
     for (const [lLat, lLon] of landings) {
@@ -186,20 +282,32 @@ export function findNearestCable(lat: number, lon: number): { cableId: string; d
 }
 
 const MONTH_MAP: Record<string, number> = {
-  JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5,
-  JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11,
+  JAN: 0,
+  FEB: 1,
+  MAR: 2,
+  APR: 3,
+  MAY: 4,
+  JUN: 5,
+  JUL: 6,
+  AUG: 7,
+  SEP: 8,
+  OCT: 9,
+  NOV: 10,
+  DEC: 11,
 };
 
 export function parseIssueDate(dateStr: string | undefined): number {
   const m = dateStr?.match(/(\d{2})(\d{4})Z\s+([A-Z]{3})\s+(\d{4})/i);
   if (!m) return 0;
-  const d = new Date(Date.UTC(
-    parseInt(m[4], 10),
-    MONTH_MAP[m[3].toUpperCase()] ?? 0,
-    parseInt(m[1], 10),
-    parseInt(m[2].slice(0, 2), 10),
-    parseInt(m[2].slice(2, 4), 10),
-  ));
+  const d = new Date(
+    Date.UTC(
+      parseInt(m[4], 10),
+      MONTH_MAP[m[3].toUpperCase()] ?? 0,
+      parseInt(m[1], 10),
+      parseInt(m[2].slice(0, 2), 10),
+      parseInt(m[2].slice(2, 4), 10),
+    ),
+  );
   return Number.isNaN(d.getTime()) ? 0 : d.getTime();
 }
 
@@ -273,13 +381,15 @@ export function processNgaSignals(warnings: NgaWarning[]): Signal[] {
         confidence: isOnStation ? 0.85 : 0.6,
         ttlSeconds: isOnStation ? 24 * 3600 : 12 * 3600,
         kind: 'repair_activity',
-        evidence: [{
-          source: 'NGA',
-          summary: isOnStation
-            ? `Cable repair vessel on station: ${summaryText}`
-            : `Cable ship in area: ${summaryText}`,
-          ts,
-        }],
+        evidence: [
+          {
+            source: 'NGA',
+            summary: isOnStation
+              ? `Cable repair vessel on station: ${summaryText}`
+              : `Cable ship in area: ${summaryText}`,
+            ts,
+          },
+        ],
       });
     }
   }
@@ -324,18 +434,18 @@ export function computeHealthMap(signals: Signal[]): Record<string, CableHealthR
     const topConfidence = effectiveSignals[0].confidence * effectiveSignals[0].recencyWeight;
 
     const hasOperatorFault = effectiveSignals.some(
-      (s) => s.kind === 'operator_fault' && s.effective >= 0.50,
+      (s) => s.kind === 'operator_fault' && s.effective >= 0.5,
     );
     const hasRepairActivity = effectiveSignals.some(
-      (s) => s.kind === 'repair_activity' && s.effective >= 0.40,
+      (s) => s.kind === 'repair_activity' && s.effective >= 0.4,
     );
 
     let status: CableHealthStatus;
-    if (topScore >= 0.80 && hasOperatorFault) {
+    if (topScore >= 0.8 && hasOperatorFault) {
       status = 'CABLE_HEALTH_STATUS_FAULT';
-    } else if (topScore >= 0.80 && hasRepairActivity) {
+    } else if (topScore >= 0.8 && hasRepairActivity) {
       status = 'CABLE_HEALTH_STATUS_DEGRADED';
-    } else if (topScore >= 0.50) {
+    } else if (topScore >= 0.5) {
       status = 'CABLE_HEALTH_STATUS_DEGRADED';
     } else {
       status = 'CABLE_HEALTH_STATUS_OK';
@@ -346,9 +456,7 @@ export function computeHealthMap(signals: Signal[]): Record<string, CableHealthR
       .flatMap((s) => s.evidence)
       .slice(0, 3);
 
-    const lastUpdated = effectiveSignals
-      .map((s) => s.ts)
-      .sort((a, b) => b - a)[0];
+    const lastUpdated = effectiveSignals.map((s) => s.ts).sort((a, b) => b - a)[0];
 
     healthMap[cableId] = {
       status,

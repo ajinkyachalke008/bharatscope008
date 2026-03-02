@@ -55,18 +55,30 @@ export function collectStoryData(
   countryCode: string,
   countryName: string,
   allNews: ClusteredEvent[],
-  theaterPostures: Array<{ theaterId: string; theaterName: string; shortName: string; targetNation: string | null; postureLevel: string; totalAircraft: number; totalVessels: number; fighters: number; tankers: number; awacs: number; strikeCapable: boolean }>,
+  theaterPostures: Array<{
+    theaterId: string;
+    theaterName: string;
+    shortName: string;
+    targetNation: string | null;
+    postureLevel: string;
+    totalAircraft: number;
+    totalVessels: number;
+    fighters: number;
+    tankers: number;
+    awacs: number;
+    strikeCapable: boolean;
+  }>,
   predictionMarkets: Array<{ title: string; yesPrice: number }>,
   signals?: { protests: number; militaryFlights: number; militaryVessels: number; outages: number },
   convergence?: { score: number; signalTypes: string[]; regionalDescriptions: string[] } | null,
 ): StoryData {
   const scores = calculateCII();
-  const countryScore = scores.find(s => s.code === countryCode) || null;
+  const countryScore = scores.find((s) => s.code === countryCode) || null;
 
   const keywords = CURATED_COUNTRIES[countryCode]?.scoringKeywords || [countryName.toLowerCase()];
-  const countryNews = allNews.filter(e => {
+  const countryNews = allNews.filter((e) => {
     const lower = e.primaryTitle.toLowerCase();
-    return keywords.some(kw => lower.includes(kw));
+    return keywords.some((kw) => lower.includes(kw));
   });
 
   const sortedNews = [...countryNews].sort((a, b) => {
@@ -76,14 +88,16 @@ export function collectStoryData(
     return pb - pa;
   });
 
-  const theater = theaterPostures.find(t =>
-    t.targetNation?.toLowerCase() === countryName.toLowerCase() ||
-    t.shortName?.toLowerCase() === countryCode.toLowerCase()
-  ) || null;
+  const theater =
+    theaterPostures.find(
+      (t) =>
+        t.targetNation?.toLowerCase() === countryName.toLowerCase() ||
+        t.shortName?.toLowerCase() === countryCode.toLowerCase(),
+    ) || null;
 
-  const countryMarkets = predictionMarkets.filter(m => {
+  const countryMarkets = predictionMarkets.filter((m) => {
     const lower = m.title.toLowerCase();
-    return keywords.some(kw => lower.includes(kw));
+    return keywords.some((kw) => lower.includes(kw));
   });
 
   const threatCounts = { critical: 0, high: 0, medium: 0, categories: new Set<string>() };
@@ -100,29 +114,33 @@ export function collectStoryData(
   return {
     countryCode,
     countryName,
-    cii: countryScore ? {
-      score: countryScore.score,
-      level: countryScore.level,
-      trend: countryScore.trend,
-      components: countryScore.components,
-      change24h: countryScore.change24h,
-    } : null,
-    news: sortedNews.slice(0, 5).map(n => ({
+    cii: countryScore
+      ? {
+          score: countryScore.score,
+          level: countryScore.level,
+          trend: countryScore.trend,
+          components: countryScore.components,
+          change24h: countryScore.change24h,
+        }
+      : null,
+    news: sortedNews.slice(0, 5).map((n) => ({
       title: n.primaryTitle,
       threatLevel: (n.threat?.level || 'info') as ThreatLevel,
       sourceCount: n.sourceCount,
     })),
-    theater: theater ? {
-      theaterName: theater.theaterName,
-      postureLevel: theater.postureLevel,
-      totalAircraft: theater.totalAircraft,
-      totalVessels: theater.totalVessels,
-      fighters: theater.fighters,
-      tankers: theater.tankers,
-      awacs: theater.awacs,
-      strikeCapable: theater.strikeCapable,
-    } : null,
-    markets: countryMarkets.slice(0, 4).map(m => ({
+    theater: theater
+      ? {
+          theaterName: theater.theaterName,
+          postureLevel: theater.postureLevel,
+          totalAircraft: theater.totalAircraft,
+          totalVessels: theater.totalVessels,
+          fighters: theater.fighters,
+          tankers: theater.tankers,
+          awacs: theater.awacs,
+          strikeCapable: theater.strikeCapable,
+        }
+      : null,
+    markets: countryMarkets.slice(0, 4).map((m) => ({
       title: m.title,
       yesPrice: m.yesPrice,
     })),
@@ -136,4 +154,3 @@ export function collectStoryData(
     convergence: convergence || null,
   };
 }
-

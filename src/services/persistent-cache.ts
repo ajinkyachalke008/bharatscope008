@@ -40,7 +40,9 @@ function getCacheDb(): Promise<IDBDatabase> {
 
     request.onsuccess = () => {
       const db = request.result;
-      db.onclose = () => { cacheDbPromise = null; };
+      db.onclose = () => {
+        cacheDbPromise = null;
+      };
       resolve(db);
     };
   });
@@ -75,7 +77,10 @@ export async function getPersistentCache<T>(key: string): Promise<CacheEnvelope<
       const value = await invokeTauri<CacheEnvelope<T> | null>('read_cache_entry', { key });
       return value ?? null;
     } catch (error) {
-      console.warn('[persistent-cache] Desktop read failed; falling back to browser storage', error);
+      console.warn(
+        '[persistent-cache] Desktop read failed; falling back to browser storage',
+        error,
+      );
     }
   }
 
@@ -90,7 +95,7 @@ export async function getPersistentCache<T>(key: string): Promise<CacheEnvelope<
 
   try {
     const raw = localStorage.getItem(`${CACHE_PREFIX}${key}`);
-    return raw ? JSON.parse(raw) as CacheEnvelope<T> : null;
+    return raw ? (JSON.parse(raw) as CacheEnvelope<T>) : null;
   } catch {
     return null;
   }
@@ -104,7 +109,10 @@ export async function setPersistentCache<T>(key: string, data: T): Promise<void>
       await invokeTauri<void>('write_cache_entry', { key, value: JSON.stringify(payload) });
       return;
     } catch (error) {
-      console.warn('[persistent-cache] Desktop write failed; falling back to browser storage', error);
+      console.warn(
+        '[persistent-cache] Desktop write failed; falling back to browser storage',
+        error,
+      );
     }
   }
 
@@ -114,7 +122,11 @@ export async function setPersistentCache<T>(key: string, data: T): Promise<void>
       return;
     } catch (error) {
       if (isQuotaError(error)) markStorageQuotaExceeded();
-      else console.warn('[persistent-cache] IndexedDB write failed; falling back to localStorage', error);
+      else
+        console.warn(
+          '[persistent-cache] IndexedDB write failed; falling back to localStorage',
+          error,
+        );
       cacheDbPromise = null;
     }
   }
@@ -148,7 +160,10 @@ export async function deletePersistentCache(key: string): Promise<void> {
       });
       return;
     } catch (error) {
-      console.warn('[persistent-cache] IndexedDB delete failed; falling back to localStorage', error);
+      console.warn(
+        '[persistent-cache] IndexedDB delete failed; falling back to localStorage',
+        error,
+      );
       cacheDbPromise = null;
     }
   }

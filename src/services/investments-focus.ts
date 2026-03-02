@@ -9,7 +9,7 @@ export function focusInvestmentOnMap(
   map: InvestmentsMapLike | null,
   mapLayers: MapLayers,
   lat: number,
-  lon: number
+  lon: number,
 ): void {
   map?.enableLayer('gulfInvestments');
   mapLayers.gulfInvestments = true;

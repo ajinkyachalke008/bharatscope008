@@ -25,6 +25,7 @@ const FULL_PANELS: Record<string, PanelConfig> = {
   africa: { name: 'Africa', enabled: true, priority: 1 },
   latam: { name: 'Latin America', enabled: true, priority: 1 },
   asia: { name: 'Asia-Pacific', enabled: true, priority: 1 },
+  india: { name: 'India News', enabled: true, priority: 1 },
   energy: { name: 'Energy & Resources', enabled: true, priority: 1 },
   gov: { name: 'Government', enabled: true, priority: 1 },
   thinktanks: { name: 'Think Tanks', enabled: true, priority: 1 },
@@ -98,6 +99,16 @@ const FULL_MAP_LAYERS: MapLayers = {
   speciesRecovery: false,
   renewableInstallations: false,
   tradeRoutes: false,
+  // India Focus layers
+  indiaStates: false,
+  indiaDistricts: false,
+  indiaHighways: false,
+  indiaMaritime: false,
+  indiaWebcams: false,
+  indiaRailways: false,
+  indiaAirports: false,
+  indiaEnergy: false,
+  indiaTelecom: false,
 };
 
 const FULL_MOBILE_MAP_LAYERS: MapLayers = {
@@ -146,6 +157,16 @@ const FULL_MOBILE_MAP_LAYERS: MapLayers = {
   speciesRecovery: false,
   renewableInstallations: false,
   tradeRoutes: false,
+  // India Focus layers
+  indiaStates: false,
+  indiaDistricts: false,
+  indiaHighways: false,
+  indiaMaritime: false,
+  indiaWebcams: false,
+  indiaRailways: false,
+  indiaAirports: false,
+  indiaEnergy: false,
+  indiaTelecom: false,
 };
 
 // ============================================
@@ -234,6 +255,16 @@ const TECH_MAP_LAYERS: MapLayers = {
   speciesRecovery: false,
   renewableInstallations: false,
   tradeRoutes: false,
+  // India Focus layers
+  indiaStates: false,
+  indiaDistricts: false,
+  indiaHighways: false,
+  indiaMaritime: false,
+  indiaWebcams: false,
+  indiaRailways: false,
+  indiaAirports: false,
+  indiaEnergy: false,
+  indiaTelecom: false,
 };
 
 const TECH_MOBILE_MAP_LAYERS: MapLayers = {
@@ -282,6 +313,16 @@ const TECH_MOBILE_MAP_LAYERS: MapLayers = {
   speciesRecovery: false,
   renewableInstallations: false,
   tradeRoutes: false,
+  // India Focus layers
+  indiaStates: false,
+  indiaDistricts: false,
+  indiaHighways: false,
+  indiaMaritime: false,
+  indiaWebcams: false,
+  indiaRailways: false,
+  indiaAirports: false,
+  indiaEnergy: false,
+  indiaTelecom: false,
 };
 
 // ============================================
@@ -367,6 +408,16 @@ const FINANCE_MAP_LAYERS: MapLayers = {
   speciesRecovery: false,
   renewableInstallations: false,
   tradeRoutes: true,
+  // India Focus layers
+  indiaStates: false,
+  indiaDistricts: false,
+  indiaHighways: false,
+  indiaMaritime: false,
+  indiaWebcams: false,
+  indiaRailways: false,
+  indiaAirports: false,
+  indiaEnergy: false,
+  indiaTelecom: false,
 };
 
 const FINANCE_MOBILE_MAP_LAYERS: MapLayers = {
@@ -415,6 +466,16 @@ const FINANCE_MOBILE_MAP_LAYERS: MapLayers = {
   speciesRecovery: false,
   renewableInstallations: false,
   tradeRoutes: false,
+  // India Focus layers
+  indiaStates: false,
+  indiaDistricts: false,
+  indiaHighways: false,
+  indiaMaritime: false,
+  indiaWebcams: false,
+  indiaRailways: false,
+  indiaAirports: false,
+  indiaEnergy: false,
+  indiaTelecom: false,
 };
 
 // ============================================
@@ -479,6 +540,16 @@ const HAPPY_MAP_LAYERS: MapLayers = {
   speciesRecovery: true,
   renewableInstallations: true,
   tradeRoutes: false,
+  // India Focus layers
+  indiaStates: false,
+  indiaDistricts: false,
+  indiaHighways: false,
+  indiaMaritime: false,
+  indiaWebcams: false,
+  indiaRailways: false,
+  indiaAirports: false,
+  indiaEnergy: false,
+  indiaTelecom: false,
 };
 
 const HAPPY_MOBILE_MAP_LAYERS: MapLayers = {
@@ -527,14 +598,45 @@ const HAPPY_MOBILE_MAP_LAYERS: MapLayers = {
   speciesRecovery: true,
   renewableInstallations: true,
   tradeRoutes: false,
+  // India Focus layers
+  indiaStates: false,
+  indiaDistricts: false,
+  indiaHighways: false,
+  indiaMaritime: false,
+  indiaWebcams: false,
+  indiaRailways: false,
+  indiaAirports: false,
+  indiaEnergy: false,
+  indiaTelecom: false,
 };
 
 // ============================================
 // VARIANT-AWARE EXPORTS
 // ============================================
-export const DEFAULT_PANELS = SITE_VARIANT === 'happy' ? HAPPY_PANELS : SITE_VARIANT === 'tech' ? TECH_PANELS : SITE_VARIANT === 'finance' ? FINANCE_PANELS : FULL_PANELS;
-export const DEFAULT_MAP_LAYERS = SITE_VARIANT === 'happy' ? HAPPY_MAP_LAYERS : SITE_VARIANT === 'tech' ? TECH_MAP_LAYERS : SITE_VARIANT === 'finance' ? FINANCE_MAP_LAYERS : FULL_MAP_LAYERS;
-export const MOBILE_DEFAULT_MAP_LAYERS = SITE_VARIANT === 'happy' ? HAPPY_MOBILE_MAP_LAYERS : SITE_VARIANT === 'tech' ? TECH_MOBILE_MAP_LAYERS : SITE_VARIANT === 'finance' ? FINANCE_MOBILE_MAP_LAYERS : FULL_MOBILE_MAP_LAYERS;
+export const DEFAULT_PANELS =
+  SITE_VARIANT === 'happy'
+    ? HAPPY_PANELS
+    : SITE_VARIANT === 'tech'
+      ? TECH_PANELS
+      : SITE_VARIANT === 'finance'
+        ? FINANCE_PANELS
+        : FULL_PANELS;
+export const DEFAULT_MAP_LAYERS =
+  SITE_VARIANT === 'happy'
+    ? HAPPY_MAP_LAYERS
+    : SITE_VARIANT === 'tech'
+      ? TECH_MAP_LAYERS
+      : SITE_VARIANT === 'finance'
+        ? FINANCE_MAP_LAYERS
+        : FULL_MAP_LAYERS;
+export const MOBILE_DEFAULT_MAP_LAYERS =
+  SITE_VARIANT === 'happy'
+    ? HAPPY_MOBILE_MAP_LAYERS
+    : SITE_VARIANT === 'tech'
+      ? TECH_MOBILE_MAP_LAYERS
+      : SITE_VARIANT === 'finance'
+        ? FINANCE_MOBILE_MAP_LAYERS
+        : FULL_MOBILE_MAP_LAYERS;
 
 /** Maps map-layer toggle keys to their data-freshness source IDs (single source of truth). */
 export const LAYER_TO_SOURCE: Partial<Record<keyof MapLayers, DataSourceId[]>> = {
@@ -557,7 +659,10 @@ export const LAYER_TO_SOURCE: Partial<Record<keyof MapLayers, DataSourceId[]>> =
 // matching panel in the active variant's DEFAULT_PANELS are shown.
 // The `variants` field restricts a category to specific site variants;
 // omit it to show the category for all variants.
-export const PANEL_CATEGORY_MAP: Record<string, { labelKey: string; panelKeys: string[]; variants?: string[] }> = {
+export const PANEL_CATEGORY_MAP: Record<
+  string,
+  { labelKey: string; panelKeys: string[]; variants?: string[] }
+> = {
   // All variants — essential panels
   core: {
     labelKey: 'header.panelCatCore',
@@ -577,7 +682,20 @@ export const PANEL_CATEGORY_MAP: Record<string, { labelKey: string; panelKeys: s
   },
   marketsFinance: {
     labelKey: 'header.panelCatMarketsFinance',
-    panelKeys: ['commodities', 'markets', 'economic', 'trade-policy', 'supply-chain', 'finance', 'polymarket', 'macro-signals', 'etf-flows', 'stablecoins', 'crypto', 'heatmap'],
+    panelKeys: [
+      'commodities',
+      'markets',
+      'economic',
+      'trade-policy',
+      'supply-chain',
+      'finance',
+      'polymarket',
+      'macro-signals',
+      'etf-flows',
+      'stablecoins',
+      'crypto',
+      'heatmap',
+    ],
     variants: ['full'],
   },
   topical: {
@@ -587,19 +705,45 @@ export const PANEL_CATEGORY_MAP: Record<string, { labelKey: string; panelKeys: s
   },
   dataTracking: {
     labelKey: 'header.panelCatDataTracking',
-    panelKeys: ['monitors', 'satellite-fires', 'ucdp-events', 'displacement', 'climate', 'population-exposure'],
+    panelKeys: [
+      'monitors',
+      'satellite-fires',
+      'ucdp-events',
+      'displacement',
+      'climate',
+      'population-exposure',
+    ],
     variants: ['full'],
   },
 
   // Tech variant
   techAi: {
     labelKey: 'header.panelCatTechAi',
-    panelKeys: ['ai', 'tech', 'hardware', 'cloud', 'dev', 'github', 'producthunt', 'events', 'service-status', 'tech-readiness'],
+    panelKeys: [
+      'ai',
+      'tech',
+      'hardware',
+      'cloud',
+      'dev',
+      'github',
+      'producthunt',
+      'events',
+      'service-status',
+      'tech-readiness',
+    ],
     variants: ['tech'],
   },
   startupsVc: {
     labelKey: 'header.panelCatStartupsVc',
-    panelKeys: ['startups', 'vcblogs', 'regionalStartups', 'unicorns', 'accelerators', 'funding', 'ipo'],
+    panelKeys: [
+      'startups',
+      'vcblogs',
+      'regionalStartups',
+      'unicorns',
+      'accelerators',
+      'funding',
+      'ipo',
+    ],
     variants: ['tech'],
   },
   securityPolicy: {
@@ -609,7 +753,18 @@ export const PANEL_CATEGORY_MAP: Record<string, { labelKey: string; panelKeys: s
   },
   techMarkets: {
     labelKey: 'header.panelCatMarkets',
-    panelKeys: ['markets', 'finance', 'crypto', 'economic', 'polymarket', 'macro-signals', 'etf-flows', 'stablecoins', 'layoffs', 'monitors'],
+    panelKeys: [
+      'markets',
+      'finance',
+      'crypto',
+      'economic',
+      'polymarket',
+      'macro-signals',
+      'etf-flows',
+      'stablecoins',
+      'layoffs',
+      'monitors',
+    ],
     variants: ['tech'],
   },
 

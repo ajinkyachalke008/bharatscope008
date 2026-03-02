@@ -18,8 +18,10 @@ import { CHROME_UA } from '../../../_shared/constants';
 // Reasoning preamble detection
 // ======================================================================
 
-export const TASK_NARRATION = /^(we need to|i need to|let me|i'll |i should|i will |the task is|the instructions|according to the rules|so we need to|okay[,.]\s*(i'll|let me|so|we need|the task|i should|i will)|sure[,.]\s*(i'll|let me|so|we need|the task|i should|i will|here)|first[, ]+(i|we|let)|to summarize (the headlines|the task|this)|my task (is|was|:)|step \d)/i;
-export const PROMPT_ECHO = /^(summarize the top story|summarize the key|rules:|here are the rules|the top story is likely)/i;
+export const TASK_NARRATION =
+  /^(we need to|i need to|let me|i'll |i should|i will |the task is|the instructions|according to the rules|so we need to|okay[,.]\s*(i'll|let me|so|we need|the task|i should|i will)|sure[,.]\s*(i'll|let me|so|we need|the task|i should|i will|here)|first[, ]+(i|we|let)|to summarize (the headlines|the task|this)|my task (is|was|:)|step \d)/i;
+export const PROMPT_ECHO =
+  /^(summarize the top story|summarize the key|rules:|here are the rules|the top story is likely)/i;
 
 export function hasReasoningPreamble(text: string): boolean {
   const trimmed = text.trim();
@@ -43,8 +45,9 @@ export async function summarizeArticle(
   const MAX_GEO_CONTEXT_LEN = 2000;
   const headlines = (req.headlines || [])
     .slice(0, MAX_HEADLINES)
-    .map(h => typeof h === 'string' ? h.slice(0, MAX_HEADLINE_LEN) : '');
-  const sanitizedGeoContext = typeof geoContext === 'string' ? geoContext.slice(0, MAX_GEO_CONTEXT_LEN) : '';
+    .map((h) => (typeof h === 'string' ? h.slice(0, MAX_HEADLINE_LEN) : ''));
+  const sanitizedGeoContext =
+    typeof geoContext === 'string' ? geoContext.slice(0, MAX_GEO_CONTEXT_LEN) : '';
 
   // Provider credential check
   const skipReasons: Record<string, string> = {
@@ -92,76 +95,78 @@ export async function summarizeArticle(
 
     // Single atomic call — source tracking happens inside cachedFetchJsonWithMeta,
     // eliminating the TOCTOU race between a separate getCachedJson and cachedFetchJson.
-    const { data: result, source } = await cachedFetchJsonWithMeta<{ summary: string; model: string; tokens: number }>(
-      cacheKey,
-      CACHE_TTL_SECONDS,
-      async () => {
-        const uniqueHeadlines = deduplicateHeadlines(headlines.slice(0, 5));
-        const { systemPrompt, userPrompt } = buildArticlePrompts(headlines, uniqueHeadlines, {
-          mode,
-          geoContext: sanitizedGeoContext,
-          variant,
-          lang,
-        });
+    const { data: result, source } = await cachedFetchJsonWithMeta<{
+      summary: string;
+      model: string;
+      tokens: number;
+    }>(cacheKey, CACHE_TTL_SECONDS, async () => {
+      const uniqueHeadlines = deduplicateHeadlines(headlines.slice(0, 5));
+      const { systemPrompt, userPrompt } = buildArticlePrompts(headlines, uniqueHeadlines, {
+        mode,
+        geoContext: sanitizedGeoContext,
+        variant,
+        lang,
+      });
 
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: { ...providerHeaders, 'User-Agent': CHROME_UA },
-          body: JSON.stringify({
-            model,
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userPrompt },
-            ],
-            temperature: 0.3,
-            max_tokens: 100,
-            top_p: 0.9,
-            ...extraBody,
-          }),
-          signal: AbortSignal.timeout(30_000),
-        });
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { ...providerHeaders, 'User-Agent': CHROME_UA },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          temperature: 0.3,
+          max_tokens: 100,
+          top_p: 0.9,
+          ...extraBody,
+        }),
+        signal: AbortSignal.timeout(30_000),
+      });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`[SummarizeArticle:${provider}] API error:`, response.status, errorText);
-          throw new Error(response.status === 429 ? 'Rate limited' : `${provider} API error`);
-        }
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`[SummarizeArticle:${provider}] API error:`, response.status, errorText);
+        throw new Error(response.status === 429 ? 'Rate limited' : `${provider} API error`);
+      }
 
-        const data = await response.json() as any;
-        const tokens = (data.usage?.total_tokens as number) || 0;
-        const message = data.choices?.[0]?.message;
-        let rawContent = typeof message?.content === 'string' ? message.content.trim() : '';
+      const data = (await response.json()) as any;
+      const tokens = (data.usage?.total_tokens as number) || 0;
+      const message = data.choices?.[0]?.message;
+      let rawContent = typeof message?.content === 'string' ? message.content.trim() : '';
 
-        rawContent = rawContent
-          .replace(/<think>[\s\S]*?<\/think>/gi, '')
-          .replace(/<\|thinking\|>[\s\S]*?<\|\/thinking\|>/gi, '')
-          .replace(/<reasoning>[\s\S]*?<\/reasoning>/gi, '')
-          .replace(/<reflection>[\s\S]*?<\/reflection>/gi, '')
-          .replace(/<\|begin_of_thought\|>[\s\S]*?<\|end_of_thought\|>/gi, '')
-          .trim();
+      rawContent = rawContent
+        .replace(/<think>[\s\S]*?<\/think>/gi, '')
+        .replace(/<\|thinking\|>[\s\S]*?<\|\/thinking\|>/gi, '')
+        .replace(/<reasoning>[\s\S]*?<\/reasoning>/gi, '')
+        .replace(/<reflection>[\s\S]*?<\/reflection>/gi, '')
+        .replace(/<\|begin_of_thought\|>[\s\S]*?<\|end_of_thought\|>/gi, '')
+        .trim();
 
-        // Strip unterminated thinking blocks (no closing tag)
-        rawContent = rawContent
-          .replace(/<think>[\s\S]*/gi, '')
-          .replace(/<\|thinking\|>[\s\S]*/gi, '')
-          .replace(/<reasoning>[\s\S]*/gi, '')
-          .replace(/<reflection>[\s\S]*/gi, '')
-          .replace(/<\|begin_of_thought\|>[\s\S]*/gi, '')
-          .trim();
+      // Strip unterminated thinking blocks (no closing tag)
+      rawContent = rawContent
+        .replace(/<think>[\s\S]*/gi, '')
+        .replace(/<\|thinking\|>[\s\S]*/gi, '')
+        .replace(/<reasoning>[\s\S]*/gi, '')
+        .replace(/<reflection>[\s\S]*/gi, '')
+        .replace(/<\|begin_of_thought\|>[\s\S]*/gi, '')
+        .trim();
 
-        if (['brief', 'analysis'].includes(mode) && rawContent.length < 20) {
-          console.warn(`[SummarizeArticle:${provider}] Output too short after stripping (${rawContent.length} chars), rejecting`);
-          return null;
-        }
+      if (['brief', 'analysis'].includes(mode) && rawContent.length < 20) {
+        console.warn(
+          `[SummarizeArticle:${provider}] Output too short after stripping (${rawContent.length} chars), rejecting`,
+        );
+        return null;
+      }
 
-        if (['brief', 'analysis'].includes(mode) && hasReasoningPreamble(rawContent)) {
-          console.warn(`[SummarizeArticle:${provider}] Reasoning preamble detected, rejecting`);
-          return null;
-        }
+      if (['brief', 'analysis'].includes(mode) && hasReasoningPreamble(rawContent)) {
+        console.warn(`[SummarizeArticle:${provider}] Reasoning preamble detected, rejecting`);
+        return null;
+      }
 
-        return rawContent ? { summary: rawContent, model, tokens } : null;
-      },
-    );
+      return rawContent ? { summary: rawContent, model, tokens } : null;
+    });
 
     if (result?.summary) {
       return {
@@ -169,7 +174,7 @@ export async function summarizeArticle(
         model: result.model || model,
         provider: source === 'cache' ? 'cache' : provider,
         cached: source === 'cache',
-        tokens: source === 'cache' ? 0 : (result.tokens || 0),
+        tokens: source === 'cache' ? 0 : result.tokens || 0,
         fallback: false,
         skipped: false,
         reason: '',
@@ -190,7 +195,6 @@ export async function summarizeArticle(
       error: 'Empty response',
       errorType: '',
     };
-
   } catch (err: unknown) {
     const error = err instanceof Error ? err : new Error(String(err));
     console.error(`[SummarizeArticle:${provider}] Error:`, error.name, error.message);

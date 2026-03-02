@@ -61,7 +61,8 @@ async function fetchGdeltGeoPositive(query: string): Promise<PositiveGeoEvent[]>
       lat > 90 ||
       lon < -180 ||
       lon > 180
-    ) continue;
+    )
+      continue;
 
     seenLocations.add(name);
 
@@ -91,7 +92,7 @@ export async function listPositiveGeoEvents(
     for (let i = 0; i < POSITIVE_QUERIES.length; i++) {
       if (i > 0) {
         // Rate-limit delay between queries
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise((r) => setTimeout(r, 500));
       }
 
       try {

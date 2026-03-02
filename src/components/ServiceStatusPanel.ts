@@ -1,4 +1,3 @@
-
 import { Panel } from './Panel';
 import { t } from '@/services/i18n';
 import { getLocalApiPort, isDesktopRuntime } from '@/services/runtime';
@@ -80,13 +79,16 @@ export class ServiceStatusPanel extends Panel {
 
   private getFilteredServices(): ServiceStatus[] {
     if (this.filter === 'all') return this.services;
-    return this.services.filter(s => s.category === this.filter);
+    return this.services.filter((s) => s.category === this.filter);
   }
 
   protected render(): void {
     if (this.loading) {
-      replaceChildren(this.content,
-        h('div', { className: 'service-status-loading' },
+      replaceChildren(
+        this.content,
+        h(
+          'div',
+          { className: 'service-status-loading' },
           h('div', { className: 'loading-spinner' }),
           h('span', null, t('components.serviceStatus.checkingServices')),
         ),
@@ -95,30 +97,42 @@ export class ServiceStatusPanel extends Panel {
     }
 
     if (this.error) {
-      replaceChildren(this.content,
-        h('div', { className: 'service-status-error' },
+      replaceChildren(
+        this.content,
+        h(
+          'div',
+          { className: 'service-status-error' },
           h('span', { className: 'error-text' }, this.error),
-          h('button', {
-            className: 'retry-btn',
-            onClick: () => { this.loading = true; this.render(); void this.fetchStatus(); },
-          }, t('common.retry')),
+          h(
+            'button',
+            {
+              className: 'retry-btn',
+              onClick: () => {
+                this.loading = true;
+                this.render();
+                void this.fetchStatus();
+              },
+            },
+            t('common.retry'),
+          ),
         ),
       );
       return;
     }
 
     const filtered = this.getFilteredServices();
-    const issues = filtered.filter(s => s.status !== 'operational');
+    const issues = filtered.filter((s) => s.status !== 'operational');
 
-    replaceChildren(this.content,
+    replaceChildren(
+      this.content,
       this.buildBackendStatus(),
       this.buildDesktopReadiness(),
       this.buildSummary(filtered),
       this.buildFilters(),
-      h('div', { className: 'service-status-list' },
-        ...this.buildServiceItems(filtered),
-      ),
-      issues.length === 0 ? h('div', { className: 'all-operational' }, t('components.serviceStatus.allOperational')) : false,
+      h('div', { className: 'service-status-list' }, ...this.buildServiceItems(filtered)),
+      issues.length === 0
+        ? h('div', { className: 'all-operational' }, t('components.serviceStatus.allOperational'))
+        : false,
     );
   }
 
@@ -126,7 +140,9 @@ export class ServiceStatusPanel extends Panel {
     if (!isDesktopRuntime()) return false;
 
     if (!this.localBackend?.enabled) {
-      return h('div', { className: 'service-status-backend warning' },
+      return h(
+        'div',
+        { className: 'service-status-backend warning' },
         t('components.serviceStatus.backendUnavailable'),
       );
     }
@@ -134,27 +150,39 @@ export class ServiceStatusPanel extends Panel {
     const port = this.localBackend.port ?? getLocalApiPort();
     const remote = this.localBackend.remoteBase ?? 'https://worldmonitor.app';
 
-    return h('div', { className: 'service-status-backend' },
-      'Local backend active on ', h('strong', null, `127.0.0.1:${port}`),
-      ' · cloud fallback: ', h('strong', null, remote),
+    return h(
+      'div',
+      { className: 'service-status-backend' },
+      'Local backend active on ',
+      h('strong', null, `127.0.0.1:${port}`),
+      ' · cloud fallback: ',
+      h('strong', null, remote),
     );
   }
 
   private buildSummary(services: ServiceStatus[]): HTMLElement {
-    const operational = services.filter(s => s.status === 'operational').length;
-    const degraded = services.filter(s => s.status === 'degraded').length;
-    const outage = services.filter(s => s.status === 'outage').length;
+    const operational = services.filter((s) => s.status === 'operational').length;
+    const degraded = services.filter((s) => s.status === 'degraded').length;
+    const outage = services.filter((s) => s.status === 'outage').length;
 
-    return h('div', { className: 'service-status-summary' },
-      h('div', { className: 'summary-item operational' },
+    return h(
+      'div',
+      { className: 'service-status-summary' },
+      h(
+        'div',
+        { className: 'summary-item operational' },
         h('span', { className: 'summary-count' }, String(operational)),
         h('span', { className: 'summary-label' }, t('components.serviceStatus.ok')),
       ),
-      h('div', { className: 'summary-item degraded' },
+      h(
+        'div',
+        { className: 'summary-item degraded' },
         h('span', { className: 'summary-count' }, String(degraded)),
         h('span', { className: 'summary-label' }, t('components.serviceStatus.degraded')),
       ),
-      h('div', { className: 'summary-item outage' },
+      h(
+        'div',
+        { className: 'summary-item outage' },
         h('span', { className: 'summary-count' }, String(outage)),
         h('span', { className: 'summary-label' }, t('components.serviceStatus.outage')),
       ),
@@ -168,20 +196,41 @@ export class ServiceStatusPanel extends Panel {
     const keySummary = getKeyBackedAvailabilitySummary();
     const nonParity = getNonParityFeatures();
 
-    return h('div', { className: 'service-status-desktop-readiness' },
-      h('div', { className: 'service-status-desktop-title' }, t('components.serviceStatus.desktopReadiness')),
-      h('div', { className: 'service-status-desktop-subtitle' },
-        t('components.serviceStatus.acceptanceChecks', { ready: String(checks.filter(check => check.ready).length), total: String(checks.length), available: String(keySummary.available), featureTotal: String(keySummary.total) }),
+    return h(
+      'div',
+      { className: 'service-status-desktop-readiness' },
+      h(
+        'div',
+        { className: 'service-status-desktop-title' },
+        t('components.serviceStatus.desktopReadiness'),
       ),
-      h('ul', { className: 'service-status-desktop-list' },
-        ...checks.map(check =>
-          h('li', null, `${check.ready ? '✅' : '⚠️'} ${check.label}`),
+      h(
+        'div',
+        { className: 'service-status-desktop-subtitle' },
+        t('components.serviceStatus.acceptanceChecks', {
+          ready: String(checks.filter((check) => check.ready).length),
+          total: String(checks.length),
+          available: String(keySummary.available),
+          featureTotal: String(keySummary.total),
+        }),
+      ),
+      h(
+        'ul',
+        { className: 'service-status-desktop-list' },
+        ...checks.map((check) => h('li', null, `${check.ready ? '✅' : '⚠️'} ${check.label}`)),
+      ),
+      h(
+        'details',
+        { className: 'service-status-non-parity' },
+        h(
+          'summary',
+          null,
+          t('components.serviceStatus.nonParityFallbacks', { count: String(nonParity.length) }),
         ),
-      ),
-      h('details', { className: 'service-status-non-parity' },
-        h('summary', null, t('components.serviceStatus.nonParityFallbacks', { count: String(nonParity.length) })),
-        h('ul', null,
-          ...nonParity.map(feature =>
+        h(
+          'ul',
+          null,
+          ...nonParity.map((feature) =>
             h('li', null, h('strong', null, feature.panel), `: ${feature.fallback}`),
           ),
         ),
@@ -191,20 +240,28 @@ export class ServiceStatusPanel extends Panel {
 
   private buildFilters(): HTMLElement {
     const categories: CategoryFilter[] = ['all', 'cloud', 'dev', 'comm', 'ai', 'saas'];
-    return h('div', { className: 'service-status-filters' },
-      ...categories.map(key =>
-        h('button', {
-          className: `status-filter-btn ${this.filter === key ? 'active' : ''}`,
-          dataset: { filter: key },
-          onClick: () => this.setFilter(key),
-        }, getCategoryLabel(key)),
+    return h(
+      'div',
+      { className: 'service-status-filters' },
+      ...categories.map((key) =>
+        h(
+          'button',
+          {
+            className: `status-filter-btn ${this.filter === key ? 'active' : ''}`,
+            dataset: { filter: key },
+            onClick: () => this.setFilter(key),
+          },
+          getCategoryLabel(key),
+        ),
       ),
     );
   }
 
   private buildServiceItems(services: ServiceStatus[]): HTMLElement[] {
-    return services.map(service =>
-      h('div', { className: `service-status-item ${service.status}` },
+    return services.map((service) =>
+      h(
+        'div',
+        { className: `service-status-item ${service.status}` },
         h('span', { className: 'status-icon' }, this.getStatusIcon(service.status)),
         h('span', { className: 'status-name' }, service.name),
         h('span', { className: `status-badge ${service.status}` }, service.status.toUpperCase()),
@@ -214,11 +271,14 @@ export class ServiceStatusPanel extends Panel {
 
   private getStatusIcon(status: string): string {
     switch (status) {
-      case 'operational': return '●';
-      case 'degraded': return '◐';
-      case 'outage': return '○';
-      default: return '?';
+      case 'operational':
+        return '●';
+      case 'degraded':
+        return '◐';
+      case 'outage':
+        return '○';
+      default:
+        return '?';
     }
   }
-
 }

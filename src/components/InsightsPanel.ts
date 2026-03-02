@@ -2,17 +2,29 @@ import { Panel } from './Panel';
 import { mlWorker } from '@/services/ml-worker';
 import { generateSummary, type SummarizeOptions } from '@/services/summarization';
 import { parallelAnalysis, type AnalyzedHeadline } from '@/services/parallel-analysis';
-import { signalAggregator, logSignalSummary, type RegionalConvergence } from '@/services/signal-aggregator';
+import {
+  signalAggregator,
+  logSignalSummary,
+  type RegionalConvergence,
+} from '@/services/signal-aggregator';
 import { focalPointDetector } from '@/services/focal-point-detector';
 import { ingestNewsForCII } from '@/services/country-instability';
 import { getTheaterPostureSummaries } from '@/services/military-surge';
 import { isMobileDevice } from '@/utils';
 import { escapeHtml, sanitizeUrl } from '@/utils/sanitize';
 import { SITE_VARIANT } from '@/config';
-import { deletePersistentCache, getPersistentCache, setPersistentCache } from '@/services/persistent-cache';
+import {
+  deletePersistentCache,
+  getPersistentCache,
+  setPersistentCache,
+} from '@/services/persistent-cache';
 import { t } from '@/services/i18n';
 import { isDesktopRuntime } from '@/services/runtime';
-import { getAiFlowSettings, isAnyAiProviderEnabled, subscribeAiFlowChange } from '@/services/ai-flow-settings';
+import {
+  getAiFlowSettings,
+  isAnyAiProviderEnabled,
+  subscribeAiFlowChange,
+} from '@/services/ai-flow-settings';
 import type { ClusteredEvent, FocalPoint, MilitaryFlight } from '@/types';
 
 export class InsightsPanel extends Panel {
@@ -62,7 +74,7 @@ export class InsightsPanel extends Panel {
 
     const postures = getTheaterPostureSummaries(this.lastMilitaryFlights);
     const significant = postures.filter(
-      (p) => p.postureLevel === 'critical' || p.postureLevel === 'elevated' || p.strikeCapable
+      (p) => p.postureLevel === 'critical' || p.postureLevel === 'elevated' || p.strikeCapable,
     );
 
     if (significant.length === 0) {
@@ -82,7 +94,6 @@ export class InsightsPanel extends Panel {
     return `\n\nCRITICAL MILITARY POSTURE:\n${lines.join('\n')}`;
   }
 
-
   private async loadBriefFromCache(): Promise<boolean> {
     if (this.cachedBrief) return false;
     const entry = await getPersistentCache<{ summary: string }>(InsightsPanel.BRIEF_CACHE_KEY);
@@ -93,43 +104,134 @@ export class InsightsPanel extends Panel {
   }
   // High-priority military/conflict keywords (huge boost)
   private static readonly MILITARY_KEYWORDS = [
-    'war', 'armada', 'invasion', 'airstrike', 'strike', 'missile', 'troops',
-    'deployed', 'offensive', 'artillery', 'bomb', 'combat', 'fleet', 'warship',
-    'carrier', 'navy', 'airforce', 'deployment', 'mobilization', 'attack',
+    'war',
+    'armada',
+    'invasion',
+    'airstrike',
+    'strike',
+    'missile',
+    'troops',
+    'deployed',
+    'offensive',
+    'artillery',
+    'bomb',
+    'combat',
+    'fleet',
+    'warship',
+    'carrier',
+    'navy',
+    'airforce',
+    'deployment',
+    'mobilization',
+    'attack',
   ];
 
   // Violence/casualty keywords (huge boost - human cost stories)
   private static readonly VIOLENCE_KEYWORDS = [
-    'killed', 'dead', 'death', 'shot', 'blood', 'massacre', 'slaughter',
-    'fatalities', 'casualties', 'wounded', 'injured', 'murdered', 'execution',
-    'crackdown', 'violent', 'clashes', 'gunfire', 'shooting',
+    'killed',
+    'dead',
+    'death',
+    'shot',
+    'blood',
+    'massacre',
+    'slaughter',
+    'fatalities',
+    'casualties',
+    'wounded',
+    'injured',
+    'murdered',
+    'execution',
+    'crackdown',
+    'violent',
+    'clashes',
+    'gunfire',
+    'shooting',
   ];
 
   // Civil unrest keywords (high boost)
   private static readonly UNREST_KEYWORDS = [
-    'protest', 'protests', 'uprising', 'revolt', 'revolution', 'riot', 'riots',
-    'demonstration', 'unrest', 'dissent', 'rebellion', 'insurgent', 'overthrow',
-    'coup', 'martial law', 'curfew', 'shutdown', 'blackout',
+    'protest',
+    'protests',
+    'uprising',
+    'revolt',
+    'revolution',
+    'riot',
+    'riots',
+    'demonstration',
+    'unrest',
+    'dissent',
+    'rebellion',
+    'insurgent',
+    'overthrow',
+    'coup',
+    'martial law',
+    'curfew',
+    'shutdown',
+    'blackout',
   ];
 
   // Geopolitical flashpoints (major boost)
   private static readonly FLASHPOINT_KEYWORDS = [
-    'iran', 'tehran', 'russia', 'moscow', 'china', 'beijing', 'taiwan', 'ukraine', 'kyiv',
-    'north korea', 'pyongyang', 'israel', 'gaza', 'west bank', 'syria', 'damascus',
-    'yemen', 'hezbollah', 'hamas', 'kremlin', 'pentagon', 'nato', 'wagner',
+    'iran',
+    'tehran',
+    'russia',
+    'moscow',
+    'china',
+    'beijing',
+    'taiwan',
+    'ukraine',
+    'kyiv',
+    'north korea',
+    'pyongyang',
+    'israel',
+    'gaza',
+    'west bank',
+    'syria',
+    'damascus',
+    'yemen',
+    'hezbollah',
+    'hamas',
+    'kremlin',
+    'pentagon',
+    'nato',
+    'wagner',
   ];
 
   // Crisis keywords (moderate boost)
   private static readonly CRISIS_KEYWORDS = [
-    'crisis', 'emergency', 'catastrophe', 'disaster', 'collapse', 'humanitarian',
-    'sanctions', 'ultimatum', 'threat', 'retaliation', 'escalation', 'tensions',
-    'breaking', 'urgent', 'developing', 'exclusive',
+    'crisis',
+    'emergency',
+    'catastrophe',
+    'disaster',
+    'collapse',
+    'humanitarian',
+    'sanctions',
+    'ultimatum',
+    'threat',
+    'retaliation',
+    'escalation',
+    'tensions',
+    'breaking',
+    'urgent',
+    'developing',
+    'exclusive',
   ];
 
   // Business/tech context that should REDUCE score (demote business news with military words)
   private static readonly DEMOTE_KEYWORDS = [
-    'ceo', 'earnings', 'stock', 'startup', 'data center', 'datacenter', 'revenue',
-    'quarterly', 'profit', 'investor', 'ipo', 'funding', 'valuation',
+    'ceo',
+    'earnings',
+    'stock',
+    'startup',
+    'data center',
+    'datacenter',
+    'revenue',
+    'quarterly',
+    'profit',
+    'investor',
+    'ipo',
+    'funding',
+    'valuation',
   ];
 
   private getImportanceScore(cluster: ClusteredEvent): number {
@@ -141,27 +243,29 @@ export class InsightsPanel extends Panel {
 
     // Violence/casualty keywords: highest priority (+100 base, +25 per match)
     // "Pools of blood" type stories should always surface
-    const violenceMatches = InsightsPanel.VIOLENCE_KEYWORDS.filter(kw => titleLower.includes(kw));
+    const violenceMatches = InsightsPanel.VIOLENCE_KEYWORDS.filter((kw) => titleLower.includes(kw));
     if (violenceMatches.length > 0) {
-      score += 100 + (violenceMatches.length * 25);
+      score += 100 + violenceMatches.length * 25;
     }
 
     // Military keywords: highest priority (+80 base, +20 per match)
-    const militaryMatches = InsightsPanel.MILITARY_KEYWORDS.filter(kw => titleLower.includes(kw));
+    const militaryMatches = InsightsPanel.MILITARY_KEYWORDS.filter((kw) => titleLower.includes(kw));
     if (militaryMatches.length > 0) {
-      score += 80 + (militaryMatches.length * 20);
+      score += 80 + militaryMatches.length * 20;
     }
 
     // Civil unrest: high priority (+70 base, +18 per match)
-    const unrestMatches = InsightsPanel.UNREST_KEYWORDS.filter(kw => titleLower.includes(kw));
+    const unrestMatches = InsightsPanel.UNREST_KEYWORDS.filter((kw) => titleLower.includes(kw));
     if (unrestMatches.length > 0) {
-      score += 70 + (unrestMatches.length * 18);
+      score += 70 + unrestMatches.length * 18;
     }
 
     // Flashpoint keywords: high priority (+60 base, +15 per match)
-    const flashpointMatches = InsightsPanel.FLASHPOINT_KEYWORDS.filter(kw => titleLower.includes(kw));
+    const flashpointMatches = InsightsPanel.FLASHPOINT_KEYWORDS.filter((kw) =>
+      titleLower.includes(kw),
+    );
     if (flashpointMatches.length > 0) {
-      score += 60 + (flashpointMatches.length * 15);
+      score += 60 + flashpointMatches.length * 15;
     }
 
     // COMBO BONUS: Violence/unrest + flashpoint location = critical story
@@ -171,23 +275,23 @@ export class InsightsPanel extends Panel {
     }
 
     // Crisis keywords: moderate priority (+30 base, +10 per match)
-    const crisisMatches = InsightsPanel.CRISIS_KEYWORDS.filter(kw => titleLower.includes(kw));
+    const crisisMatches = InsightsPanel.CRISIS_KEYWORDS.filter((kw) => titleLower.includes(kw));
     if (crisisMatches.length > 0) {
-      score += 30 + (crisisMatches.length * 10);
+      score += 30 + crisisMatches.length * 10;
     }
 
     // Demote business/tech news that happens to contain military words
-    const demoteMatches = InsightsPanel.DEMOTE_KEYWORDS.filter(kw => titleLower.includes(kw));
+    const demoteMatches = InsightsPanel.DEMOTE_KEYWORDS.filter((kw) => titleLower.includes(kw));
     if (demoteMatches.length > 0) {
       score *= 0.3; // Heavy penalty for business context
     }
 
     // Velocity multiplier
     const velMultiplier: Record<string, number> = {
-      'viral': 3,
-      'spike': 2.5,
-      'elevated': 1.5,
-      'normal': 1
+      viral: 3,
+      spike: 2.5,
+      elevated: 1.5,
+      normal: 1,
     };
     score *= velMultiplier[cluster.velocity?.level ?? 'normal'] ?? 1;
 
@@ -197,7 +301,7 @@ export class InsightsPanel extends Panel {
     // Recency bonus (decay over 12 hours)
     const ageMs = Date.now() - cluster.firstSeen.getTime();
     const ageHours = ageMs / 3600000;
-    const recencyMultiplier = Math.max(0.5, 1 - (ageHours / 12));
+    const recencyMultiplier = Math.max(0.5, 1 - ageHours / 12);
     score *= recencyMultiplier;
 
     return score;
@@ -205,16 +309,16 @@ export class InsightsPanel extends Panel {
 
   private selectTopStories(clusters: ClusteredEvent[], maxCount: number): ClusteredEvent[] {
     // Score ALL clusters first - high-scoring stories override source requirements
-    const allScored = clusters
-      .map(c => ({ cluster: c, score: this.getImportanceScore(c) }));
+    const allScored = clusters.map((c) => ({ cluster: c, score: this.getImportanceScore(c) }));
 
     // Filter: require at least 2 sources OR alert OR elevated velocity OR high score
     // High score (>100) means critical keywords were matched - don't require multi-source
-    const candidates = allScored.filter(({ cluster: c, score }) =>
-      c.sourceCount >= 2 ||
-      c.isAlert ||
-      (c.velocity && c.velocity.level !== 'normal') ||
-      score > 100  // Critical stories bypass source requirement
+    const candidates = allScored.filter(
+      ({ cluster: c, score }) =>
+        c.sourceCount >= 2 ||
+        c.isAlert ||
+        (c.velocity && c.velocity.level !== 'normal') ||
+        score > 100, // Critical stories bypass source requirement
     );
 
     // Sort by score
@@ -264,7 +368,9 @@ export class InsightsPanel extends Panel {
 
     if (clusters.length === 0) {
       this.setDataBadge('unavailable');
-      this.setContent(`<div class="insights-empty">${t('components.insights.waitingForData')}</div>`);
+      this.setContent(
+        `<div class="insights-empty">${t('components.insights.waitingForData')}</div>`,
+      );
       return;
     }
 
@@ -276,7 +382,9 @@ export class InsightsPanel extends Panel {
     }
 
     // Build summarize options from AI flow settings (web) or defaults (desktop)
-    const aiFlow = isDesktopRuntime() ? { cloudLlm: true, browserModel: true } : getAiFlowSettings();
+    const aiFlow = isDesktopRuntime()
+      ? { cloudLlm: true, browserModel: true }
+      : getAiFlowSettings();
     const summarizeOpts: SummarizeOptions = {
       skipCloudProviders: !aiFlow.cloudLlm,
       skipBrowserFallback: !aiFlow.browserModel,
@@ -292,16 +400,19 @@ export class InsightsPanel extends Panel {
 
       // Run parallel multi-perspective analysis in background (logs to console)
       // This analyzes ALL clusters, not just the keyword-filtered ones
-      const parallelPromise = parallelAnalysis.analyzeHeadlines(clusters).then(report => {
-        this.lastMissedStories = report.missedByKeywords;
-        const suggestions = parallelAnalysis.getSuggestedImprovements();
-        if (suggestions.length > 0) {
-          console.log('%c💡 Improvement Suggestions:', 'color: #f59e0b; font-weight: bold');
-          suggestions.forEach(s => console.log(`  • ${s}`));
-        }
-      }).catch(err => {
-        console.warn('[ParallelAnalysis] Error:', err);
-      });
+      const parallelPromise = parallelAnalysis
+        .analyzeHeadlines(clusters)
+        .then((report) => {
+          this.lastMissedStories = report.missedByKeywords;
+          const suggestions = parallelAnalysis.getSuggestedImprovements();
+          if (suggestions.length > 0) {
+            console.log('%c💡 Improvement Suggestions:', 'color: #f59e0b; font-weight: bold');
+            suggestions.forEach((s) => console.log(`  • ${s}`));
+          }
+        })
+        .catch((err) => {
+          console.warn('[ParallelAnalysis] Error:', err);
+        });
 
       // Get geographic signal correlations (geopolitical variant only)
       // Tech variant focuses on tech news, not military/protest signals
@@ -352,7 +463,7 @@ export class InsightsPanel extends Panel {
       }
 
       // Cap titles sent to AI at 5 to reduce entity conflation in small models
-      const titles = importantClusters.slice(0, 5).map(c => c.primaryTitle);
+      const titles = importantClusters.slice(0, 5).map((c) => c.primaryTitle);
 
       // Step 2: Analyze sentiment (browser-based, fast)
       this.setProgress(2, totalSteps, t('components.insights.analyzingSentiment'));
@@ -377,13 +488,20 @@ export class InsightsPanel extends Panel {
         // Pass focal point context + theater posture to AI for correlation-aware summarization
         // Tech variant: no geopolitical context, just tech news summarization
         const theaterContext = SITE_VARIANT === 'full' ? this.getTheaterPostureContext() : '';
-        const geoContext = SITE_VARIANT === 'full'
-          ? (focalSummary.aiContext || signalSummary.aiContext) + theaterContext
-          : '';
-        const result = await generateSummary(titles, (_step, _total, msg) => {
-          // Show sub-progress for summarization
-          this.setProgress(3, totalSteps, `Generating brief: ${msg}`);
-        }, geoContext, undefined, summarizeOpts);
+        const geoContext =
+          SITE_VARIANT === 'full'
+            ? (focalSummary.aiContext || signalSummary.aiContext) + theaterContext
+            : '';
+        const result = await generateSummary(
+          titles,
+          (_step, _total, msg) => {
+            // Show sub-progress for summarization
+            this.setProgress(3, totalSteps, `Generating brief: ${msg}`);
+          },
+          geoContext,
+          undefined,
+          summarizeOpts,
+        );
 
         if (this.updateGeneration !== thisGeneration) return;
 
@@ -393,7 +511,9 @@ export class InsightsPanel extends Panel {
           this.lastBriefUpdate = now;
           usedCachedBrief = false;
           void setPersistentCache(InsightsPanel.BRIEF_CACHE_KEY, { summary: worldBrief });
-          console.log(`[InsightsPanel] Brief generated${result.cached ? ' (cached)' : ''}${geoContext ? ' (with geo context)' : ''}`);
+          console.log(
+            `[InsightsPanel] Brief generated${result.cached ? ' (cached)' : ''}${geoContext ? ' (with geo context)' : ''}`,
+          );
         }
       } else {
         usedCachedBrief = true;
@@ -418,7 +538,7 @@ export class InsightsPanel extends Panel {
   private renderInsights(
     clusters: ClusteredEvent[],
     sentiments: Array<{ label: string; score: number }> | null,
-    worldBrief: string | null
+    worldBrief: string | null,
   ): void {
     const briefHtml = worldBrief ? this.renderWorldBrief(worldBrief) : '';
     const focalPointsHtml = this.renderFocalPoints();
@@ -453,31 +573,40 @@ export class InsightsPanel extends Panel {
 
   private renderBreakingStories(
     clusters: ClusteredEvent[],
-    sentiments: Array<{ label: string; score: number }> | null
+    sentiments: Array<{ label: string; score: number }> | null,
   ): string {
-    return clusters.map((cluster, i) => {
-      const sentiment = sentiments?.[i];
-      const sentimentClass = sentiment?.label === 'negative' ? 'negative' :
-        sentiment?.label === 'positive' ? 'positive' : 'neutral';
+    return clusters
+      .map((cluster, i) => {
+        const sentiment = sentiments?.[i];
+        const sentimentClass =
+          sentiment?.label === 'negative'
+            ? 'negative'
+            : sentiment?.label === 'positive'
+              ? 'positive'
+              : 'neutral';
 
-      const badges: string[] = [];
+        const badges: string[] = [];
 
-      if (cluster.sourceCount >= 3) {
-        badges.push(`<span class="insight-badge confirmed">✓ ${cluster.sourceCount} sources</span>`);
-      } else if (cluster.sourceCount >= 2) {
-        badges.push(`<span class="insight-badge multi">${cluster.sourceCount} sources</span>`);
-      }
+        if (cluster.sourceCount >= 3) {
+          badges.push(
+            `<span class="insight-badge confirmed">✓ ${cluster.sourceCount} sources</span>`,
+          );
+        } else if (cluster.sourceCount >= 2) {
+          badges.push(`<span class="insight-badge multi">${cluster.sourceCount} sources</span>`);
+        }
 
-      if (cluster.velocity && cluster.velocity.level !== 'normal') {
-        const velIcon = cluster.velocity.trend === 'rising' ? '↑' : '';
-        badges.push(`<span class="insight-badge velocity ${cluster.velocity.level}">${velIcon}+${cluster.velocity.sourcesPerHour}/hr</span>`);
-      }
+        if (cluster.velocity && cluster.velocity.level !== 'normal') {
+          const velIcon = cluster.velocity.trend === 'rising' ? '↑' : '';
+          badges.push(
+            `<span class="insight-badge velocity ${cluster.velocity.level}">${velIcon}+${cluster.velocity.sourcesPerHour}/hr</span>`,
+          );
+        }
 
-      if (cluster.isAlert) {
-        badges.push('<span class="insight-badge alert">⚠ ALERT</span>');
-      }
+        if (cluster.isAlert) {
+          badges.push('<span class="insight-badge alert">⚠ ALERT</span>');
+        }
 
-      return `
+        return `
         <div class="insight-story">
           <div class="insight-story-header">
             <span class="insight-sentiment-dot ${sentimentClass}"></span>
@@ -486,16 +615,19 @@ export class InsightsPanel extends Panel {
           ${badges.length > 0 ? `<div class="insight-badges">${badges.join('')}</div>` : ''}
         </div>
       `;
-    }).join('');
+      })
+      .join('');
   }
 
-  private renderSentimentOverview(sentiments: Array<{ label: string; score: number }> | null): string {
+  private renderSentimentOverview(
+    sentiments: Array<{ label: string; score: number }> | null,
+  ): string {
     if (!sentiments || sentiments.length === 0) {
       return '';
     }
 
-    const negative = sentiments.filter(s => s.label === 'negative').length;
-    const positive = sentiments.filter(s => s.label === 'positive').length;
+    const negative = sentiments.filter((s) => s.label === 'negative').length;
+    const positive = sentiments.filter((s) => s.label === 'positive').length;
     const neutral = sentiments.length - negative - positive;
 
     const total = sentiments.length;
@@ -531,9 +663,9 @@ export class InsightsPanel extends Panel {
   }
 
   private renderStats(clusters: ClusteredEvent[]): string {
-    const multiSource = clusters.filter(c => c.sourceCount >= 2).length;
-    const fastMoving = clusters.filter(c => c.velocity && c.velocity.level !== 'normal').length;
-    const alerts = clusters.filter(c => c.isAlert).length;
+    const multiSource = clusters.filter((c) => c.sourceCount >= 2).length;
+    const fastMoving = clusters.filter((c) => c.velocity && c.velocity.level !== 'normal').length;
+    const alerts = clusters.filter((c) => c.isAlert).length;
 
     return `
       <div class="insights-stats">
@@ -545,12 +677,16 @@ export class InsightsPanel extends Panel {
           <span class="insight-stat-value">${fastMoving}</span>
           <span class="insight-stat-label">Fast-moving</span>
         </div>
-        ${alerts > 0 ? `
+        ${
+          alerts > 0
+            ? `
         <div class="insight-stat alert">
           <span class="insight-stat-value">${alerts}</span>
           <span class="insight-stat-label">Alerts</span>
         </div>
-        ` : ''}
+        `
+            : ''
+        }
       </div>
     `;
   }
@@ -560,15 +696,17 @@ export class InsightsPanel extends Panel {
       return '';
     }
 
-    const storiesHtml = this.lastMissedStories.slice(0, 3).map(story => {
-      const topPerspective = story.perspectives
-        .filter(p => p.name !== 'keywords')
-        .sort((a, b) => b.score - a.score)[0];
+    const storiesHtml = this.lastMissedStories
+      .slice(0, 3)
+      .map((story) => {
+        const topPerspective = story.perspectives
+          .filter((p) => p.name !== 'keywords')
+          .sort((a, b) => b.score - a.score)[0];
 
-      const perspectiveName = topPerspective?.name ?? 'ml';
-      const perspectiveScore = topPerspective?.score ?? 0;
+        const perspectiveName = topPerspective?.name ?? 'ml';
+        const perspectiveScore = topPerspective?.score ?? 0;
 
-      return `
+        return `
         <div class="insight-story missed">
           <div class="insight-story-header">
             <span class="insight-sentiment-dot ml-flagged"></span>
@@ -579,7 +717,8 @@ export class InsightsPanel extends Panel {
           </div>
         </div>
       `;
-    }).join('');
+      })
+      .join('');
 
     return `
       <div class="insights-section insights-missed">
@@ -594,25 +733,28 @@ export class InsightsPanel extends Panel {
       return '';
     }
 
-    const zonesHtml = this.lastConvergenceZones.slice(0, 3).map(zone => {
-      const signalIcons: Record<string, string> = {
-        internet_outage: '🌐',
-        military_flight: '✈️',
-        military_vessel: '🚢',
-        protest: '🪧',
-        ais_disruption: '⚓',
-      };
+    const zonesHtml = this.lastConvergenceZones
+      .slice(0, 3)
+      .map((zone) => {
+        const signalIcons: Record<string, string> = {
+          internet_outage: '🌐',
+          military_flight: '✈️',
+          military_vessel: '🚢',
+          protest: '🪧',
+          ais_disruption: '⚓',
+        };
 
-      const icons = zone.signalTypes.map(t => signalIcons[t] || '📍').join('');
+        const icons = zone.signalTypes.map((t) => signalIcons[t] || '📍').join('');
 
-      return `
+        return `
         <div class="convergence-zone">
           <div class="convergence-region">${icons} ${escapeHtml(zone.region)}</div>
           <div class="convergence-description">${escapeHtml(zone.description)}</div>
           <div class="convergence-stats">${zone.signalTypes.length} signal types • ${zone.totalSignals} events</div>
         </div>
       `;
-    }).join('');
+      })
+      .join('');
 
     return `
       <div class="insights-section insights-convergence">
@@ -624,9 +766,9 @@ export class InsightsPanel extends Panel {
 
   private renderFocalPoints(): string {
     // Only show focal points that have both news AND signals (true correlations)
-    const correlatedFPs = this.lastFocalPoints.filter(
-      fp => fp.newsMentions > 0 && fp.signalCount > 0
-    ).slice(0, 5);
+    const correlatedFPs = this.lastFocalPoints
+      .filter((fp) => fp.newsMentions > 0 && fp.signalCount > 0)
+      .slice(0, 5);
 
     if (correlatedFPs.length === 0) {
       return '';
@@ -640,14 +782,15 @@ export class InsightsPanel extends Panel {
       ais_disruption: '🚢',
     };
 
-    const focalPointsHtml = correlatedFPs.map(fp => {
-      const urgencyClass = fp.urgency;
-      const icons = fp.signalTypes.map(t => signalIcons[t] || '').join(' ');
-      const topHeadline = fp.topHeadlines[0];
-      const headlineText = topHeadline?.title?.slice(0, 60) || '';
-      const headlineUrl = sanitizeUrl(topHeadline?.url || '');
+    const focalPointsHtml = correlatedFPs
+      .map((fp) => {
+        const urgencyClass = fp.urgency;
+        const icons = fp.signalTypes.map((t) => signalIcons[t] || '').join(' ');
+        const topHeadline = fp.topHeadlines[0];
+        const headlineText = topHeadline?.title?.slice(0, 60) || '';
+        const headlineUrl = sanitizeUrl(topHeadline?.url || '');
 
-      return `
+        return `
         <div class="focal-point ${urgencyClass}">
           <div class="focal-point-header">
             <span class="focal-point-name">${escapeHtml(fp.displayName)}</span>
@@ -660,7 +803,8 @@ export class InsightsPanel extends Panel {
           ${headlineText && headlineUrl ? `<a href="${headlineUrl}" target="_blank" rel="noopener" class="focal-point-headline">"${escapeHtml(headlineText)}..."</a>` : ''}
         </div>
       `;
-    }).join('');
+      })
+      .join('');
 
     return `
       <div class="insights-section insights-focal">

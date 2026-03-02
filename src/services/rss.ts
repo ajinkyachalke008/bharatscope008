@@ -20,17 +20,18 @@ const AI_CLASSIFY_DEDUP_MS = 30 * 60 * 1000;
 const AI_CLASSIFY_WINDOW_MS = 60 * 1000;
 const AI_CLASSIFY_MAX_PER_WINDOW =
   SITE_VARIANT === 'finance' ? 40 : SITE_VARIANT === 'tech' ? 60 : 80;
-const AI_CLASSIFY_MAX_PER_FEED =
-  SITE_VARIANT === 'finance' ? 2 : SITE_VARIANT === 'tech' ? 2 : 3;
+const AI_CLASSIFY_MAX_PER_FEED = SITE_VARIANT === 'finance' ? 2 : SITE_VARIANT === 'tech' ? 2 : 3;
 const aiRecentlyQueued = new Map<string, number>();
 const aiDispatches: number[] = [];
 
 function toSerializable(items: NewsItem[]): Array<Omit<NewsItem, 'pubDate'> & { pubDate: string }> {
-  return items.map(item => ({ ...item, pubDate: item.pubDate.toISOString() }));
+  return items.map((item) => ({ ...item, pubDate: item.pubDate.toISOString() }));
 }
 
-function fromSerializable(items: Array<Omit<NewsItem, 'pubDate'> & { pubDate: string }>): NewsItem[] {
-  return items.map(item => ({ ...item, pubDate: new Date(item.pubDate) }));
+function fromSerializable(
+  items: Array<Omit<NewsItem, 'pubDate'> & { pubDate: string }>,
+): NewsItem[] {
+  return items.map((item) => ({ ...item, pubDate: new Date(item.pubDate) }));
 }
 
 function getFeedScope(feedName: string, lang: string): string {
@@ -51,7 +52,8 @@ function getPersistentFeedKey(feedScope: string): string {
 }
 
 async function readPersistentFeed(key: string): Promise<NewsItem[] | null> {
-  const entry = await getPersistentCache<Array<Omit<NewsItem, 'pubDate'> & { pubDate: string }>>(key);
+  const entry =
+    await getPersistentCache<Array<Omit<NewsItem, 'pubDate'> & { pubDate: string }>>(key);
   if (!entry?.data?.length) return null;
   return fromSerializable(entry.data);
 }
@@ -85,8 +87,7 @@ function cleanupCaches(): void {
   }
 
   if (feedCache.size > MAX_CACHE_ENTRIES) {
-    const entries = Array.from(feedCache.entries())
-      .sort((a, b) => a[1].timestamp - b[1].timestamp);
+    const entries = Array.from(feedCache.entries()).sort((a, b) => a[1].timestamp - b[1].timestamp);
     const toRemove = entries.slice(0, entries.length - MAX_CACHE_ENTRIES);
     for (const [key] of toRemove) {
       feedCache.delete(key);
@@ -108,7 +109,9 @@ function recordFeedFailure(feedScope: string): void {
   if (state.count >= MAX_FAILURES) {
     state.cooldownUntil = Date.now() + FEED_COOLDOWN_MS;
     const { feedName, lang } = parseFeedScope(feedScope);
-    console.warn(`[RSS] ${feedName} (${lang}) on cooldown for 5 minutes after ${state.count} failures`);
+    console.warn(
+      `[RSS] ${feedName} (${lang}) on cooldown for 5 minutes after ${state.count} failures`,
+    );
   }
   feedFailures.set(feedScope, state);
 }
@@ -183,7 +186,12 @@ function extractImageUrl(item: Element): string | undefined {
       const medium = el.getAttribute('medium');
       const type = el.getAttribute('type');
       // Accept if medium is image, type contains image, URL looks like image, or no type specified
-      if (medium === 'image' || type?.startsWith('image/') || IMG_EXTENSIONS.test(url) || (!type && !medium)) {
+      if (
+        medium === 'image' ||
+        type?.startsWith('image/') ||
+        IMG_EXTENSIONS.test(url) ||
+        (!type && !medium)
+      ) {
         return url;
       }
     }
@@ -218,8 +226,11 @@ function extractImageUrl(item: Element): string | undefined {
   try {
     // 4. Fallback: parse first <img src="..."> from description or content:encoded
     const description = item.querySelector('description')?.textContent || '';
-    const contentEncoded = item.getElementsByTagNameNS('http://purl.org/rss/1.0/modules/content/', 'encoded');
-    const contentText = contentEncoded.length > 0 ? (contentEncoded[0]!.textContent || '') : '';
+    const contentEncoded = item.getElementsByTagNameNS(
+      'http://purl.org/rss/1.0/modules/content/',
+      'encoded',
+    );
+    const contentText = contentEncoded.length > 0 ? contentEncoded[0]!.textContent || '' : '';
     const htmlContent = contentText || description;
     const imgMatch = htmlContent.match(/<img[^>]+src=["']([^"']+)["']/);
     if (imgMatch?.[1]) return imgMatch[1];
@@ -285,8 +296,10 @@ export async function fetchFeed(feed: Feed): Promise<NewsItem[]> {
         }
 
         const pubDateStr = isAtom
-          ? (item.querySelector('published')?.textContent || item.querySelector('updated')?.textContent || '')
-          : (item.querySelector('pubDate')?.textContent || '');
+          ? item.querySelector('published')?.textContent ||
+            item.querySelector('updated')?.textContent ||
+            ''
+          : item.querySelector('pubDate')?.textContent || '';
         const parsedDate = pubDateStr ? new Date(pubDateStr) : new Date();
         const pubDate = Number.isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
         const threat = classifyByKeyword(title, SITE_VARIANT);
@@ -301,7 +314,11 @@ export async function fetchFeed(feed: Feed): Promise<NewsItem[]> {
           pubDate,
           isAlert,
           threat,
-          ...(topGeo && { lat: topGeo.hub.lat, lon: topGeo.hub.lon, locationName: topGeo.hub.name }),
+          ...(topGeo && {
+            lat: topGeo.hub.lat,
+            lon: topGeo.hub.lon,
+            locationName: topGeo.hub.name,
+          }),
           lang: feed.lang,
           ...(SITE_VARIANT === 'happy' && { imageUrl: extractImageUrl(item) }),
         };
@@ -310,26 +327,30 @@ export async function fetchFeed(feed: Feed): Promise<NewsItem[]> {
     feedCache.set(feedScope, { items: parsed, timestamp: Date.now() });
     void setPersistentCache(getPersistentFeedKey(feedScope), toSerializable(parsed));
     recordFeedSuccess(feedScope);
-    ingestHeadlines(parsed.map(item => ({
-      title: item.title,
-      pubDate: item.pubDate,
-      source: item.source,
-      link: item.link,
-    })));
+    ingestHeadlines(
+      parsed.map((item) => ({
+        title: item.title,
+        pubDate: item.pubDate,
+        source: item.source,
+        link: item.link,
+      })),
+    );
 
     const aiCandidates = parsed
-      .filter(item => item.threat.source === 'keyword')
+      .filter((item) => item.threat.source === 'keyword')
       .sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime())
       .slice(0, AI_CLASSIFY_MAX_PER_FEED);
 
     for (const item of aiCandidates) {
       if (!canQueueAiClassification(item.title)) continue;
-      classifyWithAI(item.title, SITE_VARIANT).then((aiResult) => {
-        if (aiResult && aiResult.confidence > item.threat.confidence) {
-          item.threat = aiResult;
-          item.isAlert = aiResult.level === 'critical' || aiResult.level === 'high';
-        }
-      }).catch(() => { });
+      classifyWithAI(item.title, SITE_VARIANT)
+        .then((aiResult) => {
+          if (aiResult && aiResult.confidence > item.threat.confidence) {
+            item.threat = aiResult;
+            item.isAlert = aiResult.level === 'critical' || aiResult.level === 'high';
+          }
+        })
+        .catch(() => {});
     }
 
     return parsed;
@@ -346,7 +367,7 @@ export async function fetchCategoryFeeds(
   options: {
     batchSize?: number;
     onBatch?: (items: NewsItem[]) => void;
-  } = {}
+  } = {},
 ): Promise<NewsItem[]> {
   const topLimit = 20;
   const batchSize = options.batchSize ?? 5;
@@ -355,19 +376,21 @@ export async function fetchCategoryFeeds(
   // Filter feeds by language:
   // 1. Feeds with no explicit 'lang' are universal (or multi-url handled inside fetchFeed)
   // 2. Feeds with explicit 'lang' must match current UI language
-  const filteredFeeds = feeds.filter(feed => !feed.lang || feed.lang === currentLang);
+  const filteredFeeds = feeds.filter((feed) => !feed.lang || feed.lang === currentLang);
 
   const batches = chunkArray(filteredFeeds, batchSize);
   const topItems: NewsItem[] = [];
   let totalItems = 0;
 
-  const ensureSortedDescending = () => [...topItems].sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime());
+  const ensureSortedDescending = () =>
+    [...topItems].sort((a, b) => b.pubDate.getTime() - a.pubDate.getTime());
 
   const insertTopItem = (item: NewsItem) => {
     totalItems += 1;
     if (topItems.length < topLimit) {
       topItems.push(item);
-      if (topItems.length === topLimit) topItems.sort((a, b) => a.pubDate.getTime() - b.pubDate.getTime());
+      if (topItems.length === topLimit)
+        topItems.sort((a, b) => a.pubDate.getTime() - b.pubDate.getTime());
       return;
     }
 

@@ -36,7 +36,17 @@ const LAYER_KEYS: (keyof MapLayers)[] = [
 ];
 
 const TIME_RANGES: TimeRange[] = ['1h', '6h', '24h', '48h', '7d', 'all'];
-const VIEW_VALUES: MapView[] = ['global', 'america', 'mena', 'eu', 'asia', 'latam', 'africa', 'oceania'];
+const VIEW_VALUES: MapView[] = [
+  'global',
+  'america',
+  'mena',
+  'eu',
+  'asia',
+  'india',
+  'latam',
+  'africa',
+  'oceania',
+];
 
 export interface ParsedMapUrlState {
   view?: MapView;
@@ -51,10 +61,7 @@ export interface ParsedMapUrlState {
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, value));
 
-export function parseMapUrlState(
-  search: string,
-  fallbackLayers: MapLayers
-): ParsedMapUrlState {
+export function parseMapUrlState(search: string, fallbackLayers: MapLayers): ParsedMapUrlState {
   const params = new URLSearchParams(search);
 
   const viewParam = params.get('view');
@@ -77,7 +84,10 @@ export function parseMapUrlState(
     : undefined;
 
   const countryParam = params.get('country');
-  const country = countryParam && /^[A-Z]{2}$/i.test(countryParam.trim()) ? countryParam.trim().toUpperCase() : undefined;
+  const country =
+    countryParam && /^[A-Z]{2}$/i.test(countryParam.trim())
+      ? countryParam.trim().toUpperCase()
+      : undefined;
 
   const layersParam = params.get('layers');
   let layers: MapLayers | undefined;
@@ -89,7 +99,7 @@ export function parseMapUrlState(
         normalizedLayers
           .split(',')
           .map((layer) => layer.trim())
-          .filter(Boolean)
+          .filter(Boolean),
       );
       LAYER_KEYS.forEach((key) => {
         layers![key] = requested.has(key);
@@ -121,7 +131,7 @@ export function buildMapUrl(
     timeRange: TimeRange;
     layers: MapLayers;
     country?: string;
-  }
+  },
 ): string {
   const url = new URL(baseUrl);
   const params = new URLSearchParams();

@@ -18,11 +18,7 @@ export function h(
 
   let allChildren: DomChild[];
 
-  if (
-    propsOrChild != null &&
-    typeof propsOrChild === 'object' &&
-    !(propsOrChild instanceof Node)
-  ) {
+  if (propsOrChild != null && typeof propsOrChild === 'object' && !(propsOrChild instanceof Node)) {
     applyProps(el, propsOrChild as DomProps);
     allChildren = children;
   } else {
@@ -61,7 +57,18 @@ export function rawHtml(html: string): DocumentFragment {
 }
 
 const SAFE_TAGS = new Set([
-  'strong', 'em', 'b', 'i', 'br', 'p', 'ul', 'ol', 'li', 'span', 'div', 'a',
+  'strong',
+  'em',
+  'b',
+  'i',
+  'br',
+  'p',
+  'ul',
+  'ol',
+  'li',
+  'span',
+  'div',
+  'a',
 ]);
 const SAFE_ATTRS = new Set(['style', 'class', 'href', 'target', 'rel']);
 
@@ -120,10 +127,7 @@ function applyProps(el: HTMLElement, props: DomProps): void {
         el.dataset[k] = ds[k]!;
       }
     } else if (key.startsWith('on') && typeof value === 'function') {
-      el.addEventListener(
-        key.slice(2).toLowerCase(),
-        value as EventListener,
-      );
+      el.addEventListener(key.slice(2).toLowerCase(), value as EventListener);
     } else if (value === true) {
       el.setAttribute(key, '');
     } else {
@@ -132,10 +136,7 @@ function applyProps(el: HTMLElement, props: DomProps): void {
   }
 }
 
-function appendChildren(
-  parent: Element | DocumentFragment,
-  children: DomChild[],
-): void {
+function appendChildren(parent: Element | DocumentFragment, children: DomChild[]): void {
   for (const child of children) {
     if (child == null || child === false) continue;
     if (child instanceof Node) {

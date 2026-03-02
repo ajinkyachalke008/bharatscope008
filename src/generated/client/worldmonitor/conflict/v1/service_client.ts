@@ -89,7 +89,11 @@ export interface HumanitarianCountrySummary {
   updatedAt: number;
 }
 
-export type UcdpViolenceType = "UCDP_VIOLENCE_TYPE_UNSPECIFIED" | "UCDP_VIOLENCE_TYPE_STATE_BASED" | "UCDP_VIOLENCE_TYPE_NON_STATE" | "UCDP_VIOLENCE_TYPE_ONE_SIDED";
+export type UcdpViolenceType =
+  | 'UCDP_VIOLENCE_TYPE_UNSPECIFIED'
+  | 'UCDP_VIOLENCE_TYPE_STATE_BASED'
+  | 'UCDP_VIOLENCE_TYPE_NON_STATE'
+  | 'UCDP_VIOLENCE_TYPE_ONE_SIDED';
 
 export interface FieldViolation {
   field: string;
@@ -100,8 +104,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -112,7 +116,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -134,23 +138,26 @@ export class ConflictServiceClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string, options?: ConflictServiceClientOptions) {
-    this.baseURL = baseURL.replace(/\/+$/, "");
+    this.baseURL = baseURL.replace(/\/+$/, '');
     this.fetchFn = options?.fetch ?? globalThis.fetch;
     this.defaultHeaders = { ...options?.defaultHeaders };
   }
 
-  async listAcledEvents(req: ListAcledEventsRequest, options?: ConflictServiceCallOptions): Promise<ListAcledEventsResponse> {
-    let path = "/api/conflict/v1/list-acled-events";
+  async listAcledEvents(
+    req: ListAcledEventsRequest,
+    options?: ConflictServiceCallOptions,
+  ): Promise<ListAcledEventsResponse> {
+    const path = '/api/conflict/v1/list-acled-events';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -160,21 +167,24 @@ export class ConflictServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as ListAcledEventsResponse;
+    return (await resp.json()) as ListAcledEventsResponse;
   }
 
-  async listUcdpEvents(req: ListUcdpEventsRequest, options?: ConflictServiceCallOptions): Promise<ListUcdpEventsResponse> {
-    let path = "/api/conflict/v1/list-ucdp-events";
+  async listUcdpEvents(
+    req: ListUcdpEventsRequest,
+    options?: ConflictServiceCallOptions,
+  ): Promise<ListUcdpEventsResponse> {
+    const path = '/api/conflict/v1/list-ucdp-events';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -184,21 +194,24 @@ export class ConflictServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as ListUcdpEventsResponse;
+    return (await resp.json()) as ListUcdpEventsResponse;
   }
 
-  async getHumanitarianSummary(req: GetHumanitarianSummaryRequest, options?: ConflictServiceCallOptions): Promise<GetHumanitarianSummaryResponse> {
-    let path = "/api/conflict/v1/get-humanitarian-summary";
+  async getHumanitarianSummary(
+    req: GetHumanitarianSummaryRequest,
+    options?: ConflictServiceCallOptions,
+  ): Promise<GetHumanitarianSummaryResponse> {
+    const path = '/api/conflict/v1/get-humanitarian-summary';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -208,7 +221,7 @@ export class ConflictServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetHumanitarianSummaryResponse;
+    return (await resp.json()) as GetHumanitarianSummaryResponse;
   }
 
   private async handleError(resp: Response): Promise<never> {
@@ -226,4 +239,3 @@ export class ConflictServiceClient {
     throw new ApiError(resp.status, `Request failed with status ${resp.status}`, body);
   }
 }
-

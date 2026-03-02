@@ -50,7 +50,9 @@ async function fetchFredSeries(cfg: FredSeriesConfig): Promise<ShippingIndex | n
 
     if (!response.ok) return null;
 
-    const data = await response.json() as { observations?: Array<{ date: string; value: string }> };
+    const data = (await response.json()) as {
+      observations?: Array<{ date: string; value: string }>;
+    };
     const observations = (data.observations || [])
       .map((obs): ShippingRatePoint | null => {
         const value = parseFloat(obs.value);
@@ -63,8 +65,10 @@ async function fetchFredSeries(cfg: FredSeriesConfig): Promise<ShippingIndex | n
     if (observations.length === 0) return null;
 
     const currentValue = observations[observations.length - 1]!.value;
-    const previousValue = observations.length > 1 ? observations[observations.length - 2]!.value : currentValue;
-    const changePct = previousValue !== 0 ? ((currentValue - previousValue) / previousValue) * 100 : 0;
+    const previousValue =
+      observations.length > 1 ? observations[observations.length - 2]!.value : currentValue;
+    const changePct =
+      previousValue !== 0 ? ((currentValue - previousValue) / previousValue) * 100 : 0;
 
     const spikeAlert = detectSpike(observations);
 
@@ -99,7 +103,9 @@ export async function getShippingRates(
       },
     );
 
-    return result ?? { indices: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true };
+    return (
+      result ?? { indices: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true }
+    );
   } catch {
     return { indices: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true };
   }

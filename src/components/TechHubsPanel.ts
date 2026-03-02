@@ -5,58 +5,60 @@ import { escapeHtml, sanitizeUrl } from '@/utils/sanitize';
 import { getCSSColor } from '@/utils';
 
 const COUNTRY_FLAGS: Record<string, string> = {
-  'USA': '🇺🇸', 'United States': '🇺🇸',
-  'UK': '🇬🇧', 'United Kingdom': '🇬🇧',
-  'China': '🇨🇳',
-  'India': '🇮🇳',
-  'Israel': '🇮🇱',
-  'Germany': '🇩🇪',
-  'France': '🇫🇷',
-  'Canada': '🇨🇦',
-  'Japan': '🇯🇵',
+  USA: '🇺🇸',
+  'United States': '🇺🇸',
+  UK: '🇬🇧',
+  'United Kingdom': '🇬🇧',
+  China: '🇨🇳',
+  India: '🇮🇳',
+  Israel: '🇮🇱',
+  Germany: '🇩🇪',
+  France: '🇫🇷',
+  Canada: '🇨🇦',
+  Japan: '🇯🇵',
   'South Korea': '🇰🇷',
-  'Singapore': '🇸🇬',
-  'Australia': '🇦🇺',
-  'Netherlands': '🇳🇱',
-  'Sweden': '🇸🇪',
-  'Switzerland': '🇨🇭',
-  'Brazil': '🇧🇷',
-  'Indonesia': '🇮🇩',
-  'UAE': '🇦🇪',
-  'Estonia': '🇪🇪',
-  'Ireland': '🇮🇪',
-  'Finland': '🇫🇮',
-  'Spain': '🇪🇸',
-  'Italy': '🇮🇹',
-  'Poland': '🇵🇱',
-  'Mexico': '🇲🇽',
-  'Argentina': '🇦🇷',
-  'Chile': '🇨🇱',
-  'Colombia': '🇨🇴',
-  'Nigeria': '🇳🇬',
-  'Kenya': '🇰🇪',
+  Singapore: '🇸🇬',
+  Australia: '🇦🇺',
+  Netherlands: '🇳🇱',
+  Sweden: '🇸🇪',
+  Switzerland: '🇨🇭',
+  Brazil: '🇧🇷',
+  Indonesia: '🇮🇩',
+  UAE: '🇦🇪',
+  Estonia: '🇪🇪',
+  Ireland: '🇮🇪',
+  Finland: '🇫🇮',
+  Spain: '🇪🇸',
+  Italy: '🇮🇹',
+  Poland: '🇵🇱',
+  Mexico: '🇲🇽',
+  Argentina: '🇦🇷',
+  Chile: '🇨🇱',
+  Colombia: '🇨🇴',
+  Nigeria: '🇳🇬',
+  Kenya: '🇰🇪',
   'South Africa': '🇿🇦',
-  'Egypt': '🇪🇬',
-  'Taiwan': '🇹🇼',
-  'Vietnam': '🇻🇳',
-  'Thailand': '🇹🇭',
-  'Malaysia': '🇲🇾',
-  'Philippines': '🇵🇭',
+  Egypt: '🇪🇬',
+  Taiwan: '🇹🇼',
+  Vietnam: '🇻🇳',
+  Thailand: '🇹🇭',
+  Malaysia: '🇲🇾',
+  Philippines: '🇵🇭',
   'New Zealand': '🇳🇿',
-  'Austria': '🇦🇹',
-  'Belgium': '🇧🇪',
-  'Denmark': '🇩🇰',
-  'Norway': '🇳🇴',
-  'Portugal': '🇵🇹',
+  Austria: '🇦🇹',
+  Belgium: '🇧🇪',
+  Denmark: '🇩🇰',
+  Norway: '🇳🇴',
+  Portugal: '🇵🇹',
   'Czech Republic': '🇨🇿',
-  'Romania': '🇷🇴',
-  'Ukraine': '🇺🇦',
-  'Russia': '🇷🇺',
-  'Turkey': '🇹🇷',
+  Romania: '🇷🇴',
+  Ukraine: '🇺🇦',
+  Russia: '🇷🇺',
+  Turkey: '🇹🇷',
   'Saudi Arabia': '🇸🇦',
-  'Qatar': '🇶🇦',
-  'Pakistan': '🇵🇰',
-  'Bangladesh': '🇧🇩',
+  Qatar: '🇶🇦',
+  Pakistan: '🇵🇰',
+  Bangladesh: '🇧🇩',
 };
 
 export class TechHubsPanel extends Panel {
@@ -96,12 +98,13 @@ export class TechHubsPanel extends Panel {
       return;
     }
 
-    const html = this.activities.map((hub, index) => {
-      const trendIcon = hub.trend === 'rising' ? '↑' : hub.trend === 'falling' ? '↓' : '';
-      const breakingTag = hub.hasBreaking ? '<span class="hub-breaking">ALERT</span>' : '';
-      const topStory = hub.topStories[0];
+    const html = this.activities
+      .map((hub, index) => {
+        const trendIcon = hub.trend === 'rising' ? '↑' : hub.trend === 'falling' ? '↓' : '';
+        const breakingTag = hub.hasBreaking ? '<span class="hub-breaking">ALERT</span>' : '';
+        const topStory = hub.topStories[0];
 
-      return `
+        return `
         <div class="tech-hub-item ${hub.activityLevel}" data-hub-id="${escapeHtml(hub.hubId)}" data-index="${index}">
           <div class="hub-rank">${index + 1}</div>
           <span class="hub-indicator ${hub.activityLevel}"></span>
@@ -119,13 +122,18 @@ export class TechHubsPanel extends Panel {
           </div>
           <div class="hub-score">${Math.round(hub.score)}</div>
         </div>
-        ${topStory ? `
+        ${
+          topStory
+            ? `
           <a class="hub-top-story" href="${sanitizeUrl(topStory.link)}" target="_blank" rel="noopener" data-hub-id="${escapeHtml(hub.hubId)}">
             ${escapeHtml(topStory.title.length > 80 ? topStory.title.slice(0, 77) + '...' : topStory.title)}
           </a>
-        ` : ''}
+        `
+            : ''
+        }
       `;
-    }).join('');
+      })
+      .join('');
 
     this.setContent(html);
     this.bindEvents();
@@ -136,7 +144,7 @@ export class TechHubsPanel extends Panel {
     items.forEach((item) => {
       item.addEventListener('click', () => {
         const hubId = item.dataset.hubId;
-        const hub = this.activities.find(a => a.hubId === hubId);
+        const hub = this.activities.find((a) => a.hubId === hubId);
         if (hub && this.onHubClick) {
           this.onHubClick(hub);
         }

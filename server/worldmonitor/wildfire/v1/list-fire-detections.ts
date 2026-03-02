@@ -27,15 +27,15 @@ const FIRMS_SOURCE = 'VIIRS_SNPP_NRT';
 
 /** Bounding boxes as west,south,east,north */
 const MONITORED_REGIONS: Record<string, string> = {
-  'Ukraine': '22,44,40,53',
-  'Russia': '20,50,180,82',
-  'Iran': '44,25,63,40',
+  Ukraine: '22,44,40,53',
+  Russia: '20,50,180,82',
+  Iran: '44,25,63,40',
   'Israel/Gaza': '34,29,36,34',
-  'Syria': '35,32,42,37',
-  'Taiwan': '119,21,123,26',
+  Syria: '35,32,42,37',
+  Taiwan: '119,21,123,26',
   'North Korea': '124,37,131,43',
   'Saudi Arabia': '34,16,56,32',
-  'Turkey': '26,36,45,42',
+  Turkey: '26,36,45,42',
 };
 
 /** Map VIIRS confidence letters to proto enum values. */
@@ -89,8 +89,7 @@ export const listFireDetections: WildfireServiceHandler['listFireDetections'] = 
   _ctx: ServerContext,
   _req: ListFireDetectionsRequest,
 ): Promise<ListFireDetectionsResponse> => {
-  const apiKey =
-    process.env.NASA_FIRMS_API_KEY || process.env.FIRMS_API_KEY || '';
+  const apiKey = process.env.NASA_FIRMS_API_KEY || process.env.FIRMS_API_KEY || '';
 
   if (!apiKey) {
     return { fireDetections: [], pagination: undefined };

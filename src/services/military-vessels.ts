@@ -1,4 +1,9 @@
-import type { MilitaryVessel, MilitaryVesselCluster, MilitaryVesselType, MilitaryOperator } from '@/types';
+import type {
+  MilitaryVessel,
+  MilitaryVesselCluster,
+  MilitaryVesselType,
+  MilitaryOperator,
+} from '@/types';
 import { createCircuitBreaker } from '@/utils';
 import {
   KNOWN_NAVAL_VESSELS,
@@ -30,7 +35,10 @@ let isTracking = false;
 let messageCount = 0;
 
 // Circuit breaker
-const breaker = createCircuitBreaker<{ vessels: MilitaryVessel[]; clusters: MilitaryVesselCluster[] }>({
+const breaker = createCircuitBreaker<{
+  vessels: MilitaryVessel[];
+  clusters: MilitaryVesselCluster[];
+}>({
   name: 'Military Vessel Tracking',
   maxFailures: 3,
   cooldownMs: 5 * 60 * 1000,
@@ -55,17 +63,17 @@ const NAVAL_CHOKEPOINTS = [
 
 // Naval base locations for proximity detection
 const NAVAL_BASES = [
-  { name: 'Norfolk Naval Station', lat: 36.95, lon: -76.30, country: 'USA' },
+  { name: 'Norfolk Naval Station', lat: 36.95, lon: -76.3, country: 'USA' },
   { name: 'San Diego Naval Base', lat: 32.68, lon: -117.15, country: 'USA' },
   { name: 'Pearl Harbor', lat: 21.35, lon: -157.95, country: 'USA' },
   { name: 'Yokosuka Naval Base', lat: 35.29, lon: 139.67, country: 'Japan' },
   { name: 'Qingdao Naval Base', lat: 36.07, lon: 120.38, country: 'China' },
   { name: 'Sevastopol', lat: 44.62, lon: 33.53, country: 'Russia' },
-  { name: 'Portsmouth Naval Base', lat: 50.80, lon: -1.10, country: 'UK' },
+  { name: 'Portsmouth Naval Base', lat: 50.8, lon: -1.1, country: 'UK' },
   { name: 'Toulon Naval Base', lat: 43.12, lon: 5.93, country: 'France' },
   { name: 'Tartus Naval Base', lat: 34.89, lon: 35.87, country: 'Syria' },
-  { name: 'Zhanjiang Naval Base', lat: 21.20, lon: 110.40, country: 'China' },
-  { name: 'Vladivostok', lat: 43.12, lon: 131.90, country: 'Russia' },
+  { name: 'Zhanjiang Naval Base', lat: 21.2, lon: 110.4, country: 'China' },
+  { name: 'Vladivostok', lat: 43.12, lon: 131.9, country: 'Russia' },
   { name: 'Diego Garcia', lat: -7.32, lon: 72.42, country: 'UK/USA' },
 ];
 
@@ -81,75 +89,207 @@ function analyzeMmsi(mmsi: string): { isPotentialMilitary: boolean; country?: st
 
   // MIDs for countries with significant navies
   const militaryMids: Record<string, string> = {
-    '201': 'Albania', '202': 'Andorra', '203': 'Austria',
-    '211': 'Germany', '212': 'Cyprus', '213': 'Georgia',
-    '214': 'Moldova', '215': 'Malta', '216': 'Armenia',
-    '218': 'Germany', '219': 'Denmark', '220': 'Denmark',
-    '224': 'Spain', '225': 'Spain', '226': 'France',
-    '227': 'France', '228': 'France', '229': 'Malta',
-    '230': 'Finland', '231': 'Faroe', '232': 'UK',
-    '233': 'UK', '234': 'UK', '235': 'UK',
-    '236': 'Gibraltar', '237': 'Greece', '238': 'Croatia',
-    '239': 'Greece', '240': 'Greece', '241': 'Greece',
-    '242': 'Morocco', '243': 'Hungary', '244': 'Netherlands',
-    '245': 'Netherlands', '246': 'Netherlands', '247': 'Italy',
-    '248': 'Malta', '249': 'Malta', '250': 'Ireland',
-    '255': 'Portugal', '256': 'Malta', '257': 'Norway',
-    '258': 'Norway', '259': 'Norway', '261': 'Poland',
-    '263': 'Portugal', '264': 'Romania', '265': 'Sweden',
-    '266': 'Sweden', '267': 'Slovakia', '268': 'San Marino',
-    '269': 'Switzerland', '270': 'Czechia', '271': 'Turkey',
-    '272': 'Ukraine', '273': 'Russia', '274': 'North Macedonia',
-    '275': 'Latvia', '276': 'Estonia', '277': 'Lithuania',
-    '278': 'Slovenia', '279': 'Serbia',
-    '301': 'Anguilla', '303': 'Alaska',
-    '304': 'Antigua', '305': 'Antigua', '306': 'Sint Maarten',
-    '307': 'Aruba', '308': 'Bahamas', '309': 'Bahamas',
-    '310': 'Bermuda', '311': 'Bahamas', '312': 'Belize',
-    '314': 'Barbados', '316': 'Canada',
-    '319': 'Cayman', '321': 'Costa Rica', '323': 'Cuba',
-    '325': 'Dominica', '327': 'Dominican Rep', '329': 'Guadeloupe',
-    '330': 'Grenada', '331': 'Greenland', '332': 'Guatemala',
-    '334': 'Honduras', '336': 'Haiti', '338': 'USA',
-    '339': 'Jamaica', '341': 'St Kitts', '343': 'St Lucia',
-    '345': 'Mexico', '347': 'Martinique', '348': 'Montserrat',
-    '350': 'Nicaragua', '351': 'Panama', '352': 'Panama',
-    '353': 'Panama', '354': 'Panama', '355': 'Panama',
-    '356': 'Panama', '357': 'Panama', '358': 'Puerto Rico',
-    '359': 'El Salvador', '361': 'St Pierre', '362': 'Trinidad',
-    '364': 'Turks Caicos', '366': 'USA', '367': 'USA',
-    '368': 'USA', '369': 'USA', '370': 'Panama',
-    '371': 'Panama', '372': 'Panama', '373': 'Panama',
-    '374': 'Panama', '375': 'St Vincent', '376': 'St Vincent',
-    '377': 'St Vincent', '378': 'BVI', '379': 'USVI',
-    '401': 'Afghanistan', '403': 'Saudi Arabia', '405': 'Bangladesh',
-    '408': 'Bahrain', '410': 'Bhutan', '412': 'China',
-    '413': 'China', '414': 'China', '416': 'Taiwan',
-    '417': 'Sri Lanka', '419': 'India', '422': 'Iran',
-    '423': 'Azerbaijan', '425': 'Iraq', '428': 'Israel',
-    '431': 'Japan', '432': 'Japan', '434': 'Turkmenistan',
-    '436': 'Kazakhstan', '437': 'Uzbekistan', '438': 'Jordan',
-    '440': 'South Korea', '441': 'South Korea', '443': 'Palestine',
-    '445': 'North Korea', '447': 'Kuwait', '450': 'Lebanon',
-    '451': 'Kyrgyzstan', '453': 'Macau', '455': 'Maldives',
-    '457': 'Mongolia', '459': 'Nepal', '461': 'Oman',
-    '463': 'Pakistan', '466': 'Qatar', '468': 'Syria',
-    '470': 'UAE', '472': 'Tajikistan', '473': 'Yemen',
-    '475': 'Yemen', '477': 'Hong Kong',
-    '501': 'France Adelie', '503': 'Australia',
-    '506': 'Myanmar', '508': 'Brunei', '510': 'Micronesia',
-    '511': 'Palau', '512': 'New Zealand', '514': 'Cambodia',
-    '515': 'Cambodia', '516': 'Christmas Is', '518': 'Cook Is',
-    '520': 'Fiji', '523': 'Cocos', '525': 'Indonesia',
-    '529': 'Kiribati', '531': 'Laos', '533': 'Malaysia',
-    '536': 'N Mariana', '538': 'Marshall Is', '540': 'New Caledonia',
-    '542': 'Niue', '544': 'Nauru', '546': 'French Polynesia',
-    '548': 'Philippines', '553': 'Papua NG', '555': 'Pitcairn',
-    '557': 'Solomon Is', '559': 'Am Samoa', '561': 'Samoa',
-    '563': 'Singapore', '564': 'Singapore', '565': 'Singapore',
-    '566': 'Singapore', '567': 'Thailand', '570': 'Tonga',
-    '572': 'Tuvalu', '574': 'Vietnam', '576': 'Vanuatu',
-    '577': 'Vanuatu', '578': 'Wallis',
+    '201': 'Albania',
+    '202': 'Andorra',
+    '203': 'Austria',
+    '211': 'Germany',
+    '212': 'Cyprus',
+    '213': 'Georgia',
+    '214': 'Moldova',
+    '215': 'Malta',
+    '216': 'Armenia',
+    '218': 'Germany',
+    '219': 'Denmark',
+    '220': 'Denmark',
+    '224': 'Spain',
+    '225': 'Spain',
+    '226': 'France',
+    '227': 'France',
+    '228': 'France',
+    '229': 'Malta',
+    '230': 'Finland',
+    '231': 'Faroe',
+    '232': 'UK',
+    '233': 'UK',
+    '234': 'UK',
+    '235': 'UK',
+    '236': 'Gibraltar',
+    '237': 'Greece',
+    '238': 'Croatia',
+    '239': 'Greece',
+    '240': 'Greece',
+    '241': 'Greece',
+    '242': 'Morocco',
+    '243': 'Hungary',
+    '244': 'Netherlands',
+    '245': 'Netherlands',
+    '246': 'Netherlands',
+    '247': 'Italy',
+    '248': 'Malta',
+    '249': 'Malta',
+    '250': 'Ireland',
+    '255': 'Portugal',
+    '256': 'Malta',
+    '257': 'Norway',
+    '258': 'Norway',
+    '259': 'Norway',
+    '261': 'Poland',
+    '263': 'Portugal',
+    '264': 'Romania',
+    '265': 'Sweden',
+    '266': 'Sweden',
+    '267': 'Slovakia',
+    '268': 'San Marino',
+    '269': 'Switzerland',
+    '270': 'Czechia',
+    '271': 'Turkey',
+    '272': 'Ukraine',
+    '273': 'Russia',
+    '274': 'North Macedonia',
+    '275': 'Latvia',
+    '276': 'Estonia',
+    '277': 'Lithuania',
+    '278': 'Slovenia',
+    '279': 'Serbia',
+    '301': 'Anguilla',
+    '303': 'Alaska',
+    '304': 'Antigua',
+    '305': 'Antigua',
+    '306': 'Sint Maarten',
+    '307': 'Aruba',
+    '308': 'Bahamas',
+    '309': 'Bahamas',
+    '310': 'Bermuda',
+    '311': 'Bahamas',
+    '312': 'Belize',
+    '314': 'Barbados',
+    '316': 'Canada',
+    '319': 'Cayman',
+    '321': 'Costa Rica',
+    '323': 'Cuba',
+    '325': 'Dominica',
+    '327': 'Dominican Rep',
+    '329': 'Guadeloupe',
+    '330': 'Grenada',
+    '331': 'Greenland',
+    '332': 'Guatemala',
+    '334': 'Honduras',
+    '336': 'Haiti',
+    '338': 'USA',
+    '339': 'Jamaica',
+    '341': 'St Kitts',
+    '343': 'St Lucia',
+    '345': 'Mexico',
+    '347': 'Martinique',
+    '348': 'Montserrat',
+    '350': 'Nicaragua',
+    '351': 'Panama',
+    '352': 'Panama',
+    '353': 'Panama',
+    '354': 'Panama',
+    '355': 'Panama',
+    '356': 'Panama',
+    '357': 'Panama',
+    '358': 'Puerto Rico',
+    '359': 'El Salvador',
+    '361': 'St Pierre',
+    '362': 'Trinidad',
+    '364': 'Turks Caicos',
+    '366': 'USA',
+    '367': 'USA',
+    '368': 'USA',
+    '369': 'USA',
+    '370': 'Panama',
+    '371': 'Panama',
+    '372': 'Panama',
+    '373': 'Panama',
+    '374': 'Panama',
+    '375': 'St Vincent',
+    '376': 'St Vincent',
+    '377': 'St Vincent',
+    '378': 'BVI',
+    '379': 'USVI',
+    '401': 'Afghanistan',
+    '403': 'Saudi Arabia',
+    '405': 'Bangladesh',
+    '408': 'Bahrain',
+    '410': 'Bhutan',
+    '412': 'China',
+    '413': 'China',
+    '414': 'China',
+    '416': 'Taiwan',
+    '417': 'Sri Lanka',
+    '419': 'India',
+    '422': 'Iran',
+    '423': 'Azerbaijan',
+    '425': 'Iraq',
+    '428': 'Israel',
+    '431': 'Japan',
+    '432': 'Japan',
+    '434': 'Turkmenistan',
+    '436': 'Kazakhstan',
+    '437': 'Uzbekistan',
+    '438': 'Jordan',
+    '440': 'South Korea',
+    '441': 'South Korea',
+    '443': 'Palestine',
+    '445': 'North Korea',
+    '447': 'Kuwait',
+    '450': 'Lebanon',
+    '451': 'Kyrgyzstan',
+    '453': 'Macau',
+    '455': 'Maldives',
+    '457': 'Mongolia',
+    '459': 'Nepal',
+    '461': 'Oman',
+    '463': 'Pakistan',
+    '466': 'Qatar',
+    '468': 'Syria',
+    '470': 'UAE',
+    '472': 'Tajikistan',
+    '473': 'Yemen',
+    '475': 'Yemen',
+    '477': 'Hong Kong',
+    '501': 'France Adelie',
+    '503': 'Australia',
+    '506': 'Myanmar',
+    '508': 'Brunei',
+    '510': 'Micronesia',
+    '511': 'Palau',
+    '512': 'New Zealand',
+    '514': 'Cambodia',
+    '515': 'Cambodia',
+    '516': 'Christmas Is',
+    '518': 'Cook Is',
+    '520': 'Fiji',
+    '523': 'Cocos',
+    '525': 'Indonesia',
+    '529': 'Kiribati',
+    '531': 'Laos',
+    '533': 'Malaysia',
+    '536': 'N Mariana',
+    '538': 'Marshall Is',
+    '540': 'New Caledonia',
+    '542': 'Niue',
+    '544': 'Nauru',
+    '546': 'French Polynesia',
+    '548': 'Philippines',
+    '553': 'Papua NG',
+    '555': 'Pitcairn',
+    '557': 'Solomon Is',
+    '559': 'Am Samoa',
+    '561': 'Samoa',
+    '563': 'Singapore',
+    '564': 'Singapore',
+    '565': 'Singapore',
+    '566': 'Singapore',
+    '567': 'Thailand',
+    '570': 'Tonga',
+    '572': 'Tuvalu',
+    '574': 'Vietnam',
+    '576': 'Vanuatu',
+    '577': 'Vanuatu',
+    '578': 'Wallis',
   };
 
   const country = militaryMids[mid];
@@ -174,14 +314,16 @@ function analyzeMmsi(mmsi: string): { isPotentialMilitary: boolean; country?: st
 /**
  * Match vessel name against known military vessels
  */
-function matchKnownVessel(name: string): typeof KNOWN_NAVAL_VESSELS[number] | undefined {
+function matchKnownVessel(name: string): (typeof KNOWN_NAVAL_VESSELS)[number] | undefined {
   if (!name) return undefined;
 
   const normalized = name.toUpperCase().trim();
 
   for (const vessel of KNOWN_NAVAL_VESSELS) {
-    if (normalized.includes(vessel.name.toUpperCase()) ||
-        (vessel.hullNumber && normalized.includes(vessel.hullNumber))) {
+    if (
+      normalized.includes(vessel.name.toUpperCase()) ||
+      (vessel.hullNumber && normalized.includes(vessel.hullNumber))
+    ) {
       return vessel;
     }
   }
@@ -296,7 +438,8 @@ function getVesselTypeFromAis(shipType: number): MilitaryVesselType | undefined 
 function getNearbyBase(lat: number, lon: number): string | undefined {
   for (const base of NAVAL_BASES) {
     const distance = Math.sqrt(Math.pow(lat - base.lat, 2) + Math.pow(lon - base.lon, 2));
-    if (distance <= 0.5) { // Within ~50km
+    if (distance <= 0.5) {
+      // Within ~50km
       return base.name;
     }
   }
@@ -308,7 +451,9 @@ function getNearbyBase(lat: number, lon: number): string | undefined {
  */
 function getNearbyChokepoint(lat: number, lon: number): string | undefined {
   for (const chokepoint of NAVAL_CHOKEPOINTS) {
-    const distance = Math.sqrt(Math.pow(lat - chokepoint.lat, 2) + Math.pow(lon - chokepoint.lon, 2));
+    const distance = Math.sqrt(
+      Math.pow(lat - chokepoint.lat, 2) + Math.pow(lon - chokepoint.lon, 2),
+    );
     if (distance <= chokepoint.radius) {
       return chokepoint.name;
     }
@@ -382,7 +527,7 @@ function processAisPosition(data: AisPositionData): void {
   const vessel: MilitaryVessel = {
     id: `ais-${mmsi}`,
     mmsi,
-    name: name || (knownVessel?.name || `Vessel ${mmsi}`),
+    name: name || knownVessel?.name || `Vessel ${mmsi}`,
     vesselType: knownVessel?.vesselType || aisType || 'unknown',
     aisShipType: getAisShipTypeName(data.shipType),
     hullNumber: knownVessel?.hullNumber,
@@ -401,7 +546,11 @@ function processAisPosition(data: AisPositionData): void {
     track: history.positions.length > 1 ? [...history.positions] : undefined,
     confidence: knownVessel ? 'high' : mmsiAnalysis.isPotentialMilitary ? 'medium' : 'low',
     isInteresting: Boolean(nearHotspot?.priority === 'high' || isDark || nearChokepoint),
-    note: isDark ? 'Returned after AIS silence' : (nearChokepoint ? `Near ${nearChokepoint}` : undefined),
+    note: isDark
+      ? 'Returned after AIS silence'
+      : nearChokepoint
+        ? `Near ${nearChokepoint}`
+        : undefined,
   };
 
   const previousSize = trackedVessels.size;
@@ -412,14 +561,15 @@ function processAisPosition(data: AisPositionData): void {
   if (previousSize === 0 || (trackedVessels.size === 10 && previousSize < 10)) {
     vesselCache = null;
     breaker.clearCache();
-    console.log(`[Military Vessels] Cleared caches - first vessels arriving (count: ${trackedVessels.size})`);
+    console.log(
+      `[Military Vessels] Cleared caches - first vessels arriving (count: ${trackedVessels.size})`,
+    );
   }
 
   if (messageCount % 50 === 0) {
     console.log(`[Military Vessels] Tracking ${trackedVessels.size} military/gov vessels`);
   }
 }
-
 
 /**
  * Clean up stale vessels and old history
@@ -454,7 +604,9 @@ function clusterVessels(vessels: MilitaryVessel[]): MilitaryVesselCluster[] {
   for (const hotspot of MILITARY_HOTSPOTS) {
     const nearbyVessels = vessels.filter((v) => {
       if (processed.has(v.id)) return false;
-      const distance = Math.sqrt(Math.pow(v.lat - hotspot.lat, 2) + Math.pow(v.lon - hotspot.lon, 2));
+      const distance = Math.sqrt(
+        Math.pow(v.lat - hotspot.lat, 2) + Math.pow(v.lon - hotspot.lon, 2),
+      );
       return distance <= hotspot.radius;
     });
 
@@ -466,8 +618,8 @@ function clusterVessels(vessels: MilitaryVessel[]): MilitaryVesselCluster[] {
 
       // Determine activity type
       const hasCarrier = nearbyVessels.some((v) => v.vesselType === 'carrier');
-      const hasCombatants = nearbyVessels.some((v) =>
-        v.vesselType === 'destroyer' || v.vesselType === 'frigate'
+      const hasCombatants = nearbyVessels.some(
+        (v) => v.vesselType === 'destroyer' || v.vesselType === 'frigate',
       );
 
       let activityType: 'exercise' | 'deployment' | 'transit' | 'unknown' = 'unknown';
@@ -507,7 +659,7 @@ export function initMilitaryVesselStream(): void {
 
   // Invalidate ALL caches when stream starts - fresh data should be read
   vesselCache = null;
-  breaker.clearCache();  // Clear circuit breaker's 5-minute cache too!
+  breaker.clearCache(); // Clear circuit breaker's 5-minute cache too!
 
   // Register callback with shared AIS stream
   registerAisCallback(processAisPosition);
@@ -532,7 +684,11 @@ export function disconnectMilitaryVesselStream(): void {
 /**
  * Get current tracking status
  */
-export function getMilitaryVesselStatus(): { connected: boolean; vessels: number; messages: number } {
+export function getMilitaryVesselStatus(): {
+  connected: boolean;
+  vessels: number;
+  messages: number;
+} {
   return {
     connected: isTracking,
     vessels: trackedVessels.size,
@@ -551,52 +707,61 @@ export async function fetchMilitaryVessels(): Promise<{
   clusters: MilitaryVesselCluster[];
 }> {
   // Debug: check state before calling breaker
-  console.log(`[Military Vessels] fetchMilitaryVessels called - isTracking: ${isTracking}, isAisConfigured: ${isAisConfigured()}, trackedVessels.size: ${trackedVessels.size}`);
+  console.log(
+    `[Military Vessels] fetchMilitaryVessels called - isTracking: ${isTracking}, isAisConfigured: ${isAisConfigured()}, trackedVessels.size: ${trackedVessels.size}`,
+  );
 
-  return breaker.execute(async () => {
-    let vessels: MilitaryVessel[] = [];
+  return breaker.execute(
+    async () => {
+      let vessels: MilitaryVessel[] = [];
 
-    // Check cache first, but still run USNI merge so output is consistent.
-    if (vesselCache && Date.now() - vesselCache.timestamp < CACHE_TTL) {
-      vessels = vesselCache.data;
-      console.log(`[Military Vessels] Returning cached base vessels: ${vessels.length}`);
-    } else {
-      // Initialize stream if not running
-      if (!isTracking && isAisConfigured()) {
-        console.log('[Military Vessels] Initializing stream from fetchMilitaryVessels...');
-        initMilitaryVesselStream();
+      // Check cache first, but still run USNI merge so output is consistent.
+      if (vesselCache && Date.now() - vesselCache.timestamp < CACHE_TTL) {
+        vessels = vesselCache.data;
+        console.log(`[Military Vessels] Returning cached base vessels: ${vessels.length}`);
+      } else {
+        // Initialize stream if not running
+        if (!isTracking && isAisConfigured()) {
+          console.log('[Military Vessels] Initializing stream from fetchMilitaryVessels...');
+          initMilitaryVesselStream();
+        }
+
+        // Clean up old data
+        cleanup();
+
+        // Convert tracked vessels to array
+        vessels = Array.from(trackedVessels.values());
+        console.log(
+          `[Military Vessels] After cleanup, returning ${vessels.length} vessels (trackedVessels.size: ${trackedVessels.size})`,
+        );
+
+        // Only cache non-empty results - empty results due to timing shouldn't block future calls
+        if (vessels.length > 0) {
+          vesselCache = { data: vessels, timestamp: Date.now() };
+        }
       }
 
-      // Clean up old data
-      cleanup();
+      // Generate AIS-only clusters
+      const aisClusters = clusterVessels(vessels);
 
-      // Convert tracked vessels to array
-      vessels = Array.from(trackedVessels.values());
-      console.log(`[Military Vessels] After cleanup, returning ${vessels.length} vessels (trackedVessels.size: ${trackedVessels.size})`);
-
-      // Only cache non-empty results - empty results due to timing shouldn't block future calls
-      if (vessels.length > 0) {
-        vesselCache = { data: vessels, timestamp: Date.now() };
+      // Merge with USNI Fleet Tracker data (non-blocking)
+      try {
+        const usniReport = await fetchUSNIFleetReport();
+        if (usniReport && usniReport.vessels.length > 0) {
+          const merged = mergeUSNIWithAIS(vessels, usniReport, aisClusters);
+          console.log(
+            `[Military Vessels] USNI merge: ${vessels.length} AIS + ${usniReport.vessels.length} USNI → ${merged.vessels.length} total`,
+          );
+          return merged;
+        }
+      } catch (e) {
+        console.warn('[Military Vessels] USNI merge failed, using AIS only:', (e as Error).message);
       }
-    }
 
-    // Generate AIS-only clusters
-    const aisClusters = clusterVessels(vessels);
-
-    // Merge with USNI Fleet Tracker data (non-blocking)
-    try {
-      const usniReport = await fetchUSNIFleetReport();
-      if (usniReport && usniReport.vessels.length > 0) {
-        const merged = mergeUSNIWithAIS(vessels, usniReport, aisClusters);
-        console.log(`[Military Vessels] USNI merge: ${vessels.length} AIS + ${usniReport.vessels.length} USNI → ${merged.vessels.length} total`);
-        return merged;
-      }
-    } catch (e) {
-      console.warn('[Military Vessels] USNI merge failed, using AIS only:', (e as Error).message);
-    }
-
-    return { vessels, clusters: aisClusters };
-  }, { vessels: [], clusters: [] });
+      return { vessels, clusters: aisClusters };
+    },
+    { vessels: [], clusters: [] },
+  );
 }
 
 /**
@@ -616,7 +781,11 @@ export function getVesselByMmsi(mmsi: string): MilitaryVessel | undefined {
 /**
  * Get vessels near a specific location
  */
-export function getVesselsNearLocation(lat: number, lon: number, radiusDeg: number = 2): MilitaryVessel[] {
+export function getVesselsNearLocation(
+  lat: number,
+  lon: number,
+  radiusDeg: number = 2,
+): MilitaryVessel[] {
   const result: MilitaryVessel[] = [];
   for (const vessel of trackedVessels.values()) {
     const distance = Math.sqrt(Math.pow(vessel.lat - lat, 2) + Math.pow(vessel.lon - lon, 2));

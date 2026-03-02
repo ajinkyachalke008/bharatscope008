@@ -83,11 +83,7 @@ export function aggregateGeoActivity(clusters: ClusteredEvent[]): GeoHubActivity
     const typeBonus = TYPE_BONUS[acc.hub.type] || 0;
 
     const rawScore =
-      newsCount * 10 +
-      (acc.hasBreaking ? 25 : 0) +
-      acc.totalVelocity * 3 +
-      tierBonus +
-      typeBonus;
+      newsCount * 10 + (acc.hasBreaking ? 25 : 0) + acc.totalVelocity * 3 + tierBonus + typeBonus;
 
     rawScores.push({ hubId, acc, rawScore });
     maxRawScore = Math.max(maxRawScore, rawScore);
@@ -98,9 +94,7 @@ export function aggregateGeoActivity(clusters: ClusteredEvent[]): GeoHubActivity
   for (const { hubId, acc, rawScore } of rawScores) {
     const newsCount = acc.clusters.length;
 
-    const score = maxRawScore > 0
-      ? Math.round((rawScore / maxRawScore) * 100)
-      : 0;
+    const score = maxRawScore > 0 ? Math.round((rawScore / maxRawScore) * 100) : 0;
 
     let activityLevel: 'high' | 'elevated' | 'low';
     if (score >= 70 || acc.hasBreaking) {
@@ -113,7 +107,7 @@ export function aggregateGeoActivity(clusters: ClusteredEvent[]): GeoHubActivity
 
     const topStories = acc.clusters
       .slice(0, 3)
-      .map(c => ({ title: c.primaryTitle, link: c.primaryLink }));
+      .map((c) => ({ title: c.primaryTitle, link: c.primaryLink }));
 
     let trend: 'rising' | 'stable' | 'falling' = 'stable';
     if (acc.totalVelocity > 2) {
@@ -150,7 +144,10 @@ export function getTopActiveGeoHubs(clusters: ClusteredEvent[], limit = 10): Geo
   return aggregateGeoActivity(clusters).slice(0, limit);
 }
 
-export function getGeoHubActivity(hubId: string, clusters: ClusteredEvent[]): GeoHubActivity | undefined {
+export function getGeoHubActivity(
+  hubId: string,
+  clusters: ClusteredEvent[],
+): GeoHubActivity | undefined {
   const activities = aggregateGeoActivity(clusters);
-  return activities.find(a => a.hubId === hubId);
+  return activities.find((a) => a.hubId === hubId);
 }

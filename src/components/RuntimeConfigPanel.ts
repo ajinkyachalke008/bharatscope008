@@ -72,7 +72,7 @@ export class RuntimeConfigPanel extends Panel {
 
   private getFilteredFeatures(): RuntimeFeatureDefinition[] {
     return this.featureFilter
-      ? RUNTIME_FEATURES.filter(f => this.featureFilter!.includes(f.id))
+      ? RUNTIME_FEATURES.filter((f) => this.featureFilter!.includes(f.id))
       : RUNTIME_FEATURES;
   }
 
@@ -82,7 +82,7 @@ export class RuntimeConfigPanel extends Panel {
     for (const feature of this.getFilteredFeatures()) {
       if (!isFeatureEnabled(feature.id)) continue;
       const secrets = getEffectiveSecrets(feature);
-      const hasPending = secrets.some(k => this.pendingSecrets.has(k));
+      const hasPending = secrets.some((k) => this.pendingSecrets.has(k));
       if (!hasPending) continue;
       for (const key of secrets) {
         if (!getSecretState(key).valid && !this.pendingSecrets.has(key)) {
@@ -105,7 +105,9 @@ export class RuntimeConfigPanel extends Panel {
   public async verifyPendingSecrets(): Promise<string[]> {
     this.captureUnsavedInputs();
     const errors: string[] = [];
-    const context = Object.fromEntries(this.pendingSecrets.entries()) as Partial<Record<RuntimeSecretKey, string>>;
+    const context = Object.fromEntries(this.pendingSecrets.entries()) as Partial<
+      Record<RuntimeSecretKey, string>
+    >;
 
     // Split into local-only failures vs keys needing remote verification
     const toVerifyRemotely: Array<[RuntimeSecretKey, string]> = [];
@@ -123,14 +125,24 @@ export class RuntimeConfigPanel extends Panel {
     // Run all remote verifications in parallel with a 15s global timeout
     if (toVerifyRemotely.length > 0) {
       const results = await Promise.race([
-        Promise.all(toVerifyRemotely.map(async ([key, value]) => {
-          const result = await verifySecretWithApi(key, value, context);
-          return { key, result };
-        })),
-        new Promise<Array<{ key: RuntimeSecretKey; result: { valid: boolean; message?: string } }>>(resolve =>
-          setTimeout(() => resolve(toVerifyRemotely.map(([key]) => ({
-            key, result: { valid: true, message: 'Saved (verification timed out)' },
-          }))), 15000)
+        Promise.all(
+          toVerifyRemotely.map(async ([key, value]) => {
+            const result = await verifySecretWithApi(key, value, context);
+            return { key, result };
+          }),
+        ),
+        new Promise<Array<{ key: RuntimeSecretKey; result: { valid: boolean; message?: string } }>>(
+          (resolve) =>
+            setTimeout(
+              () =>
+                resolve(
+                  toVerifyRemotely.map(([key]) => ({
+                    key,
+                    result: { valid: true, message: 'Saved (verification timed out)' },
+                  })),
+                ),
+              15000,
+            ),
         ),
       ]);
       for (const { key, result: verifyResult } of results) {
@@ -178,7 +190,10 @@ export class RuntimeConfigPanel extends Panel {
     // Capture model from select or manual input
     const modelSelect = this.content.querySelector<HTMLSelectElement>('select[data-model-select]');
     const modelManual = this.content.querySelector<HTMLInputElement>('input[data-model-manual]');
-    const modelValue = (modelManual && !modelManual.classList.contains('hidden-input') ? modelManual.value.trim() : modelSelect?.value) || '';
+    const modelValue =
+      (modelManual && !modelManual.classList.contains('hidden-input')
+        ? modelManual.value.trim()
+        : modelSelect?.value) || '';
     if (modelValue && !this.pendingSecrets.has('OLLAMA_MODEL')) {
       this.pendingSecrets.set('OLLAMA_MODEL', modelValue);
       this.validatedKeys.set('OLLAMA_MODEL', true);
@@ -194,7 +209,9 @@ export class RuntimeConfigPanel extends Panel {
 
     if (desktop && this.mode === 'alert') {
       const totalFeatures = RUNTIME_FEATURES.length;
-      const availableFeatures = RUNTIME_FEATURES.filter((feature) => isFeatureAvailable(feature.id)).length;
+      const availableFeatures = RUNTIME_FEATURES.filter((feature) =>
+        isFeatureAvailable(feature.id),
+      ).length;
       const missingFeatures = Math.max(0, totalFeatures - availableFeatures);
       const configuredCount = Object.keys(snapshot.secrets).length;
 
@@ -203,9 +220,12 @@ export class RuntimeConfigPanel extends Panel {
         return;
       }
 
-      const alertTitle = configuredCount > 0
-        ? (missingFeatures > 0 ? t('modals.runtimeConfig.alertTitle.some') : t('modals.runtimeConfig.alertTitle.configured'))
-        : t('modals.runtimeConfig.alertTitle.needsKeys');
+      const alertTitle =
+        configuredCount > 0
+          ? missingFeatures > 0
+            ? t('modals.runtimeConfig.alertTitle.some')
+            : t('modals.runtimeConfig.alertTitle.configured')
+          : t('modals.runtimeConfig.alertTitle.needsKeys');
       const alertClass = missingFeatures > 0 ? 'warn' : 'ok';
 
       this.show();
@@ -227,10 +247,10 @@ export class RuntimeConfigPanel extends Panel {
 
     this.content.innerHTML = `
       <div class="runtime-config-summary">
-        ${desktop ? t('modals.runtimeConfig.summary.desktop') : t('modals.runtimeConfig.summary.web')} · ${features.filter(f => isFeatureAvailable(f.id)).length}/${features.length} ${t('modals.runtimeConfig.summary.available')}
+        ${desktop ? t('modals.runtimeConfig.summary.desktop') : t('modals.runtimeConfig.summary.web')} · ${features.filter((f) => isFeatureAvailable(f.id)).length}/${features.length} ${t('modals.runtimeConfig.summary.available')}
       </div>
       <div class="runtime-config-list">
-        ${features.map(feature => this.renderFeature(feature)).join('')}
+        ${features.map((feature) => this.renderFeature(feature)).join('')}
       </div>
     `;
 
@@ -241,14 +261,25 @@ export class RuntimeConfigPanel extends Panel {
     const enabled = isFeatureEnabled(feature.id);
     const available = isFeatureAvailable(feature.id);
     const effectiveSecrets = getEffectiveSecrets(feature);
-    const allStaged = !available && effectiveSecrets.every(
-      (k) => getSecretState(k).valid || (this.pendingSecrets.has(k) && this.validatedKeys.get(k) !== false)
-    );
+    const allStaged =
+      !available &&
+      effectiveSecrets.every(
+        (k) =>
+          getSecretState(k).valid ||
+          (this.pendingSecrets.has(k) && this.validatedKeys.get(k) !== false),
+      );
     const pillClass = available ? 'ok' : allStaged ? 'staged' : 'warn';
-    const pillLabel = available ? t('modals.runtimeConfig.status.ready') : allStaged ? t('modals.runtimeConfig.status.staged') : t('modals.runtimeConfig.status.needsKeys');
+    const pillLabel = available
+      ? t('modals.runtimeConfig.status.ready')
+      : allStaged
+        ? t('modals.runtimeConfig.status.staged')
+        : t('modals.runtimeConfig.status.needsKeys');
     const secrets = effectiveSecrets.map((key) => this.renderSecretRow(key)).join('');
     const desktop = isDesktopRuntime();
-    const fallbackHtml = available || allStaged ? '' : `<p class="runtime-feature-fallback fallback">${escapeHtml(feature.fallback)}</p>`;
+    const fallbackHtml =
+      available || allStaged
+        ? ''
+        : `<p class="runtime-feature-fallback fallback">${escapeHtml(feature.fallback)}</p>`;
 
     return `
       <section class="runtime-feature ${available ? 'available' : allStaged ? 'staged' : 'degraded'}">
@@ -270,11 +301,21 @@ export class RuntimeConfigPanel extends Panel {
     const pending = this.pendingSecrets.has(key);
     const pendingValid = pending ? this.validatedKeys.get(key) : undefined;
     const status = pending
-      ? (pendingValid === false ? t('modals.runtimeConfig.status.invalid') : t('modals.runtimeConfig.status.staged'))
-      : !state.present ? t('modals.runtimeConfig.status.missing') : state.valid ? t('modals.runtimeConfig.status.valid') : t('modals.runtimeConfig.status.looksInvalid');
+      ? pendingValid === false
+        ? t('modals.runtimeConfig.status.invalid')
+        : t('modals.runtimeConfig.status.staged')
+      : !state.present
+        ? t('modals.runtimeConfig.status.missing')
+        : state.valid
+          ? t('modals.runtimeConfig.status.valid')
+          : t('modals.runtimeConfig.status.looksInvalid');
     const statusClass = pending
-      ? (pendingValid === false ? 'warn' : 'staged')
-      : state.valid ? 'ok' : 'warn';
+      ? pendingValid === false
+        ? 'warn'
+        : 'staged'
+      : state.valid
+        ? 'ok'
+        : 'warn';
     const signupUrl = SIGNUP_URLS[key];
     const helpKey = `modals.runtimeConfig.help.${key}`;
     const helpRaw = t(helpKey);
@@ -283,9 +324,12 @@ export class RuntimeConfigPanel extends Panel {
     const validated = this.validatedKeys.get(key);
     const inputClass = pending ? (validated === false ? 'invalid' : 'valid-staged') : '';
     const checkClass = validated === true ? 'visible' : '';
-    const hintText = pending && validated === false
-      ? (this.validationMessages.get(key) || validateSecret(key, this.pendingSecrets.get(key) || '').hint || 'Invalid value')
-      : null;
+    const hintText =
+      pending && validated === false
+        ? this.validationMessages.get(key) ||
+          validateSecret(key, this.pendingSecrets.get(key) || '').hint ||
+          'Invalid value'
+        : null;
 
     if (key === 'OLLAMA_MODEL') {
       const storedModel = pending
@@ -317,7 +361,7 @@ export class RuntimeConfigPanel extends Panel {
         <span class="runtime-secret-check ${checkClass}">&#x2713;</span>
         ${helpText ? `<div class="runtime-secret-meta">${escapeHtml(helpText)}</div>` : ''}
         <div class="runtime-input-wrapper${showGetKey ? ' has-suffix' : ''}">
-          <input type="${PLAINTEXT_KEYS.has(key) ? 'text' : 'password'}" data-secret="${key}" placeholder="${pending ? t('modals.runtimeConfig.placeholder.staged') : t('modals.runtimeConfig.placeholder.setSecret')}" autocomplete="off" ${isDesktopRuntime() ? '' : 'disabled'} class="${inputClass}" ${pending ? `value="${PLAINTEXT_KEYS.has(key) ? escapeHtml(this.pendingSecrets.get(key) || '') : MASKED_SENTINEL}"` : (PLAINTEXT_KEYS.has(key) && state.present ? `value="${escapeHtml(getRuntimeConfigSnapshot().secrets[key]?.value || '')}"` : '')}>
+          <input type="${PLAINTEXT_KEYS.has(key) ? 'text' : 'password'}" data-secret="${key}" placeholder="${pending ? t('modals.runtimeConfig.placeholder.staged') : t('modals.runtimeConfig.placeholder.setSecret')}" autocomplete="off" ${isDesktopRuntime() ? '' : 'disabled'} class="${inputClass}" ${pending ? `value="${PLAINTEXT_KEYS.has(key) ? escapeHtml(this.pendingSecrets.get(key) || '') : MASKED_SENTINEL}"` : PLAINTEXT_KEYS.has(key) && state.present ? `value="${escapeHtml(getRuntimeConfigSnapshot().secrets[key]?.value || '')}"` : ''}>
           ${getKeyHtml}
         </div>
         ${hintText ? `<span class="runtime-secret-hint">${escapeHtml(hintText)}</span>` : ''}
@@ -342,11 +386,13 @@ export class RuntimeConfigPanel extends Panel {
     if (!isDesktopRuntime()) return;
 
     if (this.mode === 'alert') {
-      this.content.querySelector<HTMLButtonElement>('[data-open-settings]')?.addEventListener('click', () => {
-        void invokeTauri<void>('open_settings_window_command').catch((error) => {
-          console.warn('[runtime-config] Failed to open settings window', error);
+      this.content
+        .querySelector<HTMLButtonElement>('[data-open-settings]')
+        ?.addEventListener('click', () => {
+          void invokeTauri<void>('open_settings_window_command').catch((error) => {
+            console.warn('[runtime-config] Failed to open settings window', error);
+          });
         });
-      });
       return;
     }
 
@@ -379,7 +425,11 @@ export class RuntimeConfigPanel extends Panel {
       input.addEventListener('input', () => {
         const key = input.dataset.secret as RuntimeSecretKey | undefined;
         if (!key) return;
-        if (this.buffered && this.pendingSecrets.has(key) && input.value.startsWith(MASKED_SENTINEL)) {
+        if (
+          this.buffered &&
+          this.pendingSecrets.has(key) &&
+          input.value.startsWith(MASKED_SENTINEL)
+        ) {
           input.value = input.value.slice(MASKED_SENTINEL.length);
         }
         this.validatedKeys.delete(key);
@@ -443,15 +493,21 @@ export class RuntimeConfigPanel extends Panel {
           this.updateFeatureCardStatus(key);
 
           // Update inline status text to reflect staged state
-          const statusEl = input.closest('.runtime-secret-row')?.querySelector('.runtime-secret-status');
+          const statusEl = input
+            .closest('.runtime-secret-row')
+            ?.querySelector('.runtime-secret-status');
           if (statusEl) {
-            statusEl.textContent = result.valid ? t('modals.runtimeConfig.status.staged') : t('modals.runtimeConfig.status.invalid');
+            statusEl.textContent = result.valid
+              ? t('modals.runtimeConfig.status.staged')
+              : t('modals.runtimeConfig.status.invalid');
             statusEl.className = `runtime-secret-status ${result.valid ? 'staged' : 'warn'}`;
           }
 
           // When Ollama URL is staged, auto-fetch available models
           if (key === 'OLLAMA_API_URL' && result.valid) {
-            const modelSelect = this.content.querySelector<HTMLSelectElement>('select[data-model-select]');
+            const modelSelect = this.content.querySelector<HTMLSelectElement>(
+              'select[data-model-select]',
+            );
             if (modelSelect) void this.fetchOllamaModels(modelSelect);
           }
         } else {
@@ -463,23 +519,31 @@ export class RuntimeConfigPanel extends Panel {
   }
 
   private updateFeatureCardStatus(secretKey: RuntimeSecretKey): void {
-    const feature = RUNTIME_FEATURES.find(f => getEffectiveSecrets(f).includes(secretKey));
+    const feature = RUNTIME_FEATURES.find((f) => getEffectiveSecrets(f).includes(secretKey));
     if (!feature) return;
-    const section = Array.from(this.content.querySelectorAll('.runtime-feature')).find(el => {
+    const section = Array.from(this.content.querySelectorAll('.runtime-feature')).find((el) => {
       const toggle = el.querySelector<HTMLInputElement>(`input[data-toggle="${feature.id}"]`);
       return !!toggle;
     });
     if (!section) return;
     const available = isFeatureAvailable(feature.id);
     const effectiveSecrets = getEffectiveSecrets(feature);
-    const allStaged = !available && effectiveSecrets.every(
-      (k) => getSecretState(k).valid || (this.pendingSecrets.has(k) && this.validatedKeys.get(k) !== false)
-    );
+    const allStaged =
+      !available &&
+      effectiveSecrets.every(
+        (k) =>
+          getSecretState(k).valid ||
+          (this.pendingSecrets.has(k) && this.validatedKeys.get(k) !== false),
+      );
     section.className = `runtime-feature ${available ? 'available' : allStaged ? 'staged' : 'degraded'}`;
     const pill = section.querySelector('.runtime-pill');
     if (pill) {
       pill.className = `runtime-pill ${available ? 'ok' : allStaged ? 'staged' : 'warn'}`;
-      pill.textContent = available ? t('modals.runtimeConfig.status.ready') : allStaged ? t('modals.runtimeConfig.status.staged') : t('modals.runtimeConfig.status.needsKeys');
+      pill.textContent = available
+        ? t('modals.runtimeConfig.status.ready')
+        : allStaged
+          ? t('modals.runtimeConfig.status.staged')
+          : t('modals.runtimeConfig.status.needsKeys');
     }
     const fallback = section.querySelector('.runtime-feature-fallback');
     if (available || allStaged) {
@@ -495,7 +559,9 @@ export class RuntimeConfigPanel extends Panel {
   }
 
   private showManualModelInput(select: HTMLSelectElement): void {
-    const manual = select.parentElement?.querySelector<HTMLInputElement>('input[data-model-manual]');
+    const manual = select.parentElement?.querySelector<HTMLInputElement>(
+      'input[data-model-manual]',
+    );
     if (!manual) return;
     select.style.display = 'none';
     manual.classList.remove('hidden-input');
@@ -513,17 +579,15 @@ export class RuntimeConfigPanel extends Panel {
 
   private async fetchOllamaModels(select: HTMLSelectElement): Promise<void> {
     const snapshot = getRuntimeConfigSnapshot();
-    const ollamaUrl = this.pendingSecrets.get('OLLAMA_API_URL')
-      || snapshot.secrets['OLLAMA_API_URL']?.value
-      || '';
+    const ollamaUrl =
+      this.pendingSecrets.get('OLLAMA_API_URL') || snapshot.secrets['OLLAMA_API_URL']?.value || '';
     if (!ollamaUrl) {
       select.innerHTML = '<option value="" disabled selected>Set Ollama URL first</option>';
       return;
     }
 
-    const currentModel = this.pendingSecrets.get('OLLAMA_MODEL')
-      || snapshot.secrets['OLLAMA_MODEL']?.value
-      || '';
+    const currentModel =
+      this.pendingSecrets.get('OLLAMA_MODEL') || snapshot.secrets['OLLAMA_MODEL']?.value || '';
 
     try {
       // Try Ollama-native /api/tags first, fall back to OpenAI-compatible /v1/models
@@ -533,10 +597,12 @@ export class RuntimeConfigPanel extends Panel {
           signal: RuntimeConfigPanel.makeTimeout(5000),
         });
         if (res.ok) {
-          const data = await res.json() as { models?: Array<{ name: string }> };
-          models = (data.models?.map(m => m.name) || []).filter(n => !n.includes('embed'));
+          const data = (await res.json()) as { models?: Array<{ name: string }> };
+          models = (data.models?.map((m) => m.name) || []).filter((n) => !n.includes('embed'));
         }
-      } catch { /* Ollama endpoint not available, try OpenAI format */ }
+      } catch {
+        /* Ollama endpoint not available, try OpenAI format */
+      }
 
       if (models.length === 0) {
         try {
@@ -544,10 +610,12 @@ export class RuntimeConfigPanel extends Panel {
             signal: RuntimeConfigPanel.makeTimeout(5000),
           });
           if (res.ok) {
-            const data = await res.json() as { data?: Array<{ id: string }> };
-            models = (data.data?.map(m => m.id) || []).filter(n => !n.includes('embed'));
+            const data = (await res.json()) as { data?: Array<{ id: string }> };
+            models = (data.data?.map((m) => m.id) || []).filter((n) => !n.includes('embed'));
           }
-        } catch { /* OpenAI endpoint also unavailable */ }
+        } catch {
+          /* OpenAI endpoint also unavailable */
+        }
       }
 
       if (models.length === 0) {
@@ -556,9 +624,12 @@ export class RuntimeConfigPanel extends Panel {
         return;
       }
 
-      select.innerHTML = models.map(name =>
-        `<option value="${escapeHtml(name)}" ${name === currentModel ? 'selected' : ''}>${escapeHtml(name)}</option>`
-      ).join('');
+      select.innerHTML = models
+        .map(
+          (name) =>
+            `<option value="${escapeHtml(name)}" ${name === currentModel ? 'selected' : ''}>${escapeHtml(name)}</option>`,
+        )
+        .join('');
 
       // Auto-select first model if none stored
       if (!currentModel && models.length > 0) {

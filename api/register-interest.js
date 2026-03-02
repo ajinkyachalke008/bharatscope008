@@ -61,7 +61,12 @@ export default async function handler(req) {
   }
 
   const { email, source, appVersion } = body;
-  if (!email || typeof email !== 'string' || email.length > MAX_EMAIL_LENGTH || !EMAIL_RE.test(email)) {
+  if (
+    !email ||
+    typeof email !== 'string' ||
+    email.length > MAX_EMAIL_LENGTH ||
+    !EMAIL_RE.test(email)
+  ) {
     return new Response(JSON.stringify({ error: 'Invalid email address' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json', ...cors },

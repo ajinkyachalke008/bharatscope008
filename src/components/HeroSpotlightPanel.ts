@@ -18,8 +18,7 @@ export class HeroSpotlightPanel extends Panel {
 
   constructor() {
     super({ id: 'spotlight', title: "Today's Hero", trackActivity: false });
-    this.content.innerHTML =
-      '<div class="hero-card-loading">Loading today\'s hero...</div>';
+    this.content.innerHTML = '<div class="hero-card-loading">Loading today\'s hero...</div>';
   }
 
   /**
@@ -27,8 +26,7 @@ export class HeroSpotlightPanel extends Panel {
    */
   public setHeroStory(item: NewsItem | undefined): void {
     if (!item) {
-      this.content.innerHTML =
-        '<div class="hero-card-empty">No hero story available today</div>';
+      this.content.innerHTML = '<div class="hero-card-empty">No hero story available today</div>';
       return;
     }
 

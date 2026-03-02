@@ -6,3 +6,6 @@ export { RefreshScheduler } from './refresh-scheduler';
 export { PanelLayoutManager } from './panel-layout';
 export { DataLoaderManager } from './data-loader';
 export { EventHandlerManager } from './event-handlers';
+export { AppMigrationManager } from './migration-manager';
+export { AppStateInitializer } from './state-initializer';
+export { AppDeepLinkRouter } from './router-manager';

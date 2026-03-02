@@ -63,17 +63,37 @@ export const DESKTOP_PARITY_FEATURES: DesktopParityFeature[] = [
     apiRoutes: ['/api/risk-scores'],
     apiHandlers: ['api/risk-scores.js'],
     locality: 'api-key',
-    fallback: 'Panel stays available with local aggregate scoring when cached backend scores are unavailable.',
+    fallback:
+      'Panel stays available with local aggregate scoring when cached backend scores are unavailable.',
     priority: 1,
   },
   {
     id: 'map-layers-core',
     panel: 'Map layers (conflicts/outages/cyber/ais/flights)',
-    serviceFiles: ['src/services/conflict/index.ts', 'src/services/infrastructure/index.ts', 'src/services/cyber/index.ts', 'src/services/maritime/index.ts', 'src/services/military-flights.ts'],
-    apiRoutes: ['/api/conflict/v1/list-acled-events', '/api/infrastructure/v1/list-internet-outages', '/api/cyber/v1/list-cyber-threats', '/api/maritime/v1/get-vessel-snapshot', '/api/military/v1/list-military-flights'],
-    apiHandlers: ['server/worldmonitor/conflict/v1/handler.ts', 'server/worldmonitor/infrastructure/v1/handler.ts', 'server/worldmonitor/cyber/v1/handler.ts', 'server/worldmonitor/maritime/v1/handler.ts', 'server/worldmonitor/military/v1/handler.ts'],
+    serviceFiles: [
+      'src/services/conflict/index.ts',
+      'src/services/infrastructure/index.ts',
+      'src/services/cyber/index.ts',
+      'src/services/maritime/index.ts',
+      'src/services/military-flights.ts',
+    ],
+    apiRoutes: [
+      '/api/conflict/v1/list-acled-events',
+      '/api/infrastructure/v1/list-internet-outages',
+      '/api/cyber/v1/list-cyber-threats',
+      '/api/maritime/v1/get-vessel-snapshot',
+      '/api/military/v1/list-military-flights',
+    ],
+    apiHandlers: [
+      'server/worldmonitor/conflict/v1/handler.ts',
+      'server/worldmonitor/infrastructure/v1/handler.ts',
+      'server/worldmonitor/cyber/v1/handler.ts',
+      'server/worldmonitor/maritime/v1/handler.ts',
+      'server/worldmonitor/military/v1/handler.ts',
+    ],
     locality: 'api-key',
-    fallback: 'Unavailable feeds are disabled while map rendering remains active for local/static layers.',
+    fallback:
+      'Unavailable feeds are disabled while map rendering remains active for local/static layers.',
     priority: 1,
   },
   {
@@ -90,7 +110,11 @@ export const DESKTOP_PARITY_FEATURES: DesktopParityFeature[] = [
     id: 'market-panel',
     panel: 'MarketPanel',
     serviceFiles: ['src/services/market/index.ts', 'src/services/prediction/index.ts'],
-    apiRoutes: ['/api/market/v1/list-crypto-quotes', '/api/market/v1/list-stablecoin-markets', '/api/market/v1/list-etf-flows'],
+    apiRoutes: [
+      '/api/market/v1/list-crypto-quotes',
+      '/api/market/v1/list-stablecoin-markets',
+      '/api/market/v1/list-etf-flows',
+    ],
     apiHandlers: ['server/worldmonitor/market/v1/handler.ts'],
     locality: 'fully-local',
     fallback: 'Multi-source market fetchers degrade to remaining providers and cached values.',
@@ -100,10 +124,15 @@ export const DESKTOP_PARITY_FEATURES: DesktopParityFeature[] = [
     id: 'wingbits-enrichment',
     panel: 'Map layers (flight enrichment)',
     serviceFiles: ['src/services/wingbits.ts'],
-    apiRoutes: ['/api/military/v1/get-aircraft-details', '/api/military/v1/get-aircraft-details-batch', '/api/military/v1/get-wingbits-status'],
+    apiRoutes: [
+      '/api/military/v1/get-aircraft-details',
+      '/api/military/v1/get-aircraft-details-batch',
+      '/api/military/v1/get-wingbits-status',
+    ],
     apiHandlers: ['server/worldmonitor/military/v1/handler.ts'],
     locality: 'api-key',
-    fallback: 'Flight tracks continue with heuristic classification when Wingbits credentials are unavailable.',
+    fallback:
+      'Flight tracks continue with heuristic classification when Wingbits credentials are unavailable.',
     priority: 3,
   },
   {
@@ -113,13 +142,14 @@ export const DESKTOP_PARITY_FEATURES: DesktopParityFeature[] = [
     apiRoutes: ['/api/military/v1/list-military-flights'],
     apiHandlers: ['server/worldmonitor/military/v1/handler.ts'],
     locality: 'cloud-fallback',
-    fallback: 'If relay is unreachable, service falls back to Vercel proxy path and then no-data mode.',
+    fallback:
+      'If relay is unreachable, service falls back to Vercel proxy path and then no-data mode.',
     priority: 3,
   },
 ];
 
 export function getNonParityFeatures(): DesktopParityFeature[] {
-  return DESKTOP_PARITY_FEATURES.filter(feature => feature.locality !== 'fully-local');
+  return DESKTOP_PARITY_FEATURES.filter((feature) => feature.locality !== 'fully-local');
 }
 
 export function getDesktopReadinessChecks(localBackendEnabled: boolean): DesktopReadinessCheck[] {
@@ -128,14 +158,29 @@ export function getDesktopReadinessChecks(localBackendEnabled: boolean): Desktop
   return [
     { id: 'startup', label: 'Desktop startup + sidecar API health', ready: localBackendEnabled },
     { id: 'map', label: 'Map rendering (local layers + static geo assets)', ready: true },
-    { id: 'core-intel', label: 'Core intelligence panels (Live News, Monitor, Strategic Risk)', ready: true },
-    { id: 'summaries', label: 'Summaries (provider-backed or browser fallback)', ready: isFeatureAvailable('aiOllama') || isFeatureAvailable('aiGroq') || isFeatureAvailable('aiOpenRouter') },
+    {
+      id: 'core-intel',
+      label: 'Core intelligence panels (Live News, Monitor, Strategic Risk)',
+      ready: true,
+    },
+    {
+      id: 'summaries',
+      label: 'Summaries (provider-backed or browser fallback)',
+      ready:
+        isFeatureAvailable('aiOllama') ||
+        isFeatureAvailable('aiGroq') ||
+        isFeatureAvailable('aiOpenRouter'),
+    },
     { id: 'market', label: 'Market panel live data paths', ready: true },
-    { id: 'live-tracking', label: 'At least one live-tracking mode (AIS or OpenSky)', ready: liveTrackingReady },
+    {
+      id: 'live-tracking',
+      label: 'At least one live-tracking mode (AIS or OpenSky)',
+      ready: liveTrackingReady,
+    },
   ];
 }
 
 export function getKeyBackedAvailabilitySummary(): { available: number; total: number } {
-  const available = keyBackedFeatures.filter(featureId => isFeatureAvailable(featureId)).length;
+  const available = keyBackedFeatures.filter((featureId) => isFeatureAvailable(featureId)).length;
   return { available, total: keyBackedFeatures.length };
 }

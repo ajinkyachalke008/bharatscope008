@@ -32,17 +32,20 @@ export class PopulationExposurePanel extends Panel {
 
     const totalAffected = this.exposures.reduce((sum, e) => sum + e.exposedPopulation, 0);
 
-    const cards = this.exposures.slice(0, 30).map(e => {
-      const typeIcon = this.getTypeIcon(e.eventType);
-      const popClass = e.exposedPopulation >= 1_000_000 ? ' popexp-pop-large' : '';
-      return `<div class="popexp-card">
+    const cards = this.exposures
+      .slice(0, 30)
+      .map((e) => {
+        const typeIcon = this.getTypeIcon(e.eventType);
+        const popClass = e.exposedPopulation >= 1_000_000 ? ' popexp-pop-large' : '';
+        return `<div class="popexp-card">
         <div class="popexp-card-name">${typeIcon} ${escapeHtml(e.eventName)}</div>
         <div class="popexp-card-meta">
           <span class="popexp-card-pop${popClass}">${t('components.populationExposure.affectedCount', { count: formatPopulation(e.exposedPopulation) })}</span>
           <span class="popexp-card-radius">${t('components.populationExposure.radiusKm', { km: String(e.exposureRadiusKm) })}</span>
         </div>
       </div>`;
-    }).join('');
+      })
+      .join('');
 
     this.setContent(`
       <div class="popexp-panel-content">

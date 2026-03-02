@@ -68,11 +68,7 @@ const MINIMAL_WORLD_TOPOLOGY = {
 const originalFetch = window.fetch.bind(window);
 window.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   const url =
-    typeof input === 'string'
-      ? input
-      : input instanceof URL
-      ? input.toString()
-      : input.url;
+    typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
 
   if (url.includes('world-atlas@2/countries-50m.json')) {
     return new Response(JSON.stringify(MINIMAL_WORLD_TOPOLOGY), {
@@ -171,7 +167,15 @@ const ensureHotspotsRendered = (): void => {
         properties: { name: 'E2E Country' },
         geometry: {
           type: 'Polygon',
-          coordinates: [[[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]]],
+          coordinates: [
+            [
+              [-180, -90],
+              [180, -90],
+              [180, 90],
+              [-180, 90],
+              [-180, -90],
+            ],
+          ],
         },
       },
     ];

@@ -5,13 +5,34 @@ import { t } from '@/services/i18n';
 import { getCSSColor } from '@/utils';
 
 const COUNTRY_FLAGS: Record<string, string> = {
-  'USA': '🇺🇸', 'Russia': '🇷🇺', 'China': '🇨🇳', 'UK': '🇬🇧', 'Belgium': '🇧🇪',
-  'Israel': '🇮🇱', 'Iran': '🇮🇷', 'Ukraine': '🇺🇦', 'Taiwan': '🇹🇼', 'Japan': '🇯🇵',
-  'South Korea': '🇰🇷', 'North Korea': '🇰🇵', 'India': '🇮🇳', 'Saudi Arabia': '🇸🇦',
-  'Turkey': '🇹🇷', 'France': '🇫🇷', 'Germany': '🇩🇪', 'Egypt': '🇪🇬', 'Pakistan': '🇵🇰',
-  'Palestine': '🇵🇸', 'Yemen': '🇾🇪', 'Syria': '🇸🇾', 'Lebanon': '🇱🇧',
-  'Sudan': '🇸🇩', 'Ethiopia': '🇪🇹', 'Myanmar': '🇲🇲', 'Austria': '🇦🇹',
-  'International': '🌐',
+  USA: '🇺🇸',
+  Russia: '🇷🇺',
+  China: '🇨🇳',
+  UK: '🇬🇧',
+  Belgium: '🇧🇪',
+  Israel: '🇮🇱',
+  Iran: '🇮🇷',
+  Ukraine: '🇺🇦',
+  Taiwan: '🇹🇼',
+  Japan: '🇯🇵',
+  'South Korea': '🇰🇷',
+  'North Korea': '🇰🇵',
+  India: '🇮🇳',
+  'Saudi Arabia': '🇸🇦',
+  Turkey: '🇹🇷',
+  France: '🇫🇷',
+  Germany: '🇩🇪',
+  Egypt: '🇪🇬',
+  Pakistan: '🇵🇰',
+  Palestine: '🇵🇸',
+  Yemen: '🇾🇪',
+  Syria: '🇸🇾',
+  Lebanon: '🇱🇧',
+  Sudan: '🇸🇩',
+  Ethiopia: '🇪🇹',
+  Myanmar: '🇲🇲',
+  Austria: '🇦🇹',
+  International: '🌐',
 };
 
 const TYPE_ICONS: Record<string, string> = {
@@ -73,12 +94,13 @@ export class GeoHubsPanel extends Panel {
       return;
     }
 
-    const html = this.activities.map((hub, index) => {
-      const trendIcon = hub.trend === 'rising' ? '↑' : hub.trend === 'falling' ? '↓' : '';
-      const breakingTag = hub.hasBreaking ? '<span class="hub-breaking geo">ALERT</span>' : '';
-      const topStory = hub.topStories[0];
+    const html = this.activities
+      .map((hub, index) => {
+        const trendIcon = hub.trend === 'rising' ? '↑' : hub.trend === 'falling' ? '↓' : '';
+        const breakingTag = hub.hasBreaking ? '<span class="hub-breaking geo">ALERT</span>' : '';
+        const topStory = hub.topStories[0];
 
-      return `
+        return `
         <div class="geo-hub-item ${hub.activityLevel}" data-hub-id="${escapeHtml(hub.hubId)}" data-index="${index}">
           <div class="hub-rank">${index + 1}</div>
           <span class="geo-hub-indicator ${hub.activityLevel}"></span>
@@ -96,13 +118,18 @@ export class GeoHubsPanel extends Panel {
           </div>
           <div class="hub-score geo">${Math.round(hub.score)}</div>
         </div>
-        ${topStory ? `
+        ${
+          topStory
+            ? `
           <a class="hub-top-story geo" href="${sanitizeUrl(topStory.link)}" target="_blank" rel="noopener" data-hub-id="${escapeHtml(hub.hubId)}">
             ${escapeHtml(topStory.title.length > 80 ? topStory.title.slice(0, 77) + '...' : topStory.title)}
           </a>
-        ` : ''}
+        `
+            : ''
+        }
       `;
-    }).join('');
+      })
+      .join('');
 
     this.setContent(html);
     this.bindEvents();
@@ -113,7 +140,7 @@ export class GeoHubsPanel extends Panel {
     items.forEach((item) => {
       item.addEventListener('click', () => {
         const hubId = item.dataset.hubId;
-        const hub = this.activities.find(a => a.hubId === hubId);
+        const hub = this.activities.find((a) => a.hubId === hubId);
         if (hub && this.onHubClick) {
           this.onHubClick(hub);
         }

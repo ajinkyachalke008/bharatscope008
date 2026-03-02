@@ -71,8 +71,7 @@ export interface EnergyPrice {
   priceAt: number;
 }
 
-export interface GetMacroSignalsRequest {
-}
+export interface GetMacroSignalsRequest {}
 
 export interface GetMacroSignalsResponse {
   timestamp: string;
@@ -181,22 +180,19 @@ export interface BisCreditToGdp {
   date: string;
 }
 
-export interface GetBisPolicyRatesRequest {
-}
+export interface GetBisPolicyRatesRequest {}
 
 export interface GetBisPolicyRatesResponse {
   rates: BisPolicyRate[];
 }
 
-export interface GetBisExchangeRatesRequest {
-}
+export interface GetBisExchangeRatesRequest {}
 
 export interface GetBisExchangeRatesResponse {
   rates: BisExchangeRate[];
 }
 
-export interface GetBisCreditRequest {
-}
+export interface GetBisCreditRequest {}
 
 export interface GetBisCreditResponse {
   entries: BisCreditToGdp[];
@@ -222,8 +218,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -234,7 +230,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -259,12 +255,30 @@ export interface RouteDescriptor {
 
 export interface EconomicServiceHandler {
   getFredSeries(ctx: ServerContext, req: GetFredSeriesRequest): Promise<GetFredSeriesResponse>;
-  listWorldBankIndicators(ctx: ServerContext, req: ListWorldBankIndicatorsRequest): Promise<ListWorldBankIndicatorsResponse>;
-  getEnergyPrices(ctx: ServerContext, req: GetEnergyPricesRequest): Promise<GetEnergyPricesResponse>;
-  getMacroSignals(ctx: ServerContext, req: GetMacroSignalsRequest): Promise<GetMacroSignalsResponse>;
-  getEnergyCapacity(ctx: ServerContext, req: GetEnergyCapacityRequest): Promise<GetEnergyCapacityResponse>;
-  getBisPolicyRates(ctx: ServerContext, req: GetBisPolicyRatesRequest): Promise<GetBisPolicyRatesResponse>;
-  getBisExchangeRates(ctx: ServerContext, req: GetBisExchangeRatesRequest): Promise<GetBisExchangeRatesResponse>;
+  listWorldBankIndicators(
+    ctx: ServerContext,
+    req: ListWorldBankIndicatorsRequest,
+  ): Promise<ListWorldBankIndicatorsResponse>;
+  getEnergyPrices(
+    ctx: ServerContext,
+    req: GetEnergyPricesRequest,
+  ): Promise<GetEnergyPricesResponse>;
+  getMacroSignals(
+    ctx: ServerContext,
+    req: GetMacroSignalsRequest,
+  ): Promise<GetMacroSignalsResponse>;
+  getEnergyCapacity(
+    ctx: ServerContext,
+    req: GetEnergyCapacityRequest,
+  ): Promise<GetEnergyCapacityResponse>;
+  getBisPolicyRates(
+    ctx: ServerContext,
+    req: GetBisPolicyRatesRequest,
+  ): Promise<GetBisPolicyRatesResponse>;
+  getBisExchangeRates(
+    ctx: ServerContext,
+    req: GetBisExchangeRatesRequest,
+  ): Promise<GetBisExchangeRatesResponse>;
   getBisCredit(ctx: ServerContext, req: GetBisCreditRequest): Promise<GetBisCreditResponse>;
 }
 
@@ -274,14 +288,14 @@ export function createEconomicServiceRoutes(
 ): RouteDescriptor[] {
   return [
     {
-      method: "POST",
-      path: "/api/economic/v1/get-fred-series",
+      method: 'POST',
+      path: '/api/economic/v1/get-fred-series',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetFredSeriesRequest;
+          const body = (await req.json()) as GetFredSeriesRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getFredSeries", body);
+            const bodyViolations = options.validateRequest('getFredSeries', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -296,13 +310,13 @@ export function createEconomicServiceRoutes(
           const result = await handler.getFredSeries(ctx, body);
           return new Response(JSON.stringify(result as GetFredSeriesResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -311,20 +325,20 @@ export function createEconomicServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/economic/v1/list-world-bank-indicators",
+      method: 'POST',
+      path: '/api/economic/v1/list-world-bank-indicators',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as ListWorldBankIndicatorsRequest;
+          const body = (await req.json()) as ListWorldBankIndicatorsRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("listWorldBankIndicators", body);
+            const bodyViolations = options.validateRequest('listWorldBankIndicators', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -339,13 +353,13 @@ export function createEconomicServiceRoutes(
           const result = await handler.listWorldBankIndicators(ctx, body);
           return new Response(JSON.stringify(result as ListWorldBankIndicatorsResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -354,20 +368,20 @@ export function createEconomicServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/economic/v1/get-energy-prices",
+      method: 'POST',
+      path: '/api/economic/v1/get-energy-prices',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetEnergyPricesRequest;
+          const body = (await req.json()) as GetEnergyPricesRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getEnergyPrices", body);
+            const bodyViolations = options.validateRequest('getEnergyPrices', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -382,13 +396,13 @@ export function createEconomicServiceRoutes(
           const result = await handler.getEnergyPrices(ctx, body);
           return new Response(JSON.stringify(result as GetEnergyPricesResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -397,20 +411,20 @@ export function createEconomicServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/economic/v1/get-macro-signals",
+      method: 'POST',
+      path: '/api/economic/v1/get-macro-signals',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetMacroSignalsRequest;
+          const body = (await req.json()) as GetMacroSignalsRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getMacroSignals", body);
+            const bodyViolations = options.validateRequest('getMacroSignals', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -425,13 +439,13 @@ export function createEconomicServiceRoutes(
           const result = await handler.getMacroSignals(ctx, body);
           return new Response(JSON.stringify(result as GetMacroSignalsResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -440,20 +454,20 @@ export function createEconomicServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/economic/v1/get-energy-capacity",
+      method: 'POST',
+      path: '/api/economic/v1/get-energy-capacity',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetEnergyCapacityRequest;
+          const body = (await req.json()) as GetEnergyCapacityRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getEnergyCapacity", body);
+            const bodyViolations = options.validateRequest('getEnergyCapacity', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -468,13 +482,13 @@ export function createEconomicServiceRoutes(
           const result = await handler.getEnergyCapacity(ctx, body);
           return new Response(JSON.stringify(result as GetEnergyCapacityResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -483,20 +497,20 @@ export function createEconomicServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/economic/v1/get-bis-policy-rates",
+      method: 'POST',
+      path: '/api/economic/v1/get-bis-policy-rates',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetBisPolicyRatesRequest;
+          const body = (await req.json()) as GetBisPolicyRatesRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getBisPolicyRates", body);
+            const bodyViolations = options.validateRequest('getBisPolicyRates', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -511,13 +525,13 @@ export function createEconomicServiceRoutes(
           const result = await handler.getBisPolicyRates(ctx, body);
           return new Response(JSON.stringify(result as GetBisPolicyRatesResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -526,20 +540,20 @@ export function createEconomicServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/economic/v1/get-bis-exchange-rates",
+      method: 'POST',
+      path: '/api/economic/v1/get-bis-exchange-rates',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetBisExchangeRatesRequest;
+          const body = (await req.json()) as GetBisExchangeRatesRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getBisExchangeRates", body);
+            const bodyViolations = options.validateRequest('getBisExchangeRates', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -554,13 +568,13 @@ export function createEconomicServiceRoutes(
           const result = await handler.getBisExchangeRates(ctx, body);
           return new Response(JSON.stringify(result as GetBisExchangeRatesResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -569,20 +583,20 @@ export function createEconomicServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/economic/v1/get-bis-credit",
+      method: 'POST',
+      path: '/api/economic/v1/get-bis-credit',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetBisCreditRequest;
+          const body = (await req.json()) as GetBisCreditRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getBisCredit", body);
+            const bodyViolations = options.validateRequest('getBisCredit', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -597,13 +611,13 @@ export function createEconomicServiceRoutes(
           const result = await handler.getBisCredit(ctx, body);
           return new Response(JSON.stringify(result as GetBisCreditResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -612,11 +626,10 @@ export function createEconomicServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
   ];
 }
-

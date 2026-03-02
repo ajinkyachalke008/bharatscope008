@@ -233,7 +233,8 @@ export function resolveTradeRouteSegments(): TradeRouteSegment[] {
     const fromCoord = portMap.get(route.from);
     const toCoord = portMap.get(route.to);
     if (!fromCoord || !toCoord) {
-      if (import.meta.env.DEV) console.error(`[trade-routes] Missing port: ${!fromCoord ? route.from : route.to}`);
+      if (import.meta.env.DEV)
+        console.error(`[trade-routes] Missing port: ${!fromCoord ? route.from : route.to}`);
       continue;
     }
 
@@ -275,7 +276,7 @@ let validRouteIds: Set<string> | null = null;
 
 export function getChokepointRoutes(waterwayId: string): TradeRoute[] {
   if (!validRouteIds) {
-    validRouteIds = new Set(resolveTradeRouteSegments().map(s => s.routeId));
+    validRouteIds = new Set(resolveTradeRouteSegments().map((s) => s.routeId));
   }
-  return TRADE_ROUTES.filter(r => validRouteIds!.has(r.id) && r.waypoints.includes(waterwayId));
+  return TRADE_ROUTES.filter((r) => validRouteIds!.has(r.id) && r.waypoints.includes(waterwayId));
 }

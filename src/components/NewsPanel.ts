@@ -1,10 +1,24 @@
 import { Panel } from './Panel';
 import { WindowedList } from './VirtualList';
-import type { NewsItem, ClusteredEvent, DeviationLevel, RelatedAsset, RelatedAssetContext } from '@/types';
+import type {
+  NewsItem,
+  ClusteredEvent,
+  DeviationLevel,
+  RelatedAsset,
+  RelatedAssetContext,
+} from '@/types';
 import { THREAT_PRIORITY } from '@/services/threat-classifier';
 import { formatTime, getCSSColor } from '@/utils';
 import { escapeHtml, sanitizeUrl } from '@/utils/sanitize';
-import { analysisWorker, enrichWithVelocityML, getClusterAssetContext, MAX_DISTANCE_KM, activityTracker, generateSummary, translateText } from '@/services';
+import {
+  analysisWorker,
+  enrichWithVelocityML,
+  getClusterAssetContext,
+  MAX_DISTANCE_KM,
+  activityTracker,
+  generateSummary,
+  translateText,
+} from '@/services';
 import { getSourcePropagandaRisk, getSourceTier, getSourceType } from '@/config/feeds';
 import { SITE_VARIANT } from '@/config';
 import { t, getCurrentLanguage } from '@/services/i18n';
@@ -59,13 +73,14 @@ export class NewsPanel extends Panel {
         chunkSize: 8, // Render 8 items per chunk
         bufferChunks: 1, // 1 chunk buffer above/below
       },
-      (prepared) => this.renderClusterHtmlSafely(
-        prepared.cluster,
-        prepared.isNew,
-        prepared.shouldHighlight,
-        prepared.showNewTag
-      ),
-      () => this.bindRelatedAssetEvents()
+      (prepared) =>
+        this.renderClusterHtmlSafely(
+          prepared.cluster,
+          prepared.isNew,
+          prepared.shouldHighlight,
+          prepared.showNewTag,
+        ),
+      () => this.bindRelatedAssetEvents(),
     );
   }
 
@@ -157,7 +172,12 @@ export class NewsPanel extends Panel {
     const sigAtStart = this.lastHeadlineSignature;
 
     try {
-      const result = await generateSummary(this.currentHeadlines.slice(0, 8), undefined, this.panelId, currentLang);
+      const result = await generateSummary(
+        this.currentHeadlines.slice(0, 8),
+        undefined,
+        this.panelId,
+        currentLang,
+      );
       if (this.lastHeadlineSignature !== sigAtStart) {
         this.hideSummary();
         return;
@@ -166,7 +186,8 @@ export class NewsPanel extends Panel {
         this.setCachedSummary(cacheKey, result.summary);
         this.showSummary(result.summary);
       } else {
-        this.summaryContainer.innerHTML = '<div class="panel-summary-error">Could not generate summary</div>';
+        this.summaryContainer.innerHTML =
+          '<div class="panel-summary-error">Could not generate summary</div>';
         setTimeout(() => this.hideSummary(), 3000);
       }
     } catch {
@@ -221,7 +242,9 @@ export class NewsPanel extends Panel {
         <button class="panel-summary-close" title="${t('components.newsPanel.close')}">×</button>
       </div>
     `;
-    this.summaryContainer.querySelector('.panel-summary-close')?.addEventListener('click', () => this.hideSummary());
+    this.summaryContainer
+      .querySelector('.panel-summary-close')
+      ?.addEventListener('click', () => this.hideSummary());
   }
 
   private hideSummary(): void {
@@ -249,9 +272,15 @@ export class NewsPanel extends Panel {
       const cached = localStorage.getItem(key);
       if (!cached) return null;
       const parsed = JSON.parse(cached);
-      if (!parsed.headlineSignature) { localStorage.removeItem(key); return null; }
+      if (!parsed.headlineSignature) {
+        localStorage.removeItem(key);
+        return null;
+      }
       if (parsed.headlineSignature !== this.lastHeadlineSignature) return null;
-      if (Date.now() - parsed.timestamp > SUMMARY_CACHE_TTL) { localStorage.removeItem(key); return null; }
+      if (Date.now() - parsed.timestamp > SUMMARY_CACHE_TTL) {
+        localStorage.removeItem(key);
+        return null;
+      }
       return parsed.summary;
     } catch {
       return null;
@@ -260,12 +289,17 @@ export class NewsPanel extends Panel {
 
   private setCachedSummary(key: string, summary: string): void {
     try {
-      localStorage.setItem(key, JSON.stringify({
-        headlineSignature: this.lastHeadlineSignature,
-        summary,
-        timestamp: Date.now(),
-      }));
-    } catch { /* storage full */ }
+      localStorage.setItem(
+        key,
+        JSON.stringify({
+          headlineSignature: this.lastHeadlineSignature,
+          summary,
+          timestamp: Date.now(),
+        }),
+      );
+    } catch {
+      /* storage full */
+    }
   }
 
   public setDeviation(zScore: number, percentChange: number, level: DeviationLevel): void {
@@ -332,7 +366,7 @@ export class NewsPanel extends Panel {
     this.setCount(items.length);
     this.currentHeadlines = items
       .slice(0, 5)
-      .map(item => item.title)
+      .map((item) => item.title)
       .filter((title): title is string => typeof title === 'string' && title.trim().length > 0);
 
     this.updateHeadlineSignature();
@@ -352,7 +386,7 @@ export class NewsPanel extends Panel {
           ${getCurrentLanguage() !== 'en' ? `<button class="item-translate-btn" title="Translate" data-text="${escapeHtml(item.title)}">文</button>` : ''}
         </div>
       </div>
-    `
+    `,
       )
       .join('');
 
@@ -373,11 +407,11 @@ export class NewsPanel extends Panel {
     this.relatedAssetContext.clear();
 
     // Store headlines for summarization (cap at 5 to reduce entity conflation in small models)
-    this.currentHeadlines = sorted.slice(0, 5).map(c => c.primaryTitle);
+    this.currentHeadlines = sorted.slice(0, 5).map((c) => c.primaryTitle);
 
     this.updateHeadlineSignature();
 
-    const clusterIds = sorted.map(c => c.id);
+    const clusterIds = sorted.map((c) => c.id);
     let newItemIds: Set<string>;
 
     if (this.isFirstRender) {
@@ -393,7 +427,7 @@ export class NewsPanel extends Panel {
     }
 
     // Prepare all clusters with their rendering data (defer HTML creation)
-    const prepared: PreparedCluster[] = sorted.map(cluster => {
+    const prepared: PreparedCluster[] = sorted.map((cluster) => {
       const isNew = newItemIds.has(cluster.id);
       const shouldHighlight = activityTracker.shouldHighlight(this.panelId, cluster.id);
       const showNewTag = activityTracker.isNewItem(this.panelId, cluster.id) && isNew;
@@ -412,7 +446,9 @@ export class NewsPanel extends Panel {
     } else {
       // Direct render for small lists
       const html = prepared
-        .map(p => this.renderClusterHtmlSafely(p.cluster, p.isNew, p.shouldHighlight, p.showNewTag))
+        .map((p) =>
+          this.renderClusterHtmlSafely(p.cluster, p.isNew, p.shouldHighlight, p.showNewTag),
+        )
         .join('');
       this.setContent(html);
       this.bindRelatedAssetEvents();
@@ -423,7 +459,7 @@ export class NewsPanel extends Panel {
     cluster: ClusteredEvent,
     isNew: boolean,
     shouldHighlight: boolean,
-    showNewTag: boolean
+    showNewTag: boolean,
   ): string {
     try {
       return this.renderClusterHtml(cluster, isNew, shouldHighlight, showNewTag);
@@ -446,85 +482,108 @@ export class NewsPanel extends Panel {
     cluster: ClusteredEvent,
     isNew: boolean,
     shouldHighlight: boolean,
-    showNewTag: boolean
+    showNewTag: boolean,
   ): string {
-    const sourceBadge = cluster.sourceCount > 1
-      ? `<span class="source-count">${t('components.newsPanel.sources', { count: String(cluster.sourceCount) })}</span>`
-      : '';
+    const sourceBadge =
+      cluster.sourceCount > 1
+        ? `<span class="source-count">${t('components.newsPanel.sources', { count: String(cluster.sourceCount) })}</span>`
+        : '';
 
     const velocity = cluster.velocity;
-    const velocityBadge = velocity && velocity.level !== 'normal' && cluster.sourceCount > 1
-      ? `<span class="velocity-badge ${velocity.level}">${velocity.trend === 'rising' ? '↑' : ''}+${velocity.sourcesPerHour}/hr</span>`
-      : '';
+    const velocityBadge =
+      velocity && velocity.level !== 'normal' && cluster.sourceCount > 1
+        ? `<span class="velocity-badge ${velocity.level}">${velocity.trend === 'rising' ? '↑' : ''}+${velocity.sourcesPerHour}/hr</span>`
+        : '';
 
-    const sentimentIcon = velocity?.sentiment === 'negative' ? '⚠' : velocity?.sentiment === 'positive' ? '✓' : '';
-    const sentimentBadge = sentimentIcon && Math.abs(velocity?.sentimentScore || 0) > 2
-      ? `<span class="sentiment-badge ${velocity?.sentiment}">${sentimentIcon}</span>`
-      : '';
+    const sentimentIcon =
+      velocity?.sentiment === 'negative' ? '⚠' : velocity?.sentiment === 'positive' ? '✓' : '';
+    const sentimentBadge =
+      sentimentIcon && Math.abs(velocity?.sentimentScore || 0) > 2
+        ? `<span class="sentiment-badge ${velocity?.sentiment}">${sentimentIcon}</span>`
+        : '';
 
     const newTag = showNewTag ? `<span class="new-tag">${t('common.new')}</span>` : '';
-    const langBadge = cluster.lang && cluster.lang !== getCurrentLanguage()
-      ? `<span class="lang-badge">${cluster.lang.toUpperCase()}</span>`
-      : '';
+    const langBadge =
+      cluster.lang && cluster.lang !== getCurrentLanguage()
+        ? `<span class="lang-badge">${cluster.lang.toUpperCase()}</span>`
+        : '';
 
     // Propaganda risk indicator for primary source
     const primaryPropRisk = getSourcePropagandaRisk(cluster.primarySource);
-    const primaryPropBadge = primaryPropRisk.risk !== 'low'
-      ? `<span class="propaganda-badge ${primaryPropRisk.risk}" title="${escapeHtml(primaryPropRisk.note || `State-affiliated: ${primaryPropRisk.stateAffiliated || 'Unknown'}`)}">${primaryPropRisk.risk === 'high' ? '⚠ State Media' : '! Caution'}</span>`
-      : '';
+    const primaryPropBadge =
+      primaryPropRisk.risk !== 'low'
+        ? `<span class="propaganda-badge ${primaryPropRisk.risk}" title="${escapeHtml(primaryPropRisk.note || `State-affiliated: ${primaryPropRisk.stateAffiliated || 'Unknown'}`)}">${primaryPropRisk.risk === 'high' ? '⚠ State Media' : '! Caution'}</span>`
+        : '';
 
     // Source credibility badge for primary source (T1=Wire, T2=Verified outlet)
     const primaryTier = getSourceTier(cluster.primarySource);
     const primaryType = getSourceType(cluster.primarySource);
     const tierLabel = primaryTier === 1 ? 'Wire' : ''; // Don't show "Major" - confusing with story importance
-    const tierBadge = primaryTier <= 2
-      ? `<span class="tier-badge tier-${primaryTier}" title="${primaryType === 'wire' ? 'Wire Service - Highest reliability' : primaryType === 'gov' ? 'Official Government Source' : 'Verified News Outlet'}">${primaryTier === 1 ? '★' : '●'}${tierLabel ? ` ${tierLabel}` : ''}</span>`
-      : '';
+    const tierBadge =
+      primaryTier <= 2
+        ? `<span class="tier-badge tier-${primaryTier}" title="${primaryType === 'wire' ? 'Wire Service - Highest reliability' : primaryType === 'gov' ? 'Official Government Source' : 'Verified News Outlet'}">${primaryTier === 1 ? '★' : '●'}${tierLabel ? ` ${tierLabel}` : ''}</span>`
+        : '';
 
     // Build "Also reported by" section for multi-source confirmation
-    const otherSources = cluster.topSources.filter(s => s.name !== cluster.primarySource);
-    const topSourcesHtml = otherSources.length > 0
-      ? `<span class="also-reported">Also:</span>` + otherSources
-        .map(s => {
-          const propRisk = getSourcePropagandaRisk(s.name);
-          const propBadge = propRisk.risk !== 'low'
-            ? `<span class="propaganda-badge ${propRisk.risk}" title="${escapeHtml(propRisk.note || `State-affiliated: ${propRisk.stateAffiliated || 'Unknown'}`)}">${propRisk.risk === 'high' ? '⚠' : '!'}</span>`
-            : '';
-          return `<span class="top-source tier-${s.tier}">${escapeHtml(s.name)}${propBadge}</span>`;
-        })
-        .join('')
-      : '';
+    const otherSources = cluster.topSources.filter((s) => s.name !== cluster.primarySource);
+    const topSourcesHtml =
+      otherSources.length > 0
+        ? `<span class="also-reported">Also:</span>` +
+          otherSources
+            .map((s) => {
+              const propRisk = getSourcePropagandaRisk(s.name);
+              const propBadge =
+                propRisk.risk !== 'low'
+                  ? `<span class="propaganda-badge ${propRisk.risk}" title="${escapeHtml(propRisk.note || `State-affiliated: ${propRisk.stateAffiliated || 'Unknown'}`)}">${propRisk.risk === 'high' ? '⚠' : '!'}</span>`
+                  : '';
+              return `<span class="top-source tier-${s.tier}">${escapeHtml(s.name)}${propBadge}</span>`;
+            })
+            .join('')
+        : '';
 
     const assetContext = getClusterAssetContext(cluster);
     if (assetContext && assetContext.assets.length > 0) {
       this.relatedAssetContext.set(cluster.id, assetContext);
     }
 
-    const relatedAssetsHtml = assetContext && assetContext.assets.length > 0
-      ? `
+    const relatedAssetsHtml =
+      assetContext && assetContext.assets.length > 0
+        ? `
         <div class="related-assets" data-cluster-id="${escapeHtml(cluster.id)}">
           <div class="related-assets-header">
             ${t('components.newsPanel.relatedAssetsNear', { location: escapeHtml(assetContext.origin.label) })}
             <span class="related-assets-range">(${MAX_DISTANCE_KM}km)</span>
           </div>
           <div class="related-assets-list">
-            ${assetContext.assets.map(asset => `
+            ${assetContext.assets
+              .map(
+                (asset) => `
               <button class="related-asset" data-cluster-id="${escapeHtml(cluster.id)}" data-asset-id="${escapeHtml(asset.id)}" data-asset-type="${escapeHtml(asset.type)}">
                 <span class="related-asset-type">${escapeHtml(this.getLocalizedAssetLabel(asset.type))}</span>
                 <span class="related-asset-name">${escapeHtml(asset.name)}</span>
                 <span class="related-asset-distance">${Math.round(asset.distanceKm)}km</span>
               </button>
-            `).join('')}
+            `,
+              )
+              .join('')}
           </div>
         </div>
       `
-      : '';
+        : '';
 
     // Category tag from threat classification
     const cat = cluster.threat?.category;
     const catLabel = cat && cat !== 'general' ? cat.charAt(0).toUpperCase() + cat.slice(1) : '';
-    const threatVarMap: Record<string, string> = { critical: '--threat-critical', high: '--threat-high', medium: '--threat-medium', low: '--threat-low', info: '--threat-info' };
-    const catColor = cluster.threat ? getCSSColor(threatVarMap[cluster.threat.level] || '--text-dim') : '';
+    const threatVarMap: Record<string, string> = {
+      critical: '--threat-critical',
+      high: '--threat-high',
+      medium: '--threat-medium',
+      low: '--threat-low',
+      info: '--threat-info',
+    };
+    const catColor = cluster.threat
+      ? getCSSColor(threatVarMap[cluster.threat.level] || '--text-dim')
+      : '';
     const categoryBadge = catLabel
       ? `<span class="category-tag" style="color:${catColor};border-color:${catColor}40;background:${catColor}20">${catLabel}</span>`
       : '';
@@ -536,7 +595,9 @@ export class NewsPanel extends Panel {
       cluster.isAlert ? 'alert' : '',
       shouldHighlight ? 'item-new-highlight' : '',
       isNew ? 'item-new' : '',
-    ].filter(Boolean).join(' ');
+    ]
+      .filter(Boolean)
+      .join(' ');
 
     return `
       <div class="${itemClasses}" ${cluster.monitorColor ? `style="border-inline-start-color: ${escapeHtml(cluster.monitorColor)}"` : ''} data-cluster-id="${escapeHtml(cluster.id)}" data-news-id="${escapeHtml(cluster.primaryLink)}">
@@ -589,7 +650,9 @@ export class NewsPanel extends Panel {
         const assetType = button.dataset.assetType as RelatedAsset['type'] | undefined;
         if (!clusterId || !assetId || !assetType) return;
         const context = this.relatedAssetContext.get(clusterId);
-        const asset = context?.assets.find(item => item.id === assetId && item.type === assetType);
+        const asset = context?.assets.find(
+          (item) => item.id === assetId && item.type === assetType,
+        );
         if (asset) {
           this.onRelatedAssetClick?.(asset);
         }
@@ -598,7 +661,7 @@ export class NewsPanel extends Panel {
 
     // Translation buttons
     const translateBtns = this.content.querySelectorAll<HTMLElement>('.item-translate-btn');
-    translateBtns.forEach(btn => {
+    translateBtns.forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const text = btn.dataset.text;

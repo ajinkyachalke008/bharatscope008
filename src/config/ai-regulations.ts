@@ -14,7 +14,12 @@ export const AI_REGULATIONS: AIRegulation[] = [
     announcedDate: '2021-04-21',
     effectiveDate: '2024-08-01',
     complianceDeadline: '2026-08-01',
-    scope: ['General Purpose AI', 'High-Risk AI Systems', 'Prohibited AI Practices', 'Foundation Models'],
+    scope: [
+      'General Purpose AI',
+      'High-Risk AI Systems',
+      'Prohibited AI Practices',
+      'Foundation Models',
+    ],
     keyProvisions: [
       'Risk-based classification system (Unacceptable, High, Limited, Minimal)',
       'Ban on social scoring, real-time biometric surveillance (with exceptions)',
@@ -24,7 +29,8 @@ export const AI_REGULATIONS: AIRegulation[] = [
     ],
     penalties: '€35M or 7% of global annual turnover (whichever is higher)',
     link: 'https://artificialintelligenceact.eu/',
-    description: 'World\'s first comprehensive AI regulation framework. Establishes harmonized rules for development and use of AI in the EU.',
+    description:
+      "World's first comprehensive AI regulation framework. Establishes harmonized rules for development and use of AI in the EU.",
   },
   {
     id: 'eu-gdpr',
@@ -45,7 +51,8 @@ export const AI_REGULATIONS: AIRegulation[] = [
     ],
     penalties: '€20M or 4% of global annual turnover',
     link: 'https://gdpr.eu/',
-    description: 'Includes provisions on automated decision-making and profiling relevant to AI systems.',
+    description:
+      'Includes provisions on automated decision-making and profiling relevant to AI systems.',
   },
 
   // United States
@@ -68,7 +75,8 @@ export const AI_REGULATIONS: AIRegulation[] = [
       'NIST AI Risk Management Framework adoption',
     ],
     link: 'https://www.whitehouse.gov/briefing-room/presidential-actions/2023/10/30/executive-order-on-the-safe-secure-and-trustworthy-development-and-use-of-artificial-intelligence/',
-    description: 'Comprehensive executive order establishing US government approach to AI safety and governance.',
+    description:
+      'Comprehensive executive order establishing US government approach to AI safety and governance.',
   },
   {
     id: 'us-blueprint-ai-bill-rights',
@@ -111,7 +119,8 @@ export const AI_REGULATIONS: AIRegulation[] = [
       'No immediate new laws',
     ],
     link: 'https://www.gov.uk/government/publications/ai-regulation-a-pro-innovation-approach',
-    description: 'Light-touch, principles-based approach favoring innovation over strict regulation.',
+    description:
+      'Light-touch, principles-based approach favoring innovation over strict regulation.',
   },
 
   // China
@@ -175,7 +184,8 @@ export const AI_REGULATIONS: AIRegulation[] = [
       'Biased output mitigation',
     ],
     link: 'https://www.parl.ca/DocumentViewer/en/44-1/bill/C-27/first-reading',
-    description: 'Proposed comprehensive AI regulation (part of Bill C-27). Still in parliamentary process.',
+    description:
+      'Proposed comprehensive AI regulation (part of Bill C-27). Still in parliamentary process.',
   },
 
   // Singapore
@@ -271,7 +281,8 @@ export const REGULATORY_ACTIONS: RegulatoryAction[] = [
     title: 'EU AI Act Enters into Force',
     type: 'law-passed',
     regulationId: 'eu-ai-act',
-    description: 'The EU AI Act officially entered into force, starting the 24-month implementation period.',
+    description:
+      'The EU AI Act officially entered into force, starting the 24-month implementation period.',
     impact: 'high',
     source: 'European Commission',
   },
@@ -323,7 +334,7 @@ export const REGULATORY_ACTIONS: RegulatoryAction[] = [
     title: 'Generative AI Rules Take Effect',
     type: 'law-passed',
     regulationId: 'cn-generative-ai',
-    description: 'China\'s measures for managing generative AI services became enforceable.',
+    description: "China's measures for managing generative AI services became enforceable.",
     impact: 'high',
     source: 'CAC',
   },
@@ -349,7 +360,8 @@ export const COUNTRY_REGULATION_PROFILES: CountryRegulationProfile[] = [
     activeRegulations: ['us-eo-14110', 'us-blueprint-ai-bill-rights'],
     proposedRegulations: [],
     lastUpdated: '2024-08-01',
-    summary: 'Sector-specific approach with executive actions. Focus on innovation with safety guardrails.',
+    summary:
+      'Sector-specific approach with executive actions. Focus on innovation with safety guardrails.',
   },
   {
     country: 'European Union',
@@ -358,7 +370,7 @@ export const COUNTRY_REGULATION_PROFILES: CountryRegulationProfile[] = [
     activeRegulations: ['eu-ai-act', 'eu-gdpr'],
     proposedRegulations: [],
     lastUpdated: '2024-08-01',
-    summary: 'Comprehensive risk-based regulation. World\'s strictest AI governance framework.',
+    summary: "Comprehensive risk-based regulation. World's strictest AI governance framework.",
   },
   {
     country: 'United Kingdom',
@@ -445,17 +457,17 @@ export const COUNTRY_REGULATION_PROFILES: CountryRegulationProfile[] = [
 
 // Helper function to get regulation by ID
 export function getRegulationById(id: string): AIRegulation | undefined {
-  return AI_REGULATIONS.find(reg => reg.id === id);
+  return AI_REGULATIONS.find((reg) => reg.id === id);
 }
 
 // Helper function to get country profile
 export function getCountryProfile(countryCode: string): CountryRegulationProfile | undefined {
-  return COUNTRY_REGULATION_PROFILES.find(profile => profile.countryCode === countryCode);
+  return COUNTRY_REGULATION_PROFILES.find((profile) => profile.countryCode === countryCode);
 }
 
 // Helper function to get regulations by country
 export function getRegulationsByCountry(country: string): AIRegulation[] {
-  return AI_REGULATIONS.filter(reg => reg.country === country);
+  return AI_REGULATIONS.filter((reg) => reg.country === country);
 }
 
 // Helper function to get upcoming compliance deadlines (next 12 months)
@@ -464,15 +476,13 @@ export function getUpcomingDeadlines(): AIRegulation[] {
   const oneYearFromNow = new Date();
   oneYearFromNow.setFullYear(now.getFullYear() + 1);
 
-  return AI_REGULATIONS
-    .filter(reg => {
-      if (!reg.complianceDeadline) return false;
-      const deadline = new Date(reg.complianceDeadline);
-      return deadline >= now && deadline <= oneYearFromNow;
-    })
-    .sort((a, b) => {
-      return new Date(a.complianceDeadline!).getTime() - new Date(b.complianceDeadline!).getTime();
-    });
+  return AI_REGULATIONS.filter((reg) => {
+    if (!reg.complianceDeadline) return false;
+    const deadline = new Date(reg.complianceDeadline);
+    return deadline >= now && deadline <= oneYearFromNow;
+  }).sort((a, b) => {
+    return new Date(a.complianceDeadline!).getTime() - new Date(b.complianceDeadline!).getTime();
+  });
 }
 
 // Helper function to get recent regulatory actions (last N months)
@@ -480,7 +490,7 @@ export function getRecentActions(months: number = 6): RegulatoryAction[] {
   const cutoffDate = new Date();
   cutoffDate.setMonth(cutoffDate.getMonth() - months);
 
-  return REGULATORY_ACTIONS
-    .filter(action => new Date(action.date) >= cutoffDate)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return REGULATORY_ACTIONS.filter((action) => new Date(action.date) >= cutoffDate).sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
 }

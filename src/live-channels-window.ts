@@ -63,7 +63,12 @@ const optionalChannelMap = new Map<string, LiveChannel>();
 for (const c of OPTIONAL_LIVE_CHANNELS) optionalChannelMap.set(c.id, c);
 
 function channelInitials(name: string): string {
-  return name.split(/[\s-]+/).map((w) => w[0] ?? '').join('').slice(0, 2).toUpperCase();
+  return name
+    .split(/[\s-]+/)
+    .map((w) => w[0] ?? '')
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 }
 
 export function initLiveChannelsWindow(containerEl?: HTMLElement): void {
@@ -80,7 +85,9 @@ export function initLiveChannelsWindow(containerEl?: HTMLElement): void {
   /** Reads current row order from DOM and persists to storage. */
   function applyOrderFromDom(listEl: HTMLElement): void {
     const rows = listEl.querySelectorAll<HTMLElement>('.live-news-manage-row');
-    const ids = Array.from(rows).map((el) => el.dataset.channelId).filter((id): id is string => !!id);
+    const ids = Array.from(rows)
+      .map((el) => el.dataset.channelId)
+      .filter((id): id is string => !!id);
     const map = new Map(channels.map((c) => [c.id, c]));
     channels = ids.map((id) => map.get(id)).filter((c): c is LiveChannel => !!c);
     saveChannelsToStorage(channels);
@@ -111,7 +118,9 @@ export function initLiveChannelsWindow(containerEl?: HTMLElement): void {
         dragStarted = true;
         dragging.classList.add('live-news-manage-row-dragging');
       }
-      const target = document.elementFromPoint(e.clientX, e.clientY)?.closest('.live-news-manage-row') as HTMLElement | null;
+      const target = document
+        .elementFromPoint(e.clientX, e.clientY)
+        ?.closest('.live-news-manage-row') as HTMLElement | null;
       if (!target || target === dragging) return;
       const all = Array.from(listEl.querySelectorAll('.live-news-manage-row'));
       const idx = all.indexOf(dragging);
@@ -192,7 +201,9 @@ export function initLiveChannelsWindow(containerEl?: HTMLElement): void {
     if (idx === -1) return null;
 
     if (isCustom) {
-      const handleRaw = (formRow.querySelector('.live-news-manage-edit-handle') as HTMLInputElement | null)?.value?.trim();
+      const handleRaw = (
+        formRow.querySelector('.live-news-manage-edit-handle') as HTMLInputElement | null
+      )?.value?.trim();
       if (handleRaw) {
         const handle = handleRaw.startsWith('@') ? handleRaw : `@${handleRaw}`;
         const newId = customChannelIdFromHandle(handle);
@@ -280,7 +291,8 @@ export function initLiveChannelsWindow(containerEl?: HTMLElement): void {
       const addedCount = region.channelIds.filter((id) => currentIds.has(id)).length;
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'live-news-manage-tab-btn' + (region.key === activeRegionTab ? ' active' : '');
+      btn.className =
+        'live-news-manage-tab-btn' + (region.key === activeRegionTab ? ' active' : '');
       const label = t(region.labelKey) ?? region.key.toUpperCase();
       btn.textContent = addedCount > 0 ? `${label} (${addedCount})` : label;
       btn.addEventListener('click', () => {
@@ -294,7 +306,8 @@ export function initLiveChannelsWindow(containerEl?: HTMLElement): void {
     tabContents.innerHTML = '';
     for (const region of OPTIONAL_CHANNEL_REGIONS) {
       const panel = document.createElement('div');
-      panel.className = 'live-news-manage-tab-content' + (region.key === activeRegionTab ? ' active' : '');
+      panel.className =
+        'live-news-manage-tab-content' + (region.key === activeRegionTab ? ' active' : '');
 
       const grid = document.createElement('div');
       grid.className = 'live-news-manage-card-grid';
@@ -429,12 +442,16 @@ export function initLiveChannelsWindow(containerEl?: HTMLElement): void {
       if (!resolvedName) {
         try {
           const baseUrl = isDesktopRuntime() ? getRemoteApiBaseUrl() : '';
-          const res = await fetch(`${baseUrl}/api/youtube/live?videoId=${encodeURIComponent(videoId)}`);
+          const res = await fetch(
+            `${baseUrl}/api/youtube/live?videoId=${encodeURIComponent(videoId)}`,
+          );
           if (res.ok) {
             const data = await res.json();
             resolvedName = data.channelName || data.title || '';
           }
-        } catch { /* use fallback */ }
+        } catch {
+          /* use fallback */
+        }
       }
       if (!resolvedName) resolvedName = `Video ${videoId}`;
 
@@ -443,7 +460,13 @@ export function initLiveChannelsWindow(containerEl?: HTMLElement): void {
         addBtn.textContent = t('components.liveNews.addChannel') ?? 'Add channel';
       }
 
-      channels.push({ id, name: resolvedName, handle: `@video`, fallbackVideoId: videoId, useFallbackOnly: true });
+      channels.push({
+        id,
+        name: resolvedName,
+        handle: `@video`,
+        fallbackVideoId: videoId,
+        useFallbackOnly: true,
+      });
       saveChannelsToStorage(channels);
       renderList(listEl);
       if (handleInput) handleInput.value = '';
@@ -452,15 +475,18 @@ export function initLiveChannelsWindow(containerEl?: HTMLElement): void {
     }
 
     // Extract handle from URL, or treat raw input as handle
-    const handle = parsed && 'handle' in parsed
-      ? parsed.handle
-      : raw.startsWith('@') ? raw : `@${raw}`;
+    const handle =
+      parsed && 'handle' in parsed ? parsed.handle : raw.startsWith('@') ? raw : `@${raw}`;
 
     // Validate YouTube handle format: @<3-30 alphanumeric/dot/hyphen/underscore chars>
     if (!/^@[\w.-]{3,30}$/i.test(handle)) {
       if (handleInput) {
         handleInput.classList.add('invalid');
-        handleInput.setAttribute('title', t('components.liveNews.invalidHandle') ?? 'Enter a valid YouTube handle (e.g. @ChannelName)');
+        handleInput.setAttribute(
+          'title',
+          t('components.liveNews.invalidHandle') ??
+            'Enter a valid YouTube handle (e.g. @ChannelName)',
+        );
       }
       return;
     }
@@ -483,7 +509,10 @@ export function initLiveChannelsWindow(containerEl?: HTMLElement): void {
         if (data.channelExists === false && !data.error) {
           if (handleInput) {
             handleInput.classList.add('invalid');
-            handleInput.setAttribute('title', t('components.liveNews.channelNotFound') ?? 'YouTube channel not found');
+            handleInput.setAttribute(
+              'title',
+              t('components.liveNews.channelNotFound') ?? 'YouTube channel not found',
+            );
           }
           return;
         }

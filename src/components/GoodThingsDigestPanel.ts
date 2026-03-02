@@ -66,25 +66,27 @@ export class GoodThingsDigestPanel extends Panel {
 
     // Summarize in parallel with progressive updates
     const signal = this.summaryAbort.signal;
-    await Promise.allSettled(top5.map(async (item, idx) => {
-      if (signal.aborted) return;
-      try {
-        // Pass [title, source] as two headlines to satisfy generateSummary's
-        // minimum length requirement (headlines.length >= 2).
-        const result = await generateSummary(
-          [item.title, item.source],
-          undefined,
-          item.locationName,
-        );
+    await Promise.allSettled(
+      top5.map(async (item, idx) => {
         if (signal.aborted) return;
-        const summary = result?.summary ?? item.title.slice(0, 200);
-        this.updateCardSummary(idx, summary);
-      } catch {
-        if (!signal.aborted) {
-          this.updateCardSummary(idx, item.title.slice(0, 200));
+        try {
+          // Pass [title, source] as two headlines to satisfy generateSummary's
+          // minimum length requirement (headlines.length >= 2).
+          const result = await generateSummary(
+            [item.title, item.source],
+            undefined,
+            item.locationName,
+          );
+          if (signal.aborted) return;
+          const summary = result?.summary ?? item.title.slice(0, 200);
+          this.updateCardSummary(idx, summary);
+        } catch {
+          if (!signal.aborted) {
+            this.updateCardSummary(idx, item.title.slice(0, 200));
+          }
         }
-      }
-    }));
+      }),
+    );
   }
 
   /**

@@ -7,7 +7,7 @@ import { tryInvokeTauri } from '@/services/tauri-bridge';
 // Consumer-friendly type (re-export, matches legacy shape)
 export interface PredictionMarket {
   title: string;
-  yesPrice: number;     // 0-100 scale (legacy compat)
+  yesPrice: number; // 0-100 scale (legacy compat)
   volume?: number;
   url?: string;
 }
@@ -41,11 +41,17 @@ const GAMMA_API = 'https://gamma-api.polymarket.com';
 const POLYMARKET_PROXY_URL = '/api/polymarket';
 const wsRelayUrl = import.meta.env.VITE_WS_RELAY_URL || '';
 const DIRECT_RAILWAY_POLY_URL = wsRelayUrl
-  ? wsRelayUrl.replace('wss://', 'https://').replace('ws://', 'http://').replace(/\/$/, '') + '/polymarket'
+  ? wsRelayUrl.replace('wss://', 'https://').replace('ws://', 'http://').replace(/\/$/, '') +
+    '/polymarket'
   : '';
-const isLocalhostRuntime = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname);
+const isLocalhostRuntime =
+  typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname);
 
-const breaker = createCircuitBreaker<PredictionMarket[]>({ name: 'Polymarket', cacheTtlMs: 5 * 60 * 1000, persistCache: true });
+const breaker = createCircuitBreaker<PredictionMarket[]>({
+  name: 'Polymarket',
+  cacheTtlMs: 5 * 60 * 1000,
+  persistCache: true,
+});
 
 // Sebuf client for strategy 4
 const client = new PredictionServiceClient('', { fetch: (...args) => globalThis.fetch(...args) });
@@ -65,10 +71,13 @@ function logDirectFetchBlockedOnce(): void {
 async function probeDirectFetchCapability(): Promise<boolean> {
   if (directFetchWorks !== null) return directFetchWorks;
   if (!directFetchProbe) {
-    directFetchProbe = fetch(`${GAMMA_API}/events?closed=false&order=volume&ascending=false&limit=1`, {
-      headers: { 'Accept': 'application/json' },
-    })
-      .then(resp => {
+    directFetchProbe = fetch(
+      `${GAMMA_API}/events?closed=false&order=volume&ascending=false&limit=1`,
+      {
+        headers: { Accept: 'application/json' },
+      },
+    )
+      .then((resp) => {
         directFetchWorks = resp.ok;
         if (directFetchWorks) {
           console.log('[Polymarket] Direct browser fetch working');
@@ -89,15 +98,20 @@ async function probeDirectFetchCapability(): Promise<boolean> {
   return directFetchProbe;
 }
 
-async function polyFetch(endpoint: 'events' | 'markets', params: Record<string, string>): Promise<Response> {
+async function polyFetch(
+  endpoint: 'events' | 'markets',
+  params: Record<string, string>,
+): Promise<Response> {
   const qs = new URLSearchParams(params).toString();
 
   // Probe direct connectivity once before parallel tag fanout to avoid reset storms.
-  const canUseDirect = directFetchWorks === true || (directFetchWorks === null && await probeDirectFetchCapability());
+  const canUseDirect =
+    directFetchWorks === true ||
+    (directFetchWorks === null && (await probeDirectFetchCapability()));
   if (canUseDirect) {
     try {
       const resp = await fetch(`${GAMMA_API}/${endpoint}?${qs}`, {
-        headers: { 'Accept': 'application/json' },
+        headers: { Accept: 'application/json' },
       });
       if (resp.ok) {
         if (directFetchWorks !== true) console.log('[Polymarket] Direct browser fetch working');
@@ -120,7 +134,9 @@ async function polyFetch(endpoint: 'events' | 'markets', params: Record<string, 
           headers: { 'Content-Type': 'application/json' },
         });
       }
-    } catch { /* Tauri command failed, fall through to proxy */ }
+    } catch {
+      /* Tauri command failed, fall through to proxy */
+    }
   }
 
   // Proxy params (expects 'tag' not 'tag_slug' for Vercel handler)
@@ -137,7 +153,9 @@ async function polyFetch(endpoint: 'events' | 'markets', params: Record<string, 
       const data = await resp.clone().json();
       if (Array.isArray(data) && data.length > 0) return resp;
     }
-  } catch { /* Proxy unavailable */ }
+  } catch {
+    /* Proxy unavailable */
+  }
 
   // Local development fallback: allow direct Railway requests.
   if (isLocalhostRuntime && DIRECT_RAILWAY_POLY_URL) {
@@ -147,7 +165,9 @@ async function polyFetch(endpoint: 'events' | 'markets', params: Record<string, 
         const data = await resp.clone().json();
         if (Array.isArray(data) && data.length > 0) return resp;
       }
-    } catch { /* Railway unavailable */ }
+    } catch {
+      /* Railway unavailable */
+    }
   }
 
   // Strategy 4: sebuf handler via generated client
@@ -162,46 +182,94 @@ async function polyFetch(endpoint: 'events' | 'markets', params: Record<string, 
       // so downstream parsing works uniformly.
       // Proto yesPrice is 0-1; outcomePrices will be parsed by parseMarketPrice
       // which multiplies by 100, resulting in the correct 0-100 scale output.
-      const gammaData = resp.markets.map(m => ({
+      const gammaData = resp.markets.map((m) => ({
         question: m.title,
         outcomePrices: JSON.stringify([String(m.yesPrice), String(1 - m.yesPrice)]),
         volumeNum: m.volume,
         slug: m.id,
       }));
-      return new Response(JSON.stringify(endpoint === 'events'
-        ? [{ id: 'sebuf', title: gammaData[0]?.question, slug: '', volume: 0, markets: gammaData }]
-        : gammaData
-      ), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      return new Response(
+        JSON.stringify(
+          endpoint === 'events'
+            ? [
+                {
+                  id: 'sebuf',
+                  title: gammaData[0]?.question,
+                  slug: '',
+                  volume: 0,
+                  markets: gammaData,
+                },
+              ]
+            : gammaData,
+        ),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      );
     }
-  } catch { /* sebuf handler failed (Cloudflare expected) */ }
+  } catch {
+    /* sebuf handler failed (Cloudflare expected) */
+  }
 
   // Final fallback: same-origin proxy
   return fetch(`${POLYMARKET_PROXY_URL}?${proxyQs}`);
 }
 
 const GEOPOLITICAL_TAGS = [
-  'politics', 'geopolitics', 'elections', 'world',
-  'ukraine', 'china', 'middle-east', 'europe',
-  'economy', 'fed', 'inflation',
+  'politics',
+  'geopolitics',
+  'elections',
+  'world',
+  'ukraine',
+  'china',
+  'middle-east',
+  'europe',
+  'economy',
+  'fed',
+  'inflation',
 ];
 
-const TECH_TAGS = [
-  'ai', 'tech', 'crypto', 'science',
-  'elon-musk', 'business', 'economy',
-];
+const TECH_TAGS = ['ai', 'tech', 'crypto', 'science', 'elon-musk', 'business', 'economy'];
 
 const EXCLUDE_KEYWORDS = [
-  'nba', 'nfl', 'mlb', 'nhl', 'fifa', 'world cup', 'super bowl', 'championship',
-  'playoffs', 'oscar', 'grammy', 'emmy', 'box office', 'movie', 'album', 'song',
-  'streamer', 'influencer', 'celebrity', 'kardashian',
-  'bachelor', 'reality tv', 'mvp', 'touchdown', 'home run', 'goal scorer',
-  'academy award', 'bafta', 'golden globe', 'cannes', 'sundance',
-  'documentary', 'feature film', 'tv series', 'season finale',
+  'nba',
+  'nfl',
+  'mlb',
+  'nhl',
+  'fifa',
+  'world cup',
+  'super bowl',
+  'championship',
+  'playoffs',
+  'oscar',
+  'grammy',
+  'emmy',
+  'box office',
+  'movie',
+  'album',
+  'song',
+  'streamer',
+  'influencer',
+  'celebrity',
+  'kardashian',
+  'bachelor',
+  'reality tv',
+  'mvp',
+  'touchdown',
+  'home run',
+  'goal scorer',
+  'academy award',
+  'bafta',
+  'golden globe',
+  'cannes',
+  'sundance',
+  'documentary',
+  'feature film',
+  'tv series',
+  'season finale',
 ];
 
 function isExcluded(title: string): boolean {
   const lower = title.toLowerCase();
-  return EXCLUDE_KEYWORDS.some(kw => lower.includes(kw));
+  return EXCLUDE_KEYWORDS.some((kw) => lower.includes(kw));
 }
 
 function parseMarketPrice(market: PolymarketMarket): number {
@@ -214,7 +282,9 @@ function parseMarketPrice(market: PolymarketMarket): number {
         if (!isNaN(parsed)) return parsed * 100;
       }
     }
-  } catch { /* keep default */ }
+  } catch {
+    /* keep default */
+  }
   return 50;
 }
 
@@ -248,8 +318,8 @@ async function fetchTopMarkets(): Promise<PredictionMarket[]> {
   const data: PolymarketMarket[] = await response.json();
 
   return data
-    .filter(m => m.question && !isExcluded(m.question))
-    .map(m => {
+    .filter((m) => m.question && !isExcluded(m.question))
+    .map((m) => {
       const yesPrice = parseMarketPrice(m);
       const volume = m.volumeNum ?? (m.volume ? parseFloat(m.volume) : 0);
       return {
@@ -265,7 +335,7 @@ export async function fetchPredictions(): Promise<PredictionMarket[]> {
   return breaker.execute(async () => {
     const tags = SITE_VARIANT === 'tech' ? TECH_TAGS : GEOPOLITICAL_TAGS;
 
-    const eventResults = await Promise.all(tags.map(tag => fetchEventsByTag(tag, 20)));
+    const eventResults = await Promise.all(tags.map((tag) => fetchEventsByTag(tag, 20)));
 
     const seen = new Set<string>();
     const markets: PredictionMarket[] = [];
@@ -310,7 +380,7 @@ export async function fetchPredictions(): Promise<PredictionMarket[]> {
       const fallbackMarkets = await fetchTopMarkets();
       for (const m of fallbackMarkets) {
         if (markets.length >= 20) break;
-        if (!markets.some(existing => existing.title === m.title)) {
+        if (!markets.some((existing) => existing.title === m.title)) {
           markets.push(m);
         }
       }
@@ -318,7 +388,7 @@ export async function fetchPredictions(): Promise<PredictionMarket[]> {
 
     // Sort by volume descending, then filter for meaningful signal
     const result = markets
-      .filter(m => {
+      .filter((m) => {
         const discrepancy = Math.abs(m.yesPrice - 50);
         return discrepancy > 5 || (m.volume && m.volume > 50000);
       })
@@ -336,47 +406,47 @@ export async function fetchPredictions(): Promise<PredictionMarket[]> {
 
 const COUNTRY_TAG_MAP: Record<string, string[]> = {
   'United States': ['usa', 'politics', 'elections'],
-  'Russia': ['russia', 'geopolitics', 'ukraine'],
-  'Ukraine': ['ukraine', 'geopolitics', 'russia'],
-  'China': ['china', 'geopolitics', 'asia'],
-  'Taiwan': ['china', 'asia', 'geopolitics'],
-  'Israel': ['middle-east', 'geopolitics'],
-  'Palestine': ['middle-east', 'geopolitics'],
-  'Iran': ['middle-east', 'geopolitics'],
+  Russia: ['russia', 'geopolitics', 'ukraine'],
+  Ukraine: ['ukraine', 'geopolitics', 'russia'],
+  China: ['china', 'geopolitics', 'asia'],
+  Taiwan: ['china', 'asia', 'geopolitics'],
+  Israel: ['middle-east', 'geopolitics'],
+  Palestine: ['middle-east', 'geopolitics'],
+  Iran: ['middle-east', 'geopolitics'],
   'Saudi Arabia': ['middle-east', 'geopolitics'],
-  'Turkey': ['middle-east', 'europe'],
-  'India': ['asia', 'geopolitics'],
-  'Japan': ['asia', 'geopolitics'],
+  Turkey: ['middle-east', 'europe'],
+  India: ['asia', 'geopolitics'],
+  Japan: ['asia', 'geopolitics'],
   'South Korea': ['asia', 'geopolitics'],
   'North Korea': ['asia', 'geopolitics'],
   'United Kingdom': ['europe', 'politics'],
-  'France': ['europe', 'politics'],
-  'Germany': ['europe', 'politics'],
-  'Italy': ['europe', 'politics'],
-  'Poland': ['europe', 'geopolitics'],
-  'Brazil': ['world', 'politics'],
+  France: ['europe', 'politics'],
+  Germany: ['europe', 'politics'],
+  Italy: ['europe', 'politics'],
+  Poland: ['europe', 'geopolitics'],
+  Brazil: ['world', 'politics'],
   'United Arab Emirates': ['middle-east', 'world'],
-  'Mexico': ['world', 'politics'],
-  'Argentina': ['world', 'politics'],
-  'Canada': ['world', 'politics'],
-  'Australia': ['world', 'politics'],
+  Mexico: ['world', 'politics'],
+  Argentina: ['world', 'politics'],
+  Canada: ['world', 'politics'],
+  Australia: ['world', 'politics'],
   'South Africa': ['world', 'politics'],
-  'Nigeria': ['world', 'politics'],
-  'Egypt': ['middle-east', 'world'],
-  'Pakistan': ['asia', 'geopolitics'],
-  'Syria': ['middle-east', 'geopolitics'],
-  'Yemen': ['middle-east', 'geopolitics'],
-  'Lebanon': ['middle-east', 'geopolitics'],
-  'Iraq': ['middle-east', 'geopolitics'],
-  'Afghanistan': ['geopolitics', 'world'],
-  'Venezuela': ['world', 'politics'],
-  'Colombia': ['world', 'politics'],
-  'Sudan': ['world', 'geopolitics'],
-  'Myanmar': ['asia', 'geopolitics'],
-  'Philippines': ['asia', 'world'],
-  'Indonesia': ['asia', 'world'],
-  'Thailand': ['asia', 'world'],
-  'Vietnam': ['asia', 'world'],
+  Nigeria: ['world', 'politics'],
+  Egypt: ['middle-east', 'world'],
+  Pakistan: ['asia', 'geopolitics'],
+  Syria: ['middle-east', 'geopolitics'],
+  Yemen: ['middle-east', 'geopolitics'],
+  Lebanon: ['middle-east', 'geopolitics'],
+  Iraq: ['middle-east', 'geopolitics'],
+  Afghanistan: ['geopolitics', 'world'],
+  Venezuela: ['world', 'politics'],
+  Colombia: ['world', 'politics'],
+  Sudan: ['world', 'geopolitics'],
+  Myanmar: ['asia', 'geopolitics'],
+  Philippines: ['asia', 'world'],
+  Indonesia: ['asia', 'world'],
+  Thailand: ['asia', 'world'],
+  Vietnam: ['asia', 'world'],
 };
 
 function getCountryVariants(country: string): string[] {
@@ -384,32 +454,32 @@ function getCountryVariants(country: string): string[] {
   const variants = [lower];
 
   const VARIANT_MAP: Record<string, string[]> = {
-    'russia': ['russian', 'moscow', 'kremlin', 'putin'],
-    'ukraine': ['ukrainian', 'kyiv', 'kiev', 'zelensky', 'zelenskyy'],
-    'china': ['chinese', 'beijing', 'xi jinping', 'prc'],
-    'taiwan': ['taiwanese', 'taipei', 'tsmc'],
+    russia: ['russian', 'moscow', 'kremlin', 'putin'],
+    ukraine: ['ukrainian', 'kyiv', 'kiev', 'zelensky', 'zelenskyy'],
+    china: ['chinese', 'beijing', 'xi jinping', 'prc'],
+    taiwan: ['taiwanese', 'taipei', 'tsmc'],
     'united states': ['american', 'usa', 'biden', 'trump', 'washington'],
-    'israel': ['israeli', 'netanyahu', 'idf', 'tel aviv'],
-    'palestine': ['palestinian', 'gaza', 'hamas', 'west bank'],
-    'iran': ['iranian', 'tehran', 'khamenei', 'irgc'],
+    israel: ['israeli', 'netanyahu', 'idf', 'tel aviv'],
+    palestine: ['palestinian', 'gaza', 'hamas', 'west bank'],
+    iran: ['iranian', 'tehran', 'khamenei', 'irgc'],
     'north korea': ['dprk', 'pyongyang', 'kim jong un'],
     'south korea': ['korean', 'seoul'],
     'saudi arabia': ['saudi', 'riyadh', 'mbs'],
     'united kingdom': ['british', 'uk', 'britain', 'london'],
-    'france': ['french', 'paris', 'macron'],
-    'germany': ['german', 'berlin', 'scholz'],
-    'turkey': ['turkish', 'ankara', 'erdogan'],
-    'india': ['indian', 'delhi', 'modi'],
-    'japan': ['japanese', 'tokyo'],
-    'brazil': ['brazilian', 'brasilia', 'lula', 'bolsonaro'],
+    france: ['french', 'paris', 'macron'],
+    germany: ['german', 'berlin', 'scholz'],
+    turkey: ['turkish', 'ankara', 'erdogan'],
+    india: ['indian', 'delhi', 'modi'],
+    japan: ['japanese', 'tokyo'],
+    brazil: ['brazilian', 'brasilia', 'lula', 'bolsonaro'],
     'united arab emirates': ['uae', 'emirati', 'dubai', 'abu dhabi'],
-    'syria': ['syrian', 'damascus', 'assad'],
-    'yemen': ['yemeni', 'houthi', 'sanaa'],
-    'lebanon': ['lebanese', 'beirut', 'hezbollah'],
-    'egypt': ['egyptian', 'cairo', 'sisi'],
-    'pakistan': ['pakistani', 'islamabad'],
-    'sudan': ['sudanese', 'khartoum'],
-    'myanmar': ['burmese', 'burma'],
+    syria: ['syrian', 'damascus', 'assad'],
+    yemen: ['yemeni', 'houthi', 'sanaa'],
+    lebanon: ['lebanese', 'beirut', 'hezbollah'],
+    egypt: ['egyptian', 'cairo', 'sisi'],
+    pakistan: ['pakistani', 'islamabad'],
+    sudan: ['sudanese', 'khartoum'],
+    myanmar: ['burmese', 'burma'],
   };
 
   const extra = VARIANT_MAP[lower];
@@ -423,7 +493,7 @@ export async function fetchCountryMarkets(country: string): Promise<PredictionMa
   const variants = getCountryVariants(country);
 
   try {
-    const eventResults = await Promise.all(uniqueTags.map(tag => fetchEventsByTag(tag, 30)));
+    const eventResults = await Promise.all(uniqueTags.map((tag) => fetchEventsByTag(tag, 30)));
     const seen = new Set<string>();
     const markets: PredictionMarket[] = [];
 
@@ -433,10 +503,10 @@ export async function fetchCountryMarkets(country: string): Promise<PredictionMa
         seen.add(event.id);
 
         const titleLower = event.title.toLowerCase();
-        const eventTitleMatches = variants.some(v => titleLower.includes(v));
+        const eventTitleMatches = variants.some((v) => titleLower.includes(v));
         if (!eventTitleMatches) {
-          const marketTitles = (event.markets ?? []).map(m => (m.question ?? '').toLowerCase());
-          if (!marketTitles.some(mt => variants.some(v => mt.includes(v)))) continue;
+          const marketTitles = (event.markets ?? []).map((m) => (m.question ?? '').toLowerCase());
+          if (!marketTitles.some((mt) => variants.some((v) => mt.includes(v)))) continue;
         }
 
         if (isExcluded(event.title)) continue;
@@ -448,8 +518,9 @@ export async function fetchCountryMarkets(country: string): Promise<PredictionMa
           // the matching sub-markets so we don't surface irrelevant ones.
           const candidates = eventTitleMatches
             ? event.markets
-            : event.markets.filter(m =>
-                variants.some(v => (m.question ?? '').toLowerCase().includes(v)));
+            : event.markets.filter((m) =>
+                variants.some((v) => (m.question ?? '').toLowerCase().includes(v)),
+              );
           if (candidates.length === 0) continue;
 
           const topMarket = candidates.reduce((best, m) => {
@@ -474,9 +545,7 @@ export async function fetchCountryMarkets(country: string): Promise<PredictionMa
       }
     }
 
-    return markets
-      .sort((a, b) => (b.volume ?? 0) - (a.volume ?? 0))
-      .slice(0, 5);
+    return markets.sort((a, b) => (b.volume ?? 0) - (a.volume ?? 0)).slice(0, 5);
   } catch (e) {
     console.error(`[Polymarket] fetchCountryMarkets(${country}) failed:`, e);
     return [];

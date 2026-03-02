@@ -54,7 +54,9 @@ async function fetchFredSeries(req: GetFredSeriesRequest): Promise<FredSeries | 
 
     if (!obsResponse.ok) return undefined;
 
-    const obsData = await obsResponse.json() as { observations?: Array<{ date: string; value: string }> };
+    const obsData = (await obsResponse.json()) as {
+      observations?: Array<{ date: string; value: string }>;
+    };
 
     const observations: FredObservation[] = (obsData.observations || [])
       .map((obs) => {
@@ -70,7 +72,9 @@ async function fetchFredSeries(req: GetFredSeriesRequest): Promise<FredSeries | 
     let frequency = '';
 
     if (metaResponse.ok) {
-      const metaData = await metaResponse.json() as { seriess?: Array<{ title?: string; units?: string; frequency?: string }> };
+      const metaData = (await metaResponse.json()) as {
+        seriess?: Array<{ title?: string; units?: string; frequency?: string }>;
+      };
       const meta = metaData.seriess?.[0];
       if (meta) {
         title = meta.title || req.seriesId;
@@ -97,10 +101,14 @@ export async function getFredSeries(
 ): Promise<GetFredSeriesResponse> {
   try {
     const cacheKey = `${REDIS_CACHE_KEY}:${req.seriesId}:${req.limit || 0}`;
-    const result = await cachedFetchJson<GetFredSeriesResponse>(cacheKey, REDIS_CACHE_TTL, async () => {
-      const series = await fetchFredSeries(req);
-      return series ? { series } : null;
-    });
+    const result = await cachedFetchJson<GetFredSeriesResponse>(
+      cacheKey,
+      REDIS_CACHE_TTL,
+      async () => {
+        const series = await fetchFredSeries(req);
+        return series ? { series } : null;
+      },
+    );
     return result || { series: undefined };
   } catch {
     return { series: undefined };

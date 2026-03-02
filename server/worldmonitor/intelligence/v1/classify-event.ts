@@ -18,9 +18,20 @@ import { CHROME_UA } from '../../../_shared/constants';
 const CLASSIFY_CACHE_TTL = 86400;
 const VALID_LEVELS = ['critical', 'high', 'medium', 'low', 'info'];
 const VALID_CATEGORIES = [
-  'conflict', 'protest', 'disaster', 'diplomatic', 'economic',
-  'terrorism', 'cyber', 'health', 'environmental', 'military',
-  'crime', 'infrastructure', 'tech', 'general',
+  'conflict',
+  'protest',
+  'disaster',
+  'diplomatic',
+  'economic',
+  'terrorism',
+  'cyber',
+  'health',
+  'environmental',
+  'military',
+  'crime',
+  'infrastructure',
+  'tech',
+  'general',
 ];
 
 // ========================================================================
@@ -67,7 +78,11 @@ Return: {"level":"...","category":"..."}`;
 
         const resp = await fetch(GROQ_API_URL, {
           method: 'POST',
-          headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json', 'User-Agent': CHROME_UA },
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'User-Agent': CHROME_UA,
+          },
           body: JSON.stringify({
             model: GROQ_MODEL,
             messages: [

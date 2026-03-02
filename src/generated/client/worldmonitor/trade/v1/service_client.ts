@@ -103,8 +103,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -115,7 +115,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -137,23 +137,26 @@ export class TradeServiceClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string, options?: TradeServiceClientOptions) {
-    this.baseURL = baseURL.replace(/\/+$/, "");
+    this.baseURL = baseURL.replace(/\/+$/, '');
     this.fetchFn = options?.fetch ?? globalThis.fetch;
     this.defaultHeaders = { ...options?.defaultHeaders };
   }
 
-  async getTradeRestrictions(req: GetTradeRestrictionsRequest, options?: TradeServiceCallOptions): Promise<GetTradeRestrictionsResponse> {
-    let path = "/api/trade/v1/get-trade-restrictions";
+  async getTradeRestrictions(
+    req: GetTradeRestrictionsRequest,
+    options?: TradeServiceCallOptions,
+  ): Promise<GetTradeRestrictionsResponse> {
+    const path = '/api/trade/v1/get-trade-restrictions';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -163,21 +166,24 @@ export class TradeServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetTradeRestrictionsResponse;
+    return (await resp.json()) as GetTradeRestrictionsResponse;
   }
 
-  async getTariffTrends(req: GetTariffTrendsRequest, options?: TradeServiceCallOptions): Promise<GetTariffTrendsResponse> {
-    let path = "/api/trade/v1/get-tariff-trends";
+  async getTariffTrends(
+    req: GetTariffTrendsRequest,
+    options?: TradeServiceCallOptions,
+  ): Promise<GetTariffTrendsResponse> {
+    const path = '/api/trade/v1/get-tariff-trends';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -187,21 +193,24 @@ export class TradeServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetTariffTrendsResponse;
+    return (await resp.json()) as GetTariffTrendsResponse;
   }
 
-  async getTradeFlows(req: GetTradeFlowsRequest, options?: TradeServiceCallOptions): Promise<GetTradeFlowsResponse> {
-    let path = "/api/trade/v1/get-trade-flows";
+  async getTradeFlows(
+    req: GetTradeFlowsRequest,
+    options?: TradeServiceCallOptions,
+  ): Promise<GetTradeFlowsResponse> {
+    const path = '/api/trade/v1/get-trade-flows';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -211,21 +220,24 @@ export class TradeServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetTradeFlowsResponse;
+    return (await resp.json()) as GetTradeFlowsResponse;
   }
 
-  async getTradeBarriers(req: GetTradeBarriersRequest, options?: TradeServiceCallOptions): Promise<GetTradeBarriersResponse> {
-    let path = "/api/trade/v1/get-trade-barriers";
+  async getTradeBarriers(
+    req: GetTradeBarriersRequest,
+    options?: TradeServiceCallOptions,
+  ): Promise<GetTradeBarriersResponse> {
+    const path = '/api/trade/v1/get-trade-barriers';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -235,7 +247,7 @@ export class TradeServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetTradeBarriersResponse;
+    return (await resp.json()) as GetTradeBarriersResponse;
   }
 
   private async handleError(resp: Response): Promise<never> {

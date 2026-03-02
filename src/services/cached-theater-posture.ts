@@ -39,23 +39,87 @@ interface TheaterMeta {
 }
 
 const THEATER_META: Record<string, TheaterMeta> = {
-  'iran-theater': { name: 'Iran Theater', shortName: 'IRAN', targetNation: 'Iran', centerLat: 31, centerLon: 47.5, bounds: { north: 42, south: 20, east: 65, west: 30 } },
-  'taiwan-theater': { name: 'Taiwan Strait', shortName: 'TAIWAN', targetNation: 'Taiwan', centerLat: 24, centerLon: 122.5, bounds: { north: 30, south: 18, east: 130, west: 115 } },
-  'baltic-theater': { name: 'Baltic Theater', shortName: 'BALTIC', targetNation: null, centerLat: 58.5, centerLon: 21, bounds: { north: 65, south: 52, east: 32, west: 10 } },
-  'blacksea-theater': { name: 'Black Sea', shortName: 'BLACK SEA', targetNation: null, centerLat: 44, centerLon: 34, bounds: { north: 48, south: 40, east: 42, west: 26 } },
-  'korea-theater': { name: 'Korean Peninsula', shortName: 'KOREA', targetNation: 'North Korea', centerLat: 38, centerLon: 128, bounds: { north: 43, south: 33, east: 132, west: 124 } },
-  'south-china-sea': { name: 'South China Sea', shortName: 'SCS', targetNation: null, centerLat: 15, centerLon: 113, bounds: { north: 25, south: 5, east: 121, west: 105 } },
-  'east-med-theater': { name: 'Eastern Mediterranean', shortName: 'E.MED', targetNation: null, centerLat: 35, centerLon: 31, bounds: { north: 37, south: 33, east: 37, west: 25 } },
-  'israel-gaza-theater': { name: 'Israel/Gaza', shortName: 'GAZA', targetNation: 'Gaza', centerLat: 31, centerLon: 34.5, bounds: { north: 33, south: 29, east: 36, west: 33 } },
-  'yemen-redsea-theater': { name: 'Yemen/Red Sea', shortName: 'RED SEA', targetNation: 'Yemen', centerLat: 16.5, centerLon: 43, bounds: { north: 22, south: 11, east: 54, west: 32 } },
+  'iran-theater': {
+    name: 'Iran Theater',
+    shortName: 'IRAN',
+    targetNation: 'Iran',
+    centerLat: 31,
+    centerLon: 47.5,
+    bounds: { north: 42, south: 20, east: 65, west: 30 },
+  },
+  'taiwan-theater': {
+    name: 'Taiwan Strait',
+    shortName: 'TAIWAN',
+    targetNation: 'Taiwan',
+    centerLat: 24,
+    centerLon: 122.5,
+    bounds: { north: 30, south: 18, east: 130, west: 115 },
+  },
+  'baltic-theater': {
+    name: 'Baltic Theater',
+    shortName: 'BALTIC',
+    targetNation: null,
+    centerLat: 58.5,
+    centerLon: 21,
+    bounds: { north: 65, south: 52, east: 32, west: 10 },
+  },
+  'blacksea-theater': {
+    name: 'Black Sea',
+    shortName: 'BLACK SEA',
+    targetNation: null,
+    centerLat: 44,
+    centerLon: 34,
+    bounds: { north: 48, south: 40, east: 42, west: 26 },
+  },
+  'korea-theater': {
+    name: 'Korean Peninsula',
+    shortName: 'KOREA',
+    targetNation: 'North Korea',
+    centerLat: 38,
+    centerLon: 128,
+    bounds: { north: 43, south: 33, east: 132, west: 124 },
+  },
+  'south-china-sea': {
+    name: 'South China Sea',
+    shortName: 'SCS',
+    targetNation: null,
+    centerLat: 15,
+    centerLon: 113,
+    bounds: { north: 25, south: 5, east: 121, west: 105 },
+  },
+  'east-med-theater': {
+    name: 'Eastern Mediterranean',
+    shortName: 'E.MED',
+    targetNation: null,
+    centerLat: 35,
+    centerLon: 31,
+    bounds: { north: 37, south: 33, east: 37, west: 25 },
+  },
+  'israel-gaza-theater': {
+    name: 'Israel/Gaza',
+    shortName: 'GAZA',
+    targetNation: 'Gaza',
+    centerLat: 31,
+    centerLon: 34.5,
+    bounds: { north: 33, south: 29, east: 36, west: 33 },
+  },
+  'yemen-redsea-theater': {
+    name: 'Yemen/Red Sea',
+    shortName: 'RED SEA',
+    targetNation: 'Yemen',
+    centerLat: 16.5,
+    centerLon: 43,
+    bounds: { north: 22, south: 11, east: 54, west: 32 },
+  },
 };
 
 function toPostureSummary(proto: TheaterPosture): TheaterPostureSummary {
   const meta = THEATER_META[proto.theater];
   const strikeCapable = proto.activeOperations.includes('strike_capable');
-  const postureLevel = (proto.postureLevel === 'critical' || proto.postureLevel === 'elevated')
-    ? proto.postureLevel as 'critical' | 'elevated'
-    : 'normal' as const;
+  const postureLevel =
+    proto.postureLevel === 'critical' || proto.postureLevel === 'elevated'
+      ? (proto.postureLevel as 'critical' | 'elevated')
+      : ('normal' as const);
 
   return {
     theaterId: proto.theater,
@@ -84,11 +148,12 @@ function toPostureSummary(proto: TheaterPosture): TheaterPostureSummary {
     trend: 'stable',
     changePercent: 0,
     summary: '',
-    headline: postureLevel === 'critical'
-      ? `Critical military buildup - ${meta?.name ?? proto.theater}`
-      : postureLevel === 'elevated'
-        ? `Elevated military activity - ${meta?.name ?? proto.theater}`
-        : `Normal activity - ${meta?.name ?? proto.theater}`,
+    headline:
+      postureLevel === 'critical'
+        ? `Critical military buildup - ${meta?.name ?? proto.theater}`
+        : postureLevel === 'elevated'
+          ? `Elevated military activity - ${meta?.name ?? proto.theater}`
+          : `Normal activity - ${meta?.name ?? proto.theater}`,
     centerLat: meta?.centerLat ?? 0,
     centerLon: meta?.centerLon ?? 0,
     bounds: meta?.bounds,
@@ -162,7 +227,9 @@ function loadFromStorage(): CachedTheaterPosture | null {
 function saveToStorage(data: CachedTheaterPosture): void {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify({ data, savedAt: Date.now() }));
-  } catch { /* quota exceeded - ignore */ }
+  } catch {
+    /* quota exceeded - ignore */
+  }
 }
 
 // Hydrate in-memory cache from localStorage on module load
@@ -172,7 +239,9 @@ if (stored) {
   console.log('[CachedTheaterPosture] Restored from localStorage (stale)');
 }
 
-export async function fetchCachedTheaterPosture(signal?: AbortSignal): Promise<CachedTheaterPosture | null> {
+export async function fetchCachedTheaterPosture(
+  signal?: AbortSignal,
+): Promise<CachedTheaterPosture | null> {
   if (signal?.aborted) throw createAbortError();
   const now = Date.now();
 
@@ -198,7 +267,7 @@ export async function fetchCachedTheaterPosture(signal?: AbortSignal): Promise<C
       saveToStorage(data);
       console.log(
         '[CachedTheaterPosture] Loaded via sebuf RPC',
-        `${data.postures.length} theaters, ${data.totalFlights} flights`
+        `${data.postures.length} theaters, ${data.totalFlights} flights`,
       );
       return cachedPosture;
     } catch (error) {

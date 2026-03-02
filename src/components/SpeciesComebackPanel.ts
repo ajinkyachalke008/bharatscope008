@@ -19,12 +19,14 @@ const SPARKLINE_HEIGHT = 50;
 const NUMBER_FORMAT = new Intl.NumberFormat('en-US');
 
 /** SVG placeholder for broken images -- nature leaf icon on soft green bg */
-const FALLBACK_IMAGE_SVG = 'data:image/svg+xml,' + encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="%236B8F5E">' +
-  '<rect width="400" height="300" fill="%23f0f4ed"/>' +
-  '<text x="200" y="160" text-anchor="middle" font-size="64">&#x1F33F;</text>' +
-  '</svg>',
-);
+const FALLBACK_IMAGE_SVG =
+  'data:image/svg+xml,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="%236B8F5E">' +
+      '<rect width="400" height="300" fill="%23f0f4ed"/>' +
+      '<text x="200" y="160" text-anchor="middle" font-size="64">&#x1F33F;</text>' +
+      '</svg>',
+  );
 
 export class SpeciesComebackPanel extends Panel {
   constructor() {
@@ -134,7 +136,8 @@ export class SpeciesComebackPanel extends Panel {
 
     const recoveryBadge = document.createElement('span');
     recoveryBadge.className = `species-badge badge-${entry.recoveryStatus}`;
-    recoveryBadge.textContent = entry.recoveryStatus.charAt(0).toUpperCase() + entry.recoveryStatus.slice(1);
+    recoveryBadge.textContent =
+      entry.recoveryStatus.charAt(0).toUpperCase() + entry.recoveryStatus.slice(1);
     badgesDiv.appendChild(recoveryBadge);
 
     const iucnBadge = document.createElement('span');
@@ -187,49 +190,51 @@ export class SpeciesComebackPanel extends Panel {
     const width = viewBoxWidth - SPARKLINE_MARGIN.left - SPARKLINE_MARGIN.right;
     const height = SPARKLINE_HEIGHT;
 
-    const svg = d3.select(container)
+    const svg = d3
+      .select(container)
       .append('svg')
       .attr('width', '100%')
       .attr('height', height + SPARKLINE_MARGIN.top + SPARKLINE_MARGIN.bottom)
-      .attr('viewBox', `0 0 ${viewBoxWidth} ${height + SPARKLINE_MARGIN.top + SPARKLINE_MARGIN.bottom}`)
+      .attr(
+        'viewBox',
+        `0 0 ${viewBoxWidth} ${height + SPARKLINE_MARGIN.top + SPARKLINE_MARGIN.bottom}`,
+      )
       .attr('preserveAspectRatio', 'xMidYMid meet')
       .style('display', 'block');
 
-    const g = svg.append('g')
+    const g = svg
+      .append('g')
       .attr('transform', `translate(${SPARKLINE_MARGIN.left},${SPARKLINE_MARGIN.top})`);
 
     // Scales
-    const xExtent = d3.extent(data, d => d.year) as [number, number];
-    const yMax = d3.max(data, d => d.value) as number;
+    const xExtent = d3.extent(data, (d) => d.year) as [number, number];
+    const yMax = d3.max(data, (d) => d.value) as number;
     const yPadding = yMax * 0.1;
 
-    const x = d3.scaleLinear()
-      .domain(xExtent)
-      .range([0, width]);
+    const x = d3.scaleLinear().domain(xExtent).range([0, width]);
 
-    const y = d3.scaleLinear()
+    const y = d3
+      .scaleLinear()
       .domain([0, yMax + yPadding])
       .range([height, 0]);
 
     // Area generator with smooth curve
-    const area = d3.area<{ year: number; value: number }>()
-      .x(d => x(d.year))
+    const area = d3
+      .area<{ year: number; value: number }>()
+      .x((d) => x(d.year))
       .y0(height)
-      .y1(d => y(d.value))
+      .y1((d) => y(d.value))
       .curve(d3.curveMonotoneX);
 
     // Line generator for top edge
-    const line = d3.line<{ year: number; value: number }>()
-      .x(d => x(d.year))
-      .y(d => y(d.value))
+    const line = d3
+      .line<{ year: number; value: number }>()
+      .x((d) => x(d.year))
+      .y((d) => y(d.value))
       .curve(d3.curveMonotoneX);
 
     // Filled area
-    g.append('path')
-      .datum(data)
-      .attr('d', area)
-      .attr('fill', color)
-      .attr('opacity', 0.2);
+    g.append('path').datum(data).attr('d', area).attr('fill', color).attr('opacity', 0.2);
 
     // Stroke line
     g.append('path')

@@ -55,94 +55,105 @@ export async function listStablecoinMarkets(
     return stablecoinCache;
   }
 
-  const coins = req.coins.length > 0
-    ? req.coins.filter(c => /^[a-z0-9-]+$/.test(c)).join(',')
-    : DEFAULT_STABLECOIN_IDS;
+  const coins =
+    req.coins.length > 0
+      ? req.coins.filter((c) => /^[a-z0-9-]+$/.test(c)).join(',')
+      : DEFAULT_STABLECOIN_IDS;
 
   const redisKey = `${REDIS_CACHE_KEY}:${coins}`;
 
   try {
-  const result = await cachedFetchJson<ListStablecoinMarketsResponse>(redisKey, REDIS_CACHE_TTL, async () => {
-    const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coins}&order=market_cap_desc&sparkline=false&price_change_percentage=7d`;
-    const resp = await fetch(url, {
-      headers: { Accept: 'application/json', 'User-Agent': CHROME_UA },
-      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
-    });
+    const result = await cachedFetchJson<ListStablecoinMarketsResponse>(
+      redisKey,
+      REDIS_CACHE_TTL,
+      async () => {
+        const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${coins}&order=market_cap_desc&sparkline=false&price_change_percentage=7d`;
+        const resp = await fetch(url, {
+          headers: { Accept: 'application/json', 'User-Agent': CHROME_UA },
+          signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+        });
 
-    if (resp.status === 429 && stablecoinCache) return stablecoinCache;
-    if (!resp.ok) throw new Error(`CoinGecko HTTP ${resp.status}`);
+        if (resp.status === 429 && stablecoinCache) return stablecoinCache;
+        if (!resp.ok) throw new Error(`CoinGecko HTTP ${resp.status}`);
 
-    const data = (await resp.json()) as CoinGeckoStablecoinItem[];
+        const data = (await resp.json()) as CoinGeckoStablecoinItem[];
 
-    const stablecoins: Stablecoin[] = data.map(coin => {
-      const price = coin.current_price || 0;
-      const deviation = Math.abs(price - 1.0);
-      let pegStatus: string;
-      if (deviation <= 0.005) pegStatus = 'ON PEG';
-      else if (deviation <= 0.01) pegStatus = 'SLIGHT DEPEG';
-      else pegStatus = 'DEPEGGED';
+        const stablecoins: Stablecoin[] = data.map((coin) => {
+          const price = coin.current_price || 0;
+          const deviation = Math.abs(price - 1.0);
+          let pegStatus: string;
+          if (deviation <= 0.005) pegStatus = 'ON PEG';
+          else if (deviation <= 0.01) pegStatus = 'SLIGHT DEPEG';
+          else pegStatus = 'DEPEGGED';
 
-      return {
-        id: coin.id,
-        symbol: (coin.symbol || '').toUpperCase(),
-        name: coin.name,
-        price,
-        deviation: +(deviation * 100).toFixed(3),
-        pegStatus,
-        marketCap: coin.market_cap || 0,
-        volume24h: coin.total_volume || 0,
-        change24h: coin.price_change_percentage_24h || 0,
-        change7d: coin.price_change_percentage_7d_in_currency || 0,
-        image: coin.image || '',
-      };
-    });
+          return {
+            id: coin.id,
+            symbol: (coin.symbol || '').toUpperCase(),
+            name: coin.name,
+            price,
+            deviation: +(deviation * 100).toFixed(3),
+            pegStatus,
+            marketCap: coin.market_cap || 0,
+            volume24h: coin.total_volume || 0,
+            change24h: coin.price_change_percentage_24h || 0,
+            change7d: coin.price_change_percentage_7d_in_currency || 0,
+            image: coin.image || '',
+          };
+        });
 
-    if (stablecoins.length === 0) return null;
+        if (stablecoins.length === 0) return null;
 
-    const totalMarketCap = stablecoins.reduce((sum, c) => sum + c.marketCap, 0);
-    const totalVolume24h = stablecoins.reduce((sum, c) => sum + c.volume24h, 0);
-    const depeggedCount = stablecoins.filter(c => c.pegStatus === 'DEPEGGED').length;
+        const totalMarketCap = stablecoins.reduce((sum, c) => sum + c.marketCap, 0);
+        const totalVolume24h = stablecoins.reduce((sum, c) => sum + c.volume24h, 0);
+        const depeggedCount = stablecoins.filter((c) => c.pegStatus === 'DEPEGGED').length;
 
-    return {
-      timestamp: new Date().toISOString(),
-      summary: {
-        totalMarketCap,
-        totalVolume24h,
-        coinCount: stablecoins.length,
-        depeggedCount,
-        healthStatus: depeggedCount === 0 ? 'HEALTHY' : depeggedCount === 1 ? 'CAUTION' : 'WARNING',
+        return {
+          timestamp: new Date().toISOString(),
+          summary: {
+            totalMarketCap,
+            totalVolume24h,
+            coinCount: stablecoins.length,
+            depeggedCount,
+            healthStatus:
+              depeggedCount === 0 ? 'HEALTHY' : depeggedCount === 1 ? 'CAUTION' : 'WARNING',
+          },
+          stablecoins,
+        };
       },
-      stablecoins,
-    };
-  });
+    );
 
-  if (result) {
-    stablecoinCache = result;
-    stablecoinCacheTimestamp = now;
-  }
+    if (result) {
+      stablecoinCache = result;
+      stablecoinCacheTimestamp = now;
+    }
 
-  return result || stablecoinCache || {
-    timestamp: new Date().toISOString(),
-    summary: {
-      totalMarketCap: 0,
-      totalVolume24h: 0,
-      coinCount: 0,
-      depeggedCount: 0,
-      healthStatus: 'UNAVAILABLE',
-    },
-    stablecoins: [],
-  };
+    return (
+      result ||
+      stablecoinCache || {
+        timestamp: new Date().toISOString(),
+        summary: {
+          totalMarketCap: 0,
+          totalVolume24h: 0,
+          coinCount: 0,
+          depeggedCount: 0,
+          healthStatus: 'UNAVAILABLE',
+        },
+        stablecoins: [],
+      }
+    );
   } catch {
-    return stablecoinCache || {
-      timestamp: new Date().toISOString(),
-      summary: {
-        totalMarketCap: 0,
-        totalVolume24h: 0,
-        coinCount: 0,
-        depeggedCount: 0,
-        healthStatus: 'UNAVAILABLE',
-      },
-      stablecoins: [],
-    };
+    return (
+      stablecoinCache || {
+        timestamp: new Date().toISOString(),
+        summary: {
+          totalMarketCap: 0,
+          totalVolume24h: 0,
+          coinCount: 0,
+          depeggedCount: 0,
+          healthStatus: 'UNAVAILABLE',
+        },
+        stablecoins: [],
+      }
+    );
   }
 }

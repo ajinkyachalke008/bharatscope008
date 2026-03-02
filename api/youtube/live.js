@@ -11,7 +11,10 @@ export default async function handler(request) {
   const cors = getCorsHeaders(request);
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
   if (isDisallowedOrigin(request)) {
-    return new Response(JSON.stringify({ error: 'Origin not allowed' }), { status: 403, headers: cors });
+    return new Response(JSON.stringify({ error: 'Origin not allowed' }), {
+      status: 403,
+      headers: cors,
+    });
   }
   const url = new URL(request.url);
   const channel = url.searchParams.get('channel');
@@ -22,14 +25,27 @@ export default async function handler(request) {
     try {
       const oembedRes = await fetch(
         `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoIdParam}&format=json`,
-        { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' } },
+        {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+        },
       );
       if (oembedRes.ok) {
         const data = await oembedRes.json();
-        return new Response(JSON.stringify({ channelName: data.author_name || null, title: data.title || null, videoId: videoIdParam }), {
-          status: 200,
-          headers: { ...cors, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600, s-maxage=3600' },
-        });
+        return new Response(
+          JSON.stringify({
+            channelName: data.author_name || null,
+            title: data.title || null,
+            videoId: videoIdParam,
+          }),
+          {
+            status: 200,
+            headers: {
+              ...cors,
+              'Content-Type': 'application/json',
+              'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+            },
+          },
+        );
       }
     } catch {}
     return new Response(JSON.stringify({ channelName: null, title: null, videoId: videoIdParam }), {
@@ -100,13 +116,16 @@ export default async function handler(request) {
       hlsUrl = hlsMatch[1].replace(/\\u0026/g, '&');
     }
 
-    return new Response(JSON.stringify({ videoId, isLive: videoId !== null, channelExists, channelName, hlsUrl }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=60',
+    return new Response(
+      JSON.stringify({ videoId, isLive: videoId !== null, channelExists, channelName, hlsUrl }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=300, s-maxage=300, stale-while-revalidate=60',
+        },
       },
-    });
+    );
   } catch (error) {
     console.error('YouTube live check error:', error);
     return new Response(JSON.stringify({ videoId: null, error: error.message }), {

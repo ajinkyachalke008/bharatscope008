@@ -65,7 +65,7 @@ async function fetchEiaSeries(
 
     if (!response.ok) return null;
 
-    const data = await response.json() as {
+    const data = (await response.json()) as {
       response?: { data?: Array<{ period?: string; value?: number }> };
     };
 
@@ -97,9 +97,10 @@ async function fetchEnergyPrices(commodities: string[]): Promise<EnergyPrice[]> 
   const apiKey = process.env.EIA_API_KEY;
   if (!apiKey) return [];
 
-  const series = commodities.length > 0
-    ? EIA_SERIES.filter((s) => commodities.includes(s.commodity))
-    : EIA_SERIES;
+  const series =
+    commodities.length > 0
+      ? EIA_SERIES.filter((s) => commodities.includes(s.commodity))
+      : EIA_SERIES;
 
   const results = await Promise.all(series.map((s) => fetchEiaSeries(s, apiKey)));
   return results.filter((p): p is EnergyPrice => p !== null);
@@ -111,10 +112,14 @@ export async function getEnergyPrices(
 ): Promise<GetEnergyPricesResponse> {
   try {
     const cacheKey = `${REDIS_CACHE_KEY}:${[...req.commodities].sort().join(',') || 'all'}`;
-    const result = await cachedFetchJson<GetEnergyPricesResponse>(cacheKey, REDIS_CACHE_TTL, async () => {
-      const prices = await fetchEnergyPrices(req.commodities);
-      return prices.length > 0 ? { prices } : null;
-    });
+    const result = await cachedFetchJson<GetEnergyPricesResponse>(
+      cacheKey,
+      REDIS_CACHE_TTL,
+      async () => {
+        const prices = await fetchEnergyPrices(req.commodities);
+        return prices.length > 0 ? { prices } : null;
+      },
+    );
     return result || { prices: [] };
   } catch {
     return { prices: [] };

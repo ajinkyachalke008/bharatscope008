@@ -5,7 +5,10 @@ interface LiveVideoInfo {
   hlsUrl: string | null;
 }
 
-const liveVideoCache = new Map<string, { videoId: string | null; hlsUrl: string | null; timestamp: number }>();
+const liveVideoCache = new Map<
+  string,
+  { videoId: string | null; hlsUrl: string | null; timestamp: number }
+>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 export async function fetchLiveVideoInfo(channelHandle: string): Promise<LiveVideoInfo> {
@@ -16,7 +19,9 @@ export async function fetchLiveVideoInfo(channelHandle: string): Promise<LiveVid
 
   try {
     const baseUrl = isDesktopRuntime() ? getRemoteApiBaseUrl() : '';
-    const res = await fetch(`${baseUrl}/api/youtube/live?channel=${encodeURIComponent(channelHandle)}`);
+    const res = await fetch(
+      `${baseUrl}/api/youtube/live?channel=${encodeURIComponent(channelHandle)}`,
+    );
     if (!res.ok) throw new Error('API error');
     const data = await res.json();
     const videoId = data.videoId || null;

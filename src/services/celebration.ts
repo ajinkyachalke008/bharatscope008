@@ -24,9 +24,10 @@ export interface MilestoneData {
 // ---- Constants ----
 
 /** Checked once at module load -- if user prefers reduced motion, skip all celebrations. */
-const REDUCED_MOTION = typeof window !== 'undefined'
-  ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  : false;
+const REDUCED_MOTION =
+  typeof window !== 'undefined'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    : false;
 
 /** Nature-inspired warm palette matching the happy theme. */
 const WARM_COLORS = ['#6B8F5E', '#C4A35A', '#7BA5C4', '#8BAF7A', '#E8B96E', '#7FC4C4'];

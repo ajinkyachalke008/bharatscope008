@@ -58,10 +58,7 @@ export class CountersPanel extends Panel {
     value.className = 'counter-value';
     value.dataset.counter = metric.id;
     // Set initial value from absolute time
-    value.textContent = formatCounterValue(
-      getCounterValue(metric),
-      metric.formatPrecision,
-    );
+    value.textContent = formatCounterValue(getCounterValue(metric), metric.formatPrecision);
 
     const label = document.createElement('div');
     label.className = 'counter-label';

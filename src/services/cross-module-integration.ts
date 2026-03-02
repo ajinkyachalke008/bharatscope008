@@ -64,12 +64,7 @@ function generateAlertId(): string {
   return `alert-${Date.now()}-${++alertIdCounter}`;
 }
 
-function haversineDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number {
+function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -108,13 +103,18 @@ function getPriorityFromConvergence(score: number, typeCount: number): AlertPrio
 }
 
 function buildConvergenceAlert(convergence: GeoConvergenceAlert, alertId: string): UnifiedAlert {
-  const location = getCountriesNearLocation(convergence.lat, convergence.lon).join(', ') || 'Unknown';
+  const location =
+    getCountriesNearLocation(convergence.lat, convergence.lon).join(', ') || 'Unknown';
   return {
     id: alertId,
     type: 'convergence',
     priority: getPriorityFromConvergence(convergence.score, convergence.types.length),
     title: t('alerts.geoAlert', { location }),
-    summary: t('alerts.eventsDetected', { count: convergence.totalEvents, lat: convergence.lat.toFixed(1), lon: convergence.lon.toFixed(1) }),
+    summary: t('alerts.eventsDetected', {
+      count: convergence.totalEvents,
+      lat: convergence.lat.toFixed(1),
+      lon: convergence.lon.toFixed(1),
+    }),
     components: { convergence },
     location: { lat: convergence.lat, lon: convergence.lon },
     countries: getCountriesNearLocation(convergence.lat, convergence.lon),
@@ -134,7 +134,7 @@ export function createCIIAlert(
   previousScore: number,
   currentScore: number,
   level: CountryScore['level'],
-  driver: string
+  driver: string,
 ): UnifiedAlert | null {
   const change = currentScore - previousScore;
   if (Math.abs(change) < 10) return null;
@@ -156,7 +156,9 @@ export function createCIIAlert(
     id: `cii-${country}`, // Stable ID for deduplication by country
     type: 'cii_spike',
     priority: getPriorityFromCIIChange(change, level),
-    title: t(change > 0 ? 'alerts.instabilityRising' : 'alerts.instabilityFalling', { country: countryName }),
+    title: t(change > 0 ? 'alerts.instabilityRising' : 'alerts.instabilityFalling', {
+      country: countryName,
+    }),
     summary: t(summaryKey, { from: previousScore, to: currentScore, change: changeStr, driver }),
     components: { ciiChange },
     countries: [country],
@@ -183,12 +185,15 @@ export function createCascadeAlert(cascade: CascadeResult): UnifiedAlert | null 
     type: 'cascade',
     priority: getPriorityFromCascadeImpact(highestImpact, cascade.countriesAffected.length),
     title: t('alerts.infraAlert', { name: cascade.source.name }),
-    summary: t('alerts.countriesAffected', { count: cascade.countriesAffected.length, impact: highestImpact }),
+    summary: t('alerts.countriesAffected', {
+      count: cascade.countriesAffected.length,
+      impact: highestImpact,
+    }),
     components: { cascade: cascadeAlert },
     location: cascade.source.coordinates
       ? { lat: cascade.source.coordinates[1], lon: cascade.source.coordinates[0] }
       : undefined,
-    countries: cascade.countriesAffected.map(c => c.country),
+    countries: cascade.countriesAffected.map((c) => c.country),
     timestamp: new Date(),
   };
 
@@ -196,9 +201,8 @@ export function createCascadeAlert(cascade: CascadeResult): UnifiedAlert | null 
 }
 
 function shouldMergeAlerts(a: UnifiedAlert, b: UnifiedAlert): boolean {
-  const sameCountry = a.countries.some(c => b.countries.includes(c));
-  const sameTime =
-    Math.abs(a.timestamp.getTime() - b.timestamp.getTime()) < ALERT_MERGE_WINDOW_MS;
+  const sameCountry = a.countries.some((c) => b.countries.includes(c));
+  const sameTime = Math.abs(a.timestamp.getTime() - b.timestamp.getTime()) < ALERT_MERGE_WINDOW_MS;
   const sameLocation = !!(
     a.location &&
     b.location &&
@@ -240,7 +244,9 @@ function getCountryDisplayName(code: string): string {
 function generateCompositeTitle(a: UnifiedAlert, b: UnifiedAlert): string {
   const ciiChange = a.components.ciiChange || b.components.ciiChange;
   if (ciiChange) {
-    return t(ciiChange.change > 0 ? 'alerts.instabilityRising' : 'alerts.instabilityFalling', { country: ciiChange.countryName });
+    return t(ciiChange.change > 0 ? 'alerts.instabilityRising' : 'alerts.instabilityFalling', {
+      country: ciiChange.countryName,
+    });
   }
 
   if (a.components.convergence || b.components.convergence) {
@@ -270,7 +276,12 @@ function generateCompositeSummary(a: UnifiedAlert, b: UnifiedAlert): string {
     const totalChange = latest.currentScore - earliest.previousScore;
     const changeStr = totalChange > 0 ? `+${totalChange}` : `${totalChange}`;
     const summaryKey = totalChange > 0 ? 'alerts.indexRose' : 'alerts.indexFell';
-    return t(summaryKey, { from: earliest.previousScore, to: latest.currentScore, change: changeStr, driver: latest.driver });
+    return t(summaryKey, {
+      from: earliest.previousScore,
+      to: latest.currentScore,
+      change: changeStr,
+      driver: latest.driver,
+    });
   }
 
   // Otherwise combine summaries — limit to avoid unbounded growth
@@ -297,7 +308,7 @@ function generateCompositeSummary(a: UnifiedAlert, b: UnifiedAlert): string {
 
 function addAndMergeAlert(alert: UnifiedAlert): UnifiedAlert {
   // First check for existing alert with same ID (stable deduplication)
-  const existingByIdIndex = alerts.findIndex(a => a.id === alert.id);
+  const existingByIdIndex = alerts.findIndex((a) => a.id === alert.id);
   if (existingByIdIndex !== -1) {
     const existing = alerts[existingByIdIndex]!;
     // Update existing alert with new data, keeping higher priority
@@ -371,7 +382,7 @@ export function checkCIIChanges(): UnifiedAlert[] {
         previous,
         score.score,
         score.level,
-        driver
+        driver,
       );
       if (alert) newAlerts.push(alert);
     }
@@ -413,7 +424,7 @@ function updateAlerts(convergenceAlerts: GeoConvergenceAlert[]): void {
 }
 
 export function calculateStrategicRiskOverview(
-  convergenceAlerts: GeoConvergenceAlert[]
+  convergenceAlerts: GeoConvergenceAlert[],
 ): StrategicRiskOverview {
   const ciiScores = calculateCII();
 
@@ -423,18 +434,16 @@ export function calculateStrategicRiskOverview(
   const ciiRiskScore = calculateCIIRiskScore(ciiScores);
 
   // Weights for composite score
-  const convergenceWeight = 0.3;  // Geo convergence of multiple event types
-  const ciiWeight = 0.5;          // Country instability (main driver)
-  const infraWeight = 0.2;        // Infrastructure incidents
+  const convergenceWeight = 0.3; // Geo convergence of multiple event types
+  const ciiWeight = 0.5; // Country instability (main driver)
+  const infraWeight = 0.2; // Infrastructure incidents
 
   const convergenceScore = Math.min(100, convergenceAlerts.length * 25);
   const infraScore = Math.min(100, countInfrastructureIncidents() * 25);
 
   // CII score is already 0-100 from calculateCIIRiskScore
   const composite = Math.round(
-    convergenceScore * convergenceWeight +
-    ciiRiskScore * ciiWeight +
-    infraScore * infraWeight
+    convergenceScore * convergenceWeight + ciiRiskScore * ciiWeight + infraScore * infraWeight,
   );
 
   const trend = determineTrend(composite);
@@ -445,15 +454,15 @@ export function calculateStrategicRiskOverview(
 
   return {
     convergenceAlerts: convergenceAlerts.length,
-    avgCIIDeviation: topCIIScore,  // Now shows top country score
+    avgCIIDeviation: topCIIScore, // Now shows top country score
     infrastructureIncidents: countInfrastructureIncidents(),
     compositeScore: composite,
     trend,
     topRisks: identifyTopRisks(convergenceAlerts, ciiScores),
     topConvergenceZones: convergenceAlerts
       .slice(0, 3)
-      .map(a => ({ cellId: a.cellId, lat: a.lat, lon: a.lon, score: a.score })),
-    unstableCountries: ciiScores.filter(s => s.score >= 50).slice(0, 5),
+      .map((a) => ({ cellId: a.cellId, lat: a.lat, lon: a.lon, score: a.score })),
+    unstableCountries: ciiScores.filter((s) => s.score >= 50).slice(0, 5),
     timestamp: new Date(),
   };
 }
@@ -480,7 +489,7 @@ function calculateCIIRiskScore(scores: CountryScore[]): number {
   }
 
   // Count of elevated countries (score >= 50) adds bonus
-  const elevatedCount = scores.filter(s => s.score >= 50).length;
+  const elevatedCount = scores.filter((s) => s.score >= 50).length;
   const elevatedBonus = Math.min(20, elevatedCount * 5);
 
   return Math.min(100, weightedScore + elevatedBonus);
@@ -500,13 +509,10 @@ function determineTrend(current: number): 'escalating' | 'stable' | 'de-escalati
 }
 
 function countInfrastructureIncidents(): number {
-  return alerts.filter(a => a.components.cascade).length;
+  return alerts.filter((a) => a.components.cascade).length;
 }
 
-function identifyTopRisks(
-  convergence: GeoConvergenceAlert[],
-  cii: CountryScore[]
-): string[] {
+function identifyTopRisks(convergence: GeoConvergenceAlert[], cii: CountryScore[]): string[] {
   const risks: string[] = [];
 
   const top = convergence[0];
@@ -515,7 +521,7 @@ function identifyTopRisks(
     risks.push(`Convergence: ${location} (score: ${top.score})`);
   }
 
-  const critical = cii.filter(s => s.level === 'critical' || s.level === 'high');
+  const critical = cii.filter((s) => s.level === 'critical' || s.level === 'high');
   for (const c of critical.slice(0, 2)) {
     risks.push(`${c.name} instability: ${c.score} (${c.level})`);
   }
@@ -529,7 +535,7 @@ export function getAlerts(): UnifiedAlert[] {
 
 export function getRecentAlerts(hours: number = 24): UnifiedAlert[] {
   const cutoff = Date.now() - hours * 60 * 60 * 1000;
-  return alerts.filter(a => a.timestamp.getTime() > cutoff);
+  return alerts.filter((a) => a.timestamp.getTime() > cutoff);
 }
 
 export function clearAlerts(): void {
@@ -538,9 +544,9 @@ export function clearAlerts(): void {
 
 export function getAlertCount(): { critical: number; high: number; medium: number; low: number } {
   return {
-    critical: alerts.filter(a => a.priority === 'critical').length,
-    high: alerts.filter(a => a.priority === 'high').length,
-    medium: alerts.filter(a => a.priority === 'medium').length,
-    low: alerts.filter(a => a.priority === 'low').length,
+    critical: alerts.filter((a) => a.priority === 'critical').length,
+    high: alerts.filter((a) => a.priority === 'high').length,
+    medium: alerts.filter((a) => a.priority === 'medium').length,
+    low: alerts.filter((a) => a.priority === 'low').length,
   };
 }

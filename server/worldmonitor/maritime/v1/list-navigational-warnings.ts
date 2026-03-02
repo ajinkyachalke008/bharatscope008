@@ -23,8 +23,18 @@ function parseNgaDate(dateStr: unknown): number {
   const match = dateStr.match(/(\d{2})(\d{4})Z\s+([A-Z]{3})\s+(\d{4})/i);
   if (!match) return Date.parse(dateStr) || 0;
   const months: Record<string, number> = {
-    JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5,
-    JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11,
+    JAN: 0,
+    FEB: 1,
+    MAR: 2,
+    APR: 3,
+    MAY: 4,
+    JUN: 5,
+    JUL: 6,
+    AUG: 7,
+    SEP: 8,
+    OCT: 9,
+    NOV: 10,
+    DEC: 11,
   };
   const day = parseInt(match[1]!, 10);
   const hours = parseInt(match[2]!.slice(0, 2), 10);
@@ -46,23 +56,23 @@ async function fetchNgaWarnings(area?: string): Promise<NavigationalWarning[]> {
     const data = await response.json();
     const rawWarnings: any[] = Array.isArray(data) ? data : (data?.broadcast_warn ?? []);
 
-    let warnings: NavigationalWarning[] = rawWarnings.map((w: any): NavigationalWarning => ({
-      id: `${w.navArea || ''}-${w.msgYear || ''}-${w.msgNumber || ''}`,
-      title: `NAVAREA ${w.navArea || ''} ${w.msgNumber || ''}/${w.msgYear || ''}`,
-      text: w.text || '',
-      area: `${w.navArea || ''}${w.subregion ? ' ' + w.subregion : ''}`,
-      location: undefined,
-      issuedAt: parseNgaDate(w.issueDate),
-      expiresAt: 0,
-      authority: w.authority || '',
-    }));
+    let warnings: NavigationalWarning[] = rawWarnings.map(
+      (w: any): NavigationalWarning => ({
+        id: `${w.navArea || ''}-${w.msgYear || ''}-${w.msgNumber || ''}`,
+        title: `NAVAREA ${w.navArea || ''} ${w.msgNumber || ''}/${w.msgYear || ''}`,
+        text: w.text || '',
+        area: `${w.navArea || ''}${w.subregion ? ' ' + w.subregion : ''}`,
+        location: undefined,
+        issuedAt: parseNgaDate(w.issueDate),
+        expiresAt: 0,
+        authority: w.authority || '',
+      }),
+    );
 
     if (area) {
       const areaLower = area.toLowerCase();
       warnings = warnings.filter(
-        (w) =>
-          w.area.toLowerCase().includes(areaLower) ||
-          w.text.toLowerCase().includes(areaLower),
+        (w) => w.area.toLowerCase().includes(areaLower) || w.text.toLowerCase().includes(areaLower),
       );
     }
 
@@ -82,10 +92,14 @@ export async function listNavigationalWarnings(
 ): Promise<ListNavigationalWarningsResponse> {
   try {
     const cacheKey = `${REDIS_CACHE_KEY}:${req.area || 'all'}`;
-    const result = await cachedFetchJson<ListNavigationalWarningsResponse>(cacheKey, REDIS_CACHE_TTL, async () => {
-      const warnings = await fetchNgaWarnings(req.area);
-      return warnings.length > 0 ? { warnings, pagination: undefined } : null;
-    });
+    const result = await cachedFetchJson<ListNavigationalWarningsResponse>(
+      cacheKey,
+      REDIS_CACHE_TTL,
+      async () => {
+        const warnings = await fetchNgaWarnings(req.area);
+        return warnings.length > 0 ? { warnings, pagination: undefined } : null;
+      },
+    );
     return result || { warnings: [], pagination: undefined };
   } catch {
     return { warnings: [], pagination: undefined };

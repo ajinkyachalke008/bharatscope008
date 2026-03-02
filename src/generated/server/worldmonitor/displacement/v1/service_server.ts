@@ -91,8 +91,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -103,7 +103,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -127,8 +127,14 @@ export interface RouteDescriptor {
 }
 
 export interface DisplacementServiceHandler {
-  getDisplacementSummary(ctx: ServerContext, req: GetDisplacementSummaryRequest): Promise<GetDisplacementSummaryResponse>;
-  getPopulationExposure(ctx: ServerContext, req: GetPopulationExposureRequest): Promise<GetPopulationExposureResponse>;
+  getDisplacementSummary(
+    ctx: ServerContext,
+    req: GetDisplacementSummaryRequest,
+  ): Promise<GetDisplacementSummaryResponse>;
+  getPopulationExposure(
+    ctx: ServerContext,
+    req: GetPopulationExposureRequest,
+  ): Promise<GetPopulationExposureResponse>;
 }
 
 export function createDisplacementServiceRoutes(
@@ -137,14 +143,14 @@ export function createDisplacementServiceRoutes(
 ): RouteDescriptor[] {
   return [
     {
-      method: "POST",
-      path: "/api/displacement/v1/get-displacement-summary",
+      method: 'POST',
+      path: '/api/displacement/v1/get-displacement-summary',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetDisplacementSummaryRequest;
+          const body = (await req.json()) as GetDisplacementSummaryRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getDisplacementSummary", body);
+            const bodyViolations = options.validateRequest('getDisplacementSummary', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -159,13 +165,13 @@ export function createDisplacementServiceRoutes(
           const result = await handler.getDisplacementSummary(ctx, body);
           return new Response(JSON.stringify(result as GetDisplacementSummaryResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -174,20 +180,20 @@ export function createDisplacementServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/displacement/v1/get-population-exposure",
+      method: 'POST',
+      path: '/api/displacement/v1/get-population-exposure',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetPopulationExposureRequest;
+          const body = (await req.json()) as GetPopulationExposureRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getPopulationExposure", body);
+            const bodyViolations = options.validateRequest('getPopulationExposure', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -202,13 +208,13 @@ export function createDisplacementServiceRoutes(
           const result = await handler.getPopulationExposure(ctx, body);
           return new Response(JSON.stringify(result as GetPopulationExposureResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -217,11 +223,10 @@ export function createDisplacementServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
   ];
 }
-

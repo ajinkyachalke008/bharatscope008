@@ -17,12 +17,21 @@ const COUNTRY_GEOJSON_URL = '/data/countries.geojson';
 const POLITICAL_OVERRIDES: Record<string, string> = { 'CN-TW': 'TW' };
 
 const NAME_ALIASES: Record<string, string> = {
-  'dr congo': 'CD', 'democratic republic of the congo': 'CD',
-  'czech republic': 'CZ', 'ivory coast': 'CI', "cote d'ivoire": 'CI',
-  'uae': 'AE', 'uk': 'GB', 'usa': 'US',
-  'south korea': 'KR', 'north korea': 'KP',
-  'republic of the congo': 'CG', 'east timor': 'TL',
-  'cape verde': 'CV', 'swaziland': 'SZ', 'burma': 'MM',
+  'dr congo': 'CD',
+  'democratic republic of the congo': 'CD',
+  'czech republic': 'CZ',
+  'ivory coast': 'CI',
+  "cote d'ivoire": 'CI',
+  uae: 'AE',
+  uk: 'GB',
+  usa: 'US',
+  'south korea': 'KR',
+  'north korea': 'KP',
+  'republic of the congo': 'CG',
+  'east timor': 'TL',
+  'cape verde': 'CV',
+  swaziland: 'SZ',
+  burma: 'MM',
 };
 
 let loadPromise: Promise<void> | null = null;
@@ -107,7 +116,7 @@ function pointOnSegment(
   x1: number,
   y1: number,
   x2: number,
-  y2: number
+  y2: number,
 ): boolean {
   const cross = (py - y1) * (x2 - x1) - (px - x1) * (y2 - y1);
   if (Math.abs(cross) > 1e-9) return false;
@@ -124,14 +133,18 @@ function pointInRing(lon: number, lat: number, ring: [number, number][]): boolea
     const [xi, yi] = current;
     const [xj, yj] = previous;
     if (pointOnSegment(lon, lat, xi, yi, xj, yj)) return true;
-    const intersects = ((yi > lat) !== (yj > lat))
-      && (lon < ((xj - xi) * (lat - yi)) / ((yj - yi) || Number.EPSILON) + xi);
+    const intersects =
+      yi > lat !== yj > lat && lon < ((xj - xi) * (lat - yi)) / (yj - yi || Number.EPSILON) + xi;
     if (intersects) inside = !inside;
   }
   return inside;
 }
 
-function pointInCountryGeometry(country: IndexedCountryGeometry, lon: number, lat: number): boolean {
+function pointInCountryGeometry(
+  country: IndexedCountryGeometry,
+  lon: number,
+  lat: number,
+): boolean {
   const [minLon, minLat, maxLon, maxLat] = country.bbox;
   if (lon < minLon || lon > maxLon || lat < minLat || lat > maxLat) return false;
 
@@ -181,7 +194,7 @@ async function ensureLoaded(): Promise<void> {
         throw new Error(`HTTP ${response.status}`);
       }
 
-      const data = await response.json() as FeatureCollection<Geometry>;
+      const data = (await response.json()) as FeatureCollection<Geometry>;
       if (!data || data.type !== 'FeatureCollection' || !Array.isArray(data.features)) {
         return;
       }
@@ -242,13 +255,18 @@ export function hasCountryGeometry(code: string): boolean {
   return countryIndex.has(code.toUpperCase());
 }
 
-export function getCountryAtCoordinates(lat: number, lon: number, candidateCodes?: string[]): CountryHit | null {
+export function getCountryAtCoordinates(
+  lat: number,
+  lon: number,
+  candidateCodes?: string[],
+): CountryHit | null {
   if (!loadedGeoJson) return null;
-  const candidates = Array.isArray(candidateCodes) && candidateCodes.length > 0
-    ? candidateCodes
-      .map((code) => countryIndex.get(code.toUpperCase()))
-      .filter((country): country is IndexedCountryGeometry => Boolean(country))
-    : countryList;
+  const candidates =
+    Array.isArray(candidateCodes) && candidateCodes.length > 0
+      ? candidateCodes
+          .map((code) => countryIndex.get(code.toUpperCase()))
+          .filter((country): country is IndexedCountryGeometry => Boolean(country))
+      : countryList;
 
   for (const country of candidates) {
     if (pointInCountryGeometry(country, lon, lat)) {

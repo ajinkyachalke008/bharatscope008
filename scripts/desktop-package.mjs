@@ -23,12 +23,16 @@ const validOs = new Set(['macos', 'windows', 'linux']);
 const validVariants = new Set(['full', 'tech']);
 
 if (showHelp) {
-  console.log('Usage: npm run desktop:package -- --os <macos|windows|linux> --variant <full|tech> [--sign] [--skip-node-runtime]');
+  console.log(
+    'Usage: npm run desktop:package -- --os <macos|windows|linux> --variant <full|tech> [--sign] [--skip-node-runtime]',
+  );
   process.exit(0);
 }
 
 if (!validOs.has(os)) {
-  console.error('Usage: npm run desktop:package -- --os <macos|windows|linux> --variant <full|tech> [--sign] [--skip-node-runtime]');
+  console.error(
+    'Usage: npm run desktop:package -- --os <macos|windows|linux> --variant <full|tech> [--sign] [--skip-node-runtime]',
+  );
   process.exit(1);
 }
 
@@ -38,7 +42,7 @@ if (!validVariants.has(variant)) {
 }
 
 const syncVersionsResult = spawnSync(process.execPath, ['scripts/sync-desktop-version.mjs'], {
-  stdio: 'inherit'
+  stdio: 'inherit',
 });
 if (syncVersionsResult.error) {
   console.error(syncVersionsResult.error.message);
@@ -55,11 +59,15 @@ const env = {
   VITE_DESKTOP_RUNTIME: '1',
 };
 const cliArgs = ['build', '--bundles', bundles];
-const tauriBin = path.join('node_modules', '.bin', process.platform === 'win32' ? 'tauri.cmd' : 'tauri');
+const tauriBin = path.join(
+  'node_modules',
+  '.bin',
+  process.platform === 'win32' ? 'tauri.cmd' : 'tauri',
+);
 
 if (!existsSync(tauriBin)) {
   console.error(
-    `Local Tauri CLI not found at ${tauriBin}. Run \"npm ci\" to install dependencies before desktop packaging.`
+    `Local Tauri CLI not found at ${tauriBin}. Run \"npm ci\" to install dependencies before desktop packaging.`,
   );
   process.exit(1);
 }
@@ -81,11 +89,13 @@ const resolveNodeTarget = () => {
 
 if (sign) {
   if (os === 'macos') {
-    const hasIdentity = Boolean(env.TAURI_BUNDLE_MACOS_SIGNING_IDENTITY || env.APPLE_SIGNING_IDENTITY);
+    const hasIdentity = Boolean(
+      env.TAURI_BUNDLE_MACOS_SIGNING_IDENTITY || env.APPLE_SIGNING_IDENTITY,
+    );
     const hasProvider = Boolean(env.TAURI_BUNDLE_MACOS_PROVIDER_SHORT_NAME);
     if (!hasIdentity || !hasProvider) {
       console.error(
-        'Signing requested (--sign) but missing macOS signing env vars. Set TAURI_BUNDLE_MACOS_SIGNING_IDENTITY (or APPLE_SIGNING_IDENTITY) and TAURI_BUNDLE_MACOS_PROVIDER_SHORT_NAME.'
+        'Signing requested (--sign) but missing macOS signing env vars. Set TAURI_BUNDLE_MACOS_SIGNING_IDENTITY (or APPLE_SIGNING_IDENTITY) and TAURI_BUNDLE_MACOS_PROVIDER_SHORT_NAME.',
       );
       process.exit(1);
     }
@@ -93,10 +103,12 @@ if (sign) {
 
   if (os === 'windows') {
     const hasThumbprint = Boolean(env.TAURI_BUNDLE_WINDOWS_CERTIFICATE_THUMBPRINT);
-    const hasPfx = Boolean(env.TAURI_BUNDLE_WINDOWS_CERTIFICATE && env.TAURI_BUNDLE_WINDOWS_CERTIFICATE_PASSWORD);
+    const hasPfx = Boolean(
+      env.TAURI_BUNDLE_WINDOWS_CERTIFICATE && env.TAURI_BUNDLE_WINDOWS_CERTIFICATE_PASSWORD,
+    );
     if (!hasThumbprint && !hasPfx) {
       console.error(
-        'Signing requested (--sign) but missing Windows signing env vars. Set TAURI_BUNDLE_WINDOWS_CERTIFICATE_THUMBPRINT or TAURI_BUNDLE_WINDOWS_CERTIFICATE + TAURI_BUNDLE_WINDOWS_CERTIFICATE_PASSWORD.'
+        'Signing requested (--sign) but missing Windows signing env vars. Set TAURI_BUNDLE_WINDOWS_CERTIFICATE_THUMBPRINT or TAURI_BUNDLE_WINDOWS_CERTIFICATE + TAURI_BUNDLE_WINDOWS_CERTIFICATE_PASSWORD.',
       );
       process.exit(1);
     }
@@ -107,20 +119,20 @@ if (!skipNodeRuntime) {
   const nodeTarget = resolveNodeTarget();
   if (!nodeTarget) {
     console.error(
-      `Unable to infer Node runtime target for OS=${os} ARCH=${process.arch}. Set NODE_TARGET explicitly or pass --skip-node-runtime.`
+      `Unable to infer Node runtime target for OS=${os} ARCH=${process.arch}. Set NODE_TARGET explicitly or pass --skip-node-runtime.`,
     );
     process.exit(1);
   }
   console.log(
-    `[desktop-package] Bundling Node runtime TARGET=${nodeTarget} VERSION=${env.NODE_VERSION ?? '22.14.0'}`
+    `[desktop-package] Bundling Node runtime TARGET=${nodeTarget} VERSION=${env.NODE_VERSION ?? '22.14.0'}`,
   );
   const downloadResult = spawnSync('bash', ['scripts/download-node.sh', '--target', nodeTarget], {
     env: {
       ...env,
-      NODE_TARGET: nodeTarget
+      NODE_TARGET: nodeTarget,
     },
     stdio: 'inherit',
-    shell: process.platform === 'win32'
+    shell: process.platform === 'win32',
   });
   if (downloadResult.error) {
     console.error(downloadResult.error.message);
@@ -131,12 +143,14 @@ if (!skipNodeRuntime) {
   }
 }
 
-console.log(`[desktop-package] OS=${os} VARIANT=${variant} BUNDLES=${bundles} SIGN=${sign ? 'on' : 'off'}`);
+console.log(
+  `[desktop-package] OS=${os} VARIANT=${variant} BUNDLES=${bundles} SIGN=${sign ? 'on' : 'off'}`,
+);
 
 const result = spawnSync(tauriBin, cliArgs, {
   env,
   stdio: 'inherit',
-  shell: process.platform === 'win32'
+  shell: process.platform === 'win32',
 });
 
 if (result.error) {

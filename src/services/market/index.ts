@@ -17,16 +17,28 @@ import { createCircuitBreaker } from '@/utils';
 
 // ---- Client + Circuit Breakers ----
 
-const client = new MarketServiceClient('', { fetch: (...args: Parameters<typeof fetch>) => globalThis.fetch(...args) });
-const stockBreaker = createCircuitBreaker<ListMarketQuotesResponse>({ name: 'Market Quotes', cacheTtlMs: 0 });
+const client = new MarketServiceClient('', {
+  fetch: (...args: Parameters<typeof fetch>) => globalThis.fetch(...args),
+});
+const stockBreaker = createCircuitBreaker<ListMarketQuotesResponse>({
+  name: 'Market Quotes',
+  cacheTtlMs: 0,
+});
 const cryptoBreaker = createCircuitBreaker<ListCryptoQuotesResponse>({ name: 'Crypto Quotes' });
 
-const emptyStockFallback: ListMarketQuotesResponse = { quotes: [], finnhubSkipped: false, skipReason: '' };
+const emptyStockFallback: ListMarketQuotesResponse = {
+  quotes: [],
+  finnhubSkipped: false,
+  skipReason: '',
+};
 const emptyCryptoFallback: ListCryptoQuotesResponse = { quotes: [] };
 
 // ---- Proto -> legacy adapters ----
 
-function toMarketData(proto: ProtoMarketQuote, meta?: { name?: string; display?: string }): MarketData {
+function toMarketData(
+  proto: ProtoMarketQuote,
+  meta?: { name?: string; display?: string },
+): MarketData {
   return {
     symbol: proto.symbol,
     name: meta?.name || proto.name,
@@ -95,7 +107,7 @@ export async function fetchMultipleStocks(
     lastSuccessfulByKey.set(setKey, results);
   }
 
-  const data = results.length > 0 ? results : (lastSuccessfulByKey.get(setKey) || []);
+  const data = results.length > 0 ? results : lastSuccessfulByKey.get(setKey) || [];
   return {
     data,
     skipped: resp.finnhubSkipped || undefined,
@@ -124,9 +136,7 @@ export async function fetchCrypto(): Promise<CryptoData[]> {
     return client.listCryptoQuotes({ ids: [] }); // empty = all defaults
   }, emptyCryptoFallback);
 
-  const results = resp.quotes
-    .map(toCryptoData)
-    .filter(c => c.price > 0);
+  const results = resp.quotes.map(toCryptoData).filter((c) => c.price > 0);
 
   if (results.length > 0) {
     lastSuccessfulCrypto = results;

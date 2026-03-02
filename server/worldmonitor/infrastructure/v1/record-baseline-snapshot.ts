@@ -33,16 +33,22 @@ export async function recordBaselineSnapshot(
     const weekday = now.getUTCDay();
     const month = now.getUTCMonth() + 1;
 
-    const keys = batch.map(u => makeBaselineKey(u.type, u.region || 'global', weekday, month));
-    const existing = await mgetJson(keys) as (BaselineEntry | null)[];
+    const keys = batch.map((u) => makeBaselineKey(u.type, u.region || 'global', weekday, month));
+    const existing = (await mgetJson(keys)) as (BaselineEntry | null)[];
 
     const writes: Promise<void>[] = [];
 
     for (let i = 0; i < batch.length; i++) {
       const { type, count } = batch[i]!;
-      if (!VALID_BASELINE_TYPES.includes(type) || typeof count !== 'number' || isNaN(count)) continue;
+      if (!VALID_BASELINE_TYPES.includes(type) || typeof count !== 'number' || isNaN(count))
+        continue;
 
-      const prev: BaselineEntry = existing[i] as BaselineEntry || { mean: 0, m2: 0, sampleCount: 0, lastUpdated: '' };
+      const prev: BaselineEntry = (existing[i] as BaselineEntry) || {
+        mean: 0,
+        m2: 0,
+        sampleCount: 0,
+        lastUpdated: '',
+      };
 
       // Welford's online algorithm
       const n = prev.sampleCount + 1;
@@ -51,12 +57,18 @@ export async function recordBaselineSnapshot(
       const delta2 = count - newMean;
       const newM2 = prev.m2 + delta * delta2;
 
-      writes.push(setCachedJson(keys[i]!, {
-        mean: newMean,
-        m2: newM2,
-        sampleCount: n,
-        lastUpdated: now.toISOString(),
-      }, BASELINE_TTL));
+      writes.push(
+        setCachedJson(
+          keys[i]!,
+          {
+            mean: newMean,
+            m2: newM2,
+            sampleCount: n,
+            lastUpdated: now.toISOString(),
+          },
+          BASELINE_TTL,
+        ),
+      );
     }
 
     if (writes.length > 0) {

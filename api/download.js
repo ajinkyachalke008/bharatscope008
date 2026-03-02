@@ -21,21 +21,25 @@ const VARIANT_IDENTIFIERS = {
 };
 
 function canonicalAssetName(name) {
-  return String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+  return String(name || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '');
 }
 
 function findAssetForVariant(assets, variant, platformMatcher) {
   const identifiers = VARIANT_IDENTIFIERS[variant] ?? null;
   if (!identifiers) return null;
 
-  return assets.find((asset) => {
-    const assetName = String(asset?.name || '');
-    const normalizedAssetName = canonicalAssetName(assetName);
-    const hasVariantIdentifier = identifiers.some((identifier) =>
-      normalizedAssetName.includes(identifier)
-    );
-    return hasVariantIdentifier && platformMatcher(assetName);
-  }) ?? null;
+  return (
+    assets.find((asset) => {
+      const assetName = String(asset?.name || '');
+      const normalizedAssetName = canonicalAssetName(assetName);
+      const hasVariantIdentifier = identifiers.some((identifier) =>
+        normalizedAssetName.includes(identifier),
+      );
+      return hasVariantIdentifier && platformMatcher(assetName);
+    }) ?? null
+  );
 }
 
 export default async function handler(req) {
@@ -50,7 +54,7 @@ export default async function handler(req) {
   try {
     const res = await fetch(RELEASES_URL, {
       headers: {
-        'Accept': 'application/vnd.github+json',
+        Accept: 'application/vnd.github+json',
         'User-Agent': 'WorldMonitor-Download-Redirect',
       },
     });
@@ -73,7 +77,7 @@ export default async function handler(req) {
     return new Response(null, {
       status: 302,
       headers: {
-        'Location': asset.browser_download_url,
+        Location: asset.browser_download_url,
         'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
       },
     });

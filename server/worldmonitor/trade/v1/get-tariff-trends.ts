@@ -38,9 +38,11 @@ function toDataPoint(row: any, reporter: string, partner: string): TariffDataPoi
 
   return {
     reportingCountry:
-      WTO_MEMBER_CODES[reporter] ?? String(row.ReportingEconomy ?? row.reportingEconomy ?? reporter),
+      WTO_MEMBER_CODES[reporter] ??
+      String(row.ReportingEconomy ?? row.reportingEconomy ?? reporter),
     partnerCountry:
-      WTO_MEMBER_CODES[partner] ?? String(row.PartnerEconomy ?? row.partnerEconomy ?? (partner || 'World')),
+      WTO_MEMBER_CODES[partner] ??
+      String(row.PartnerEconomy ?? row.partnerEconomy ?? (partner || 'World')),
     productSector: String(row.ProductOrSector ?? row.productOrSector ?? 'All products'),
     year,
     tariffRate: Math.round(tariffRate * 100) / 100,
@@ -71,7 +73,7 @@ async function fetchTariffTrends(
   const data = await wtoFetch('/data', params);
   if (!data) return { datapoints: [], ok: false };
 
-  const dataset: any[] = Array.isArray(data) ? data : data?.Dataset ?? data?.dataset ?? [];
+  const dataset: any[] = Array.isArray(data) ? data : (data?.Dataset ?? data?.dataset ?? []);
   const datapoints = dataset
     .map((row) => toDataPoint(row, reporter, partner || '000'))
     .filter((d): d is TariffDataPoint => d !== null)
@@ -102,7 +104,9 @@ export async function getTariffTrends(
       },
     );
 
-    return result ?? { datapoints: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true };
+    return (
+      result ?? { datapoints: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true }
+    );
   } catch {
     return {
       datapoints: [],

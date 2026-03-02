@@ -13,13 +13,29 @@ import { createCircuitBreaker } from '@/utils';
 // ---- Client + Circuit Breakers (3 separate breakers for 3 RPCs) ----
 
 const client = new ConflictServiceClient('', { fetch: (...args) => globalThis.fetch(...args) });
-const acledBreaker = createCircuitBreaker<ListAcledEventsResponse>({ name: 'ACLED Conflicts', cacheTtlMs: 10 * 60 * 1000, persistCache: true });
-const ucdpBreaker = createCircuitBreaker<ListUcdpEventsResponse>({ name: 'UCDP Events', cacheTtlMs: 10 * 60 * 1000, persistCache: true });
-const hapiBreaker = createCircuitBreaker<GetHumanitarianSummaryResponse>({ name: 'HDX HAPI', cacheTtlMs: 10 * 60 * 1000, persistCache: true });
+const acledBreaker = createCircuitBreaker<ListAcledEventsResponse>({
+  name: 'ACLED Conflicts',
+  cacheTtlMs: 10 * 60 * 1000,
+  persistCache: true,
+});
+const ucdpBreaker = createCircuitBreaker<ListUcdpEventsResponse>({
+  name: 'UCDP Events',
+  cacheTtlMs: 10 * 60 * 1000,
+  persistCache: true,
+});
+const hapiBreaker = createCircuitBreaker<GetHumanitarianSummaryResponse>({
+  name: 'HDX HAPI',
+  cacheTtlMs: 10 * 60 * 1000,
+  persistCache: true,
+});
 
 // ---- Exported Types (match legacy shapes exactly) ----
 
-export type ConflictEventType = 'battle' | 'explosion' | 'remote_violence' | 'violence_against_civilians';
+export type ConflictEventType =
+  | 'battle'
+  | 'explosion'
+  | 'remote_violence'
+  | 'violence_against_civilians';
 
 export interface ConflictEvent {
   id: string;
@@ -125,8 +141,26 @@ function toUcdpGeoEvent(proto: ProtoUcdpEvent): UcdpGeoEvent {
 // ---- Adapter 3: Proto HumanitarianCountrySummary -> legacy HapiConflictSummary ----
 
 const HAPI_COUNTRY_CODES = [
-  'US', 'RU', 'CN', 'UA', 'IR', 'IL', 'TW', 'KP', 'SA', 'TR',
-  'PL', 'DE', 'FR', 'GB', 'IN', 'PK', 'SY', 'YE', 'MM', 'VE',
+  'US',
+  'RU',
+  'CN',
+  'UA',
+  'IR',
+  'IL',
+  'TW',
+  'KP',
+  'SA',
+  'TR',
+  'PL',
+  'DE',
+  'FR',
+  'GB',
+  'IN',
+  'PK',
+  'SY',
+  'YE',
+  'MM',
+  'VE',
 ];
 
 function toHapiSummary(proto: ProtoHumanSummary): HapiConflictSummary {
@@ -160,7 +194,7 @@ function deriveUcdpClassifications(events: ProtoUcdpEvent[]): Map<string, UcdpCo
 
   for (const [country, countryEvents] of byCountry) {
     // Filter to trailing 2-year window
-    const recentEvents = countryEvents.filter(e => (now - e.dateStart) < twoYearsMs);
+    const recentEvents = countryEvents.filter((e) => now - e.dateStart < twoYearsMs);
     const totalDeaths = recentEvents.reduce((sum, e) => sum + e.deathsBest, 0);
     const eventCount = recentEvents.length;
 
@@ -183,10 +217,12 @@ function deriveUcdpClassifications(events: ProtoUcdpEvent[]): Map<string, UcdpCo
 
     // Most recent event year
     const mostRecentEvent = recentEvents.reduce<ProtoUcdpEvent | undefined>(
-      (latest, e) => (!latest || e.dateStart > latest.dateStart) ? e : latest,
+      (latest, e) => (!latest || e.dateStart > latest.dateStart ? e : latest),
       undefined,
     );
-    const year = mostRecentEvent ? new Date(mostRecentEvent.dateStart).getFullYear() : new Date().getFullYear();
+    const year = mostRecentEvent
+      ? new Date(mostRecentEvent.dateStart).getFullYear()
+      : new Date().getFullYear();
 
     result.set(country, {
       location: country,
@@ -206,9 +242,9 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
-    Math.sin(dLon / 2) ** 2;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -319,7 +355,7 @@ export function deduplicateAgainstAcled(
 ): UcdpGeoEvent[] {
   if (!acledEvents.length) return ucdpEvents;
 
-  return ucdpEvents.filter(ucdp => {
+  return ucdpEvents.filter((ucdp) => {
     const uLat = ucdp.latitude;
     const uLon = ucdp.longitude;
     const uDate = new Date(ucdp.date_start).getTime();
@@ -359,8 +395,8 @@ export function groupByCountry(events: UcdpGeoEvent[]): Map<string, UcdpGeoEvent
 
 export function groupByType(events: UcdpGeoEvent[]): Record<string, UcdpGeoEvent[]> {
   return {
-    'state-based': events.filter(e => e.type_of_violence === 'state-based'),
-    'non-state': events.filter(e => e.type_of_violence === 'non-state'),
-    'one-sided': events.filter(e => e.type_of_violence === 'one-sided'),
+    'state-based': events.filter((e) => e.type_of_violence === 'state-based'),
+    'non-state': events.filter((e) => e.type_of_violence === 'non-state'),
+    'one-sided': events.filter((e) => e.type_of_violence === 'one-sided'),
   };
 }

@@ -46,10 +46,7 @@ export const WTO_MEMBER_CODES: Record<string, string> = {
  * IMPORTANT: The WTO API does NOT support comma-separated indicator codes in the `i` param.
  * Each indicator must be queried separately.
  */
-export async function wtoFetch(
-  path: string,
-  params?: Record<string, string>,
-): Promise<any | null> {
+export async function wtoFetch(path: string, params?: Record<string, string>): Promise<any | null> {
   const apiKey = process.env.WTO_API_KEY;
   if (!apiKey) {
     console.warn('[WTO] WTO_API_KEY not set in process.env');

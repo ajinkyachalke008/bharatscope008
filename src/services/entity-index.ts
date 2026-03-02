@@ -67,7 +67,7 @@ export function lookupEntitiesByKeyword(keyword: string): EntityEntry[] {
   const ids = index.byKeyword.get(keyword.toLowerCase());
   if (!ids) return [];
   return Array.from(ids)
-    .map(id => index.byId.get(id))
+    .map((id) => index.byId.get(id))
     .filter((e): e is EntityEntry => e !== undefined);
 }
 
@@ -76,7 +76,7 @@ export function lookupEntitiesBySector(sector: string): EntityEntry[] {
   const ids = index.bySector.get(sector.toLowerCase());
   if (!ids) return [];
   return Array.from(ids)
-    .map(id => index.byId.get(id))
+    .map((id) => index.byId.get(id))
     .filter((e): e is EntityEntry => e !== undefined);
 }
 
@@ -84,7 +84,7 @@ export function findRelatedEntities(entityId: string): EntityEntry[] {
   const index = getEntityIndex();
   const entity = index.byId.get(entityId);
   if (!entity?.related) return [];
-  return entity.related.map(id => index.byId.get(id)).filter((e): e is EntityEntry => !!e);
+  return entity.related.map((id) => index.byId.get(id)).filter((e): e is EntityEntry => !!e);
 }
 
 export interface EntityMatch {

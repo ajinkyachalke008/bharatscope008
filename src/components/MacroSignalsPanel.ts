@@ -13,16 +13,30 @@ interface MacroSignalData {
     liquidity: { status: string; value: number | null; sparkline: number[] };
     flowStructure: { status: string; btcReturn5: number | null; qqqReturn5: number | null };
     macroRegime: { status: string; qqqRoc20: number | null; xlpRoc20: number | null };
-    technicalTrend: { status: string; btcPrice: number | null; sma50: number | null; sma200: number | null; vwap30d: number | null; mayerMultiple: number | null; sparkline: number[] };
+    technicalTrend: {
+      status: string;
+      btcPrice: number | null;
+      sma50: number | null;
+      sma200: number | null;
+      vwap30d: number | null;
+      mayerMultiple: number | null;
+      sparkline: number[];
+    };
     hashRate: { status: string; change30d: number | null };
     miningCost: { status: string };
-    fearGreed: { status: string; value: number | null; history: Array<{ value: number; date: string }> };
+    fearGreed: {
+      status: string;
+      value: number | null;
+      history: Array<{ value: number; date: string }>;
+    };
   };
   meta: { qqqSparkline: number[] };
   unavailable?: boolean;
 }
 
-const economicClient = new EconomicServiceClient('', { fetch: (...args) => globalThis.fetch(...args) });
+const economicClient = new EconomicServiceClient('', {
+  fetch: (...args) => globalThis.fetch(...args),
+});
 
 /** Map proto response (optional fields = undefined) to MacroSignalData (null for absent values). */
 function mapProtoToData(r: GetMacroSignalsResponse): MacroSignalData {
@@ -80,11 +94,13 @@ function sparklineSvg(data: number[], width = 80, height = 24, color = '#4fc3f7'
   const min = Math.min(...data);
   const max = Math.max(...data);
   const range = max - min || 1;
-  const points = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * width;
-    const y = height - ((v - min) / range) * (height - 2) - 1;
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  }).join(' ');
+  const points = data
+    .map((v, i) => {
+      const x = (i / (data.length - 1)) * width;
+      const y = height - ((v - min) / range) * (height - 2) - 1;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(' ');
   return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" class="signal-sparkline"><polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 
@@ -107,8 +123,31 @@ function donutGaugeSvg(value: number | null, size = 48): string {
 
 function statusBadgeClass(status: string): string {
   const s = status.toUpperCase();
-  if (['BULLISH', 'RISK-ON', 'GROWING', 'PROFITABLE', 'ALIGNED', 'NORMAL', 'EXTREME GREED', 'GREED'].includes(s)) return 'badge-bullish';
-  if (['BEARISH', 'DEFENSIVE', 'DECLINING', 'SQUEEZE', 'PASSIVE GAP', 'EXTREME FEAR', 'FEAR'].includes(s)) return 'badge-bearish';
+  if (
+    [
+      'BULLISH',
+      'RISK-ON',
+      'GROWING',
+      'PROFITABLE',
+      'ALIGNED',
+      'NORMAL',
+      'EXTREME GREED',
+      'GREED',
+    ].includes(s)
+  )
+    return 'badge-bullish';
+  if (
+    [
+      'BEARISH',
+      'DEFENSIVE',
+      'DECLINING',
+      'SQUEEZE',
+      'PASSIVE GAP',
+      'EXTREME FEAR',
+      'FEAR',
+    ].includes(s)
+  )
+    return 'badge-bearish';
   return 'badge-neutral';
 }
 
@@ -147,7 +186,7 @@ export class MacroSignalsPanel extends Panel {
 
         if (this.data && this.data.unavailable && attempt < 2) {
           this.showRetrying();
-          await new Promise(r => setTimeout(r, 20_000));
+          await new Promise((r) => setTimeout(r, 20_000));
           continue;
         }
         break;
@@ -155,7 +194,7 @@ export class MacroSignalsPanel extends Panel {
         if (this.isAbortError(err)) return;
         if (attempt < 2) {
           this.showRetrying();
-          await new Promise(r => setTimeout(r, 20_000));
+          await new Promise((r) => setTimeout(r, 20_000));
           continue;
         }
         this.error = err instanceof Error ? err.message : 'Failed to fetch';
@@ -184,7 +223,12 @@ export class MacroSignalsPanel extends Panel {
     const d = this.data;
     const s = d.signals;
 
-    const verdictClass = d.verdict === 'BUY' ? 'verdict-buy' : d.verdict === 'CASH' ? 'verdict-cash' : 'verdict-unknown';
+    const verdictClass =
+      d.verdict === 'BUY'
+        ? 'verdict-buy'
+        : d.verdict === 'CASH'
+          ? 'verdict-cash'
+          : 'verdict-unknown';
 
     const html = `
       <div class="macro-signals-container">
@@ -208,7 +252,14 @@ export class MacroSignalsPanel extends Panel {
     this.setContent(html);
   }
 
-  private renderSignalCard(name: string, status: string, value: string, sparkline: string, detail: string, link: string | null): string {
+  private renderSignalCard(
+    name: string,
+    status: string,
+    value: string,
+    sparkline: string,
+    detail: string,
+    link: string | null,
+  ): string {
     const badgeClass = statusBadgeClass(status);
     return `
       <div class="signal-card${link ? ' signal-card-linked' : ''}">

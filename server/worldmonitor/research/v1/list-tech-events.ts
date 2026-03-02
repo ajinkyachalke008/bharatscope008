@@ -37,7 +37,13 @@ const CURATED_EVENTS: TechEvent[] = [
     title: 'STEP Dubai 2026',
     type: 'conference',
     location: 'Dubai Internet City, Dubai',
-    coords: { lat: 25.0956, lng: 55.1548, country: 'UAE', original: 'Dubai Internet City, Dubai', virtual: false },
+    coords: {
+      lat: 25.0956,
+      lng: 55.1548,
+      country: 'UAE',
+      original: 'Dubai Internet City, Dubai',
+      virtual: false,
+    },
     startDate: '2026-02-11',
     endDate: '2026-02-12',
     url: 'https://dubai.stepconference.com',
@@ -49,12 +55,18 @@ const CURATED_EVENTS: TechEvent[] = [
     title: 'GITEX Global 2026',
     type: 'conference',
     location: 'Dubai World Trade Centre, Dubai',
-    coords: { lat: 25.2285, lng: 55.2867, country: 'UAE', original: 'Dubai World Trade Centre, Dubai', virtual: false },
+    coords: {
+      lat: 25.2285,
+      lng: 55.2867,
+      country: 'UAE',
+      original: 'Dubai World Trade Centre, Dubai',
+      virtual: false,
+    },
     startDate: '2026-12-07',
     endDate: '2026-12-11',
     url: 'https://www.gitex.com',
     source: 'curated',
-    description: 'World\'s largest tech & startup show',
+    description: "World's largest tech & startup show",
   },
   {
     id: 'token2049-dubai-2026',
@@ -73,30 +85,42 @@ const CURATED_EVENTS: TechEvent[] = [
     title: 'Collision 2026',
     type: 'conference',
     location: 'Toronto, Canada',
-    coords: { lat: 43.6532, lng: -79.3832, country: 'Canada', original: 'Toronto, Canada', virtual: false },
+    coords: {
+      lat: 43.6532,
+      lng: -79.3832,
+      country: 'Canada',
+      original: 'Toronto, Canada',
+      virtual: false,
+    },
     startDate: '2026-06-22',
     endDate: '2026-06-25',
     url: 'https://collisionconf.com',
     source: 'curated',
-    description: 'North America\'s fastest growing tech conference',
+    description: "North America's fastest growing tech conference",
   },
   {
     id: 'web-summit-2026',
     title: 'Web Summit 2026',
     type: 'conference',
     location: 'Lisbon, Portugal',
-    coords: { lat: 38.7223, lng: -9.1393, country: 'Portugal', original: 'Lisbon, Portugal', virtual: false },
+    coords: {
+      lat: 38.7223,
+      lng: -9.1393,
+      country: 'Portugal',
+      original: 'Lisbon, Portugal',
+      virtual: false,
+    },
     startDate: '2026-11-02',
     endDate: '2026-11-05',
     url: 'https://websummit.com',
     source: 'curated',
-    description: 'The world\'s premier tech conference',
+    description: "The world's premier tech conference",
   },
 ];
 
 // ---------- Geocoding ----------
 
-function normalizeLocation(location: string | null): (TechEventCoords) | null {
+function normalizeLocation(location: string | null): TechEventCoords | null {
   if (!location) return null;
 
   // Clean up the location string
@@ -109,7 +133,13 @@ function normalizeLocation(location: string | null): (TechEventCoords) | null {
   // Direct lookup
   if (CITY_COORDS[normalized]) {
     const c = CITY_COORDS[normalized];
-    return { lat: c!.lat, lng: c!.lng, country: c!.country, original: location, virtual: c!.virtual ?? false };
+    return {
+      lat: c!.lat,
+      lng: c!.lng,
+      country: c!.country,
+      original: location,
+      virtual: c!.virtual ?? false,
+    };
   }
 
   // Try removing state/country suffix
@@ -118,14 +148,26 @@ function normalizeLocation(location: string | null): (TechEventCoords) | null {
     const city = parts[0]!.trim();
     if (CITY_COORDS[city]) {
       const c = CITY_COORDS[city]!;
-      return { lat: c.lat, lng: c.lng, country: c.country, original: location, virtual: c.virtual ?? false };
+      return {
+        lat: c.lat,
+        lng: c.lng,
+        country: c.country,
+        original: location,
+        virtual: c.virtual ?? false,
+      };
     }
   }
 
   // Try fuzzy match (contains)
   for (const [key, coords] of Object.entries(CITY_COORDS)) {
     if (normalized.includes(key) || key.includes(normalized)) {
-      return { lat: coords.lat, lng: coords.lng, country: coords.country, original: location, virtual: coords.virtual ?? false };
+      return {
+        lat: coords.lat,
+        lng: coords.lng,
+        country: coords.country,
+        original: location,
+        virtual: coords.virtual ?? false,
+      };
     }
   }
 
@@ -194,13 +236,15 @@ function parseDevEventsRSS(rssText: string): TechEvent[] {
 
     const titleMatch = item.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>|<title>(.*?)<\/title>/);
     const linkMatch = item.match(/<link>(.*?)<\/link>/);
-    const descMatch = item.match(/<description><!\[CDATA\[(.*?)\]\]><\/description>|<description>(.*?)<\/description>/s);
+    const descMatch = item.match(
+      /<description><!\[CDATA\[(.*?)\]\]><\/description>|<description>(.*?)<\/description>/s,
+    );
     const guidMatch = item.match(/<guid[^>]*>(.*?)<\/guid>/);
 
     const title = titleMatch ? (titleMatch[1] ?? titleMatch[2]) : null;
-    const link = linkMatch ? linkMatch[1] ?? '' : '';
+    const link = linkMatch ? (linkMatch[1] ?? '') : '';
     const description = descMatch ? (descMatch[1] ?? descMatch[2] ?? '') : '';
-    const guid = guidMatch ? guidMatch[1] ?? '' : '';
+    const guid = guidMatch ? (guidMatch[1] ?? '') : '';
 
     if (!title) continue;
 
@@ -216,8 +260,9 @@ function parseDevEventsRSS(rssText: string): TechEvent[] {
 
     // Parse location from description: various formats
     let location: string | null = null;
-    const locationMatch = description.match(/(?:in|at)\s+([A-Za-z\s]+,\s*[A-Za-z\s]+)(?:\.|$)/i) ||
-                          description.match(/Location:\s*([^<\n]+)/i);
+    const locationMatch =
+      description.match(/(?:in|at)\s+([A-Za-z\s]+,\s*[A-Za-z\s]+)(?:\.|$)/i) ||
+      description.match(/Location:\s*([^<\n]+)/i);
     if (locationMatch) {
       location = locationMatch[1]!.trim();
     }
@@ -240,7 +285,11 @@ function parseDevEventsRSS(rssText: string): TechEvent[] {
       title: title,
       type: 'conference',
       location: location || '',
-      coords: coords ?? (location === 'Online' ? { lat: 0, lng: 0, country: 'Virtual', original: 'Online', virtual: true } : undefined),
+      coords:
+        coords ??
+        (location === 'Online'
+          ? { lat: 0, lng: 0, country: 'Virtual', original: 'Online', virtual: true }
+          : undefined),
       startDate: startDate,
       endDate: startDate, // RSS doesn't have end date
       url: link,
@@ -298,9 +347,13 @@ async function fetchTechEvents(req: ListTechEventsRequest): Promise<ListTechEven
 
   // Deduplicate by title similarity (rough match)
   const seen = new Set<string>();
-  events = events.filter(e => {
+  events = events.filter((e) => {
     const year = e.startDate.slice(0, 4);
-    const key = e.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 30) + year;
+    const key =
+      e.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '')
+        .slice(0, 30) + year;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -311,19 +364,19 @@ async function fetchTechEvents(req: ListTechEventsRequest): Promise<ListTechEven
 
   // Filter by type if specified
   if (type && type !== 'all') {
-    events = events.filter(e => e.type === type);
+    events = events.filter((e) => e.type === type);
   }
 
   // Filter to only mappable events if requested
   if (mappable) {
-    events = events.filter(e => e.coords && !e.coords.virtual);
+    events = events.filter((e) => e.coords && !e.coords.virtual);
   }
 
   // Filter by time range if specified
   if (days > 0) {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() + days);
-    events = events.filter(e => new Date(e.startDate) <= cutoff);
+    events = events.filter((e) => new Date(e.startDate) <= cutoff);
   }
 
   // Apply limit if specified
@@ -332,8 +385,8 @@ async function fetchTechEvents(req: ListTechEventsRequest): Promise<ListTechEven
   }
 
   // Add metadata
-  const conferences = events.filter(e => e.type === 'conference');
-  const mappableCount = conferences.filter(e => e.coords && !e.coords.virtual).length;
+  const conferences = events.filter((e) => e.type === 'conference');
+  const mappableCount = conferences.filter((e) => e.coords && !e.coords.virtual).length;
 
   return {
     success: true,
@@ -348,9 +401,15 @@ async function fetchTechEvents(req: ListTechEventsRequest): Promise<ListTechEven
 
 function applyLimit(res: ListTechEventsResponse, limit: number): ListTechEventsResponse {
   const events = res.events.slice(0, limit);
-  const conferences = events.filter(e => e.type === 'conference');
-  const mappableCount = conferences.filter(e => e.coords && !e.coords.virtual).length;
-  return { ...res, events, count: events.length, conferenceCount: conferences.length, mappableCount };
+  const conferences = events.filter((e) => e.type === 'conference');
+  const mappableCount = conferences.filter((e) => e.coords && !e.coords.virtual).length;
+  return {
+    ...res,
+    events,
+    count: events.length,
+    conferenceCount: conferences.length,
+    mappableCount,
+  };
 }
 
 // ---------- Handler ----------
@@ -361,12 +420,24 @@ export async function listTechEvents(
 ): Promise<ListTechEventsResponse> {
   try {
     const cacheKey = `${REDIS_CACHE_KEY}:${req.type || 'all'}:${req.mappable ? 1 : 0}:${req.days || 0}`;
-    const result = await cachedFetchJson<ListTechEventsResponse>(cacheKey, REDIS_CACHE_TTL, async () => {
-      const fetched = await fetchTechEvents({ ...req, limit: 0 });
-      return fetched.events.length > 0 ? fetched : null;
-    });
+    const result = await cachedFetchJson<ListTechEventsResponse>(
+      cacheKey,
+      REDIS_CACHE_TTL,
+      async () => {
+        const fetched = await fetchTechEvents({ ...req, limit: 0 });
+        return fetched.events.length > 0 ? fetched : null;
+      },
+    );
     if (!result) {
-      return { success: true, count: 0, conferenceCount: 0, mappableCount: 0, lastUpdated: new Date().toISOString(), events: [], error: '' };
+      return {
+        success: true,
+        count: 0,
+        conferenceCount: 0,
+        mappableCount: 0,
+        lastUpdated: new Date().toISOString(),
+        events: [],
+        error: '',
+      };
     }
     if (req.limit > 0 && result.events.length > req.limit) {
       return applyLimit(result, req.limit);

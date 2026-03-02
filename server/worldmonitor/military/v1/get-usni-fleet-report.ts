@@ -21,16 +21,35 @@ const USNI_STALE_TTL = 604800; // 7 days
 // ========================================================================
 
 const HULL_TYPE_MAP: Record<string, string> = {
-  CVN: 'carrier', CV: 'carrier',
-  DDG: 'destroyer', CG: 'destroyer',
-  LHD: 'amphibious', LHA: 'amphibious', LPD: 'amphibious', LSD: 'amphibious', LCC: 'amphibious',
-  SSN: 'submarine', SSBN: 'submarine', SSGN: 'submarine',
-  FFG: 'frigate', LCS: 'frigate',
-  MCM: 'patrol', PC: 'patrol',
-  AS: 'auxiliary', ESB: 'auxiliary', ESD: 'auxiliary',
-  'T-AO': 'auxiliary', 'T-AKE': 'auxiliary', 'T-AOE': 'auxiliary',
-  'T-ARS': 'auxiliary', 'T-ESB': 'auxiliary', 'T-EPF': 'auxiliary',
-  'T-AGOS': 'research', 'T-AGS': 'research', 'T-AGM': 'research', AGOS: 'research',
+  CVN: 'carrier',
+  CV: 'carrier',
+  DDG: 'destroyer',
+  CG: 'destroyer',
+  LHD: 'amphibious',
+  LHA: 'amphibious',
+  LPD: 'amphibious',
+  LSD: 'amphibious',
+  LCC: 'amphibious',
+  SSN: 'submarine',
+  SSBN: 'submarine',
+  SSGN: 'submarine',
+  FFG: 'frigate',
+  LCS: 'frigate',
+  MCM: 'patrol',
+  PC: 'patrol',
+  AS: 'auxiliary',
+  ESB: 'auxiliary',
+  ESD: 'auxiliary',
+  'T-AO': 'auxiliary',
+  'T-AKE': 'auxiliary',
+  'T-AOE': 'auxiliary',
+  'T-ARS': 'auxiliary',
+  'T-ESB': 'auxiliary',
+  'T-EPF': 'auxiliary',
+  'T-AGOS': 'research',
+  'T-AGS': 'research',
+  'T-AGM': 'research',
+  AGOS: 'research',
 };
 
 function hullToVesselType(hull: string): string {
@@ -45,13 +64,22 @@ function detectDeploymentStatus(text: string): string {
   if (!text) return 'unknown';
   const lower = text.toLowerCase();
   if (lower.includes('deployed') || lower.includes('deployment')) return 'deployed';
-  if (lower.includes('underway') || lower.includes('transiting') || lower.includes('transit')) return 'underway';
-  if (lower.includes('homeport') || lower.includes('in port') || lower.includes('pierside') || lower.includes('returned')) return 'in-port';
+  if (lower.includes('underway') || lower.includes('transiting') || lower.includes('transit'))
+    return 'underway';
+  if (
+    lower.includes('homeport') ||
+    lower.includes('in port') ||
+    lower.includes('pierside') ||
+    lower.includes('returned')
+  )
+    return 'in-port';
   return 'unknown';
 }
 
 function extractHomePort(text: string): string | undefined {
-  const match = text.match(/homeported (?:at|in) ([^.,]+)/i) || text.match(/home[ -]?ported (?:at|in) ([^.,]+)/i);
+  const match =
+    text.match(/homeported (?:at|in) ([^.,]+)/i) ||
+    text.match(/home[ -]?ported (?:at|in) ([^.,]+)/i);
   return match ? match[1]!.trim() : undefined;
 }
 
@@ -101,8 +129,8 @@ const REGION_COORDS: Record<string, { lat: number; lon: number }> = {
   Guam: { lat: 13.45, lon: 144.79 },
   'Pearl Harbor': { lat: 21.35, lon: -157.95 },
   'San Diego': { lat: 32.68, lon: -117.15 },
-  Norfolk: { lat: 36.95, lon: -76.30 },
-  Mayport: { lat: 30.39, lon: -81.40 },
+  Norfolk: { lat: 36.95, lon: -76.3 },
+  Mayport: { lat: 30.39, lon: -81.4 },
   Bahrain: { lat: 26.23, lon: 50.55 },
   Rota: { lat: 36.63, lon: -6.35 },
   'Diego Garcia': { lat: -7.32, lon: 72.42 },
@@ -120,7 +148,11 @@ function getRegionCoords(regionText: string): { lat: number; lon: number } | nul
   if (REGION_COORDS[normalized]) return REGION_COORDS[normalized];
   const lower = normalized.toLowerCase();
   for (const [key, coords] of Object.entries(REGION_COORDS)) {
-    if (key.toLowerCase() === lower || lower.includes(key.toLowerCase()) || key.toLowerCase().includes(lower)) {
+    if (
+      key.toLowerCase() === lower ||
+      lower.includes(key.toLowerCase()) ||
+      key.toLowerCase().includes(lower)
+    ) {
       return coords;
     }
   }
@@ -137,10 +169,12 @@ function extractBattleForceSummary(tableHtml: string): BattleForceSummary | unde
   const rows = Array.from(tableHtml.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi));
   if (rows.length < 2) return undefined;
 
-  const headerCells = Array.from(rows[0]![1]!.matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi))
-    .map((m) => stripHtml(m[1]!).toLowerCase());
-  const valueCells = Array.from(rows[1]![1]!.matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi))
-    .map((m) => parseLeadingInteger(stripHtml(m[1]!)));
+  const headerCells = Array.from(rows[0]![1]!.matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi)).map(
+    (m) => stripHtml(m[1]!).toLowerCase(),
+  );
+  const valueCells = Array.from(rows[1]![1]!.matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi)).map(
+    (m) => parseLeadingInteger(stripHtml(m[1]!)),
+  );
 
   const summary: BattleForceSummary = { totalShips: 0, deployed: 0, underway: 0 };
   let matched = false;
@@ -165,12 +199,15 @@ function extractBattleForceSummary(tableHtml: string): BattleForceSummary | unde
   if (matched) return summary;
 
   const tableText = stripHtml(tableHtml);
-  const totalMatch = tableText.match(/(?:battle[- ]?force|ships?|total)[^0-9]{0,40}(\d{1,3}(?:,\d{3})*)/i)
-    || tableText.match(/(\d{1,3}(?:,\d{3})*)\s*(?:battle[- ]?force|ships?|total)/i);
-  const deployedMatch = tableText.match(/deployed[^0-9]{0,40}(\d{1,3}(?:,\d{3})*)/i)
-    || tableText.match(/(\d{1,3}(?:,\d{3})*)\s*deployed/i);
-  const underwayMatch = tableText.match(/underway[^0-9]{0,40}(\d{1,3}(?:,\d{3})*)/i)
-    || tableText.match(/(\d{1,3}(?:,\d{3})*)\s*underway/i);
+  const totalMatch =
+    tableText.match(/(?:battle[- ]?force|ships?|total)[^0-9]{0,40}(\d{1,3}(?:,\d{3})*)/i) ||
+    tableText.match(/(\d{1,3}(?:,\d{3})*)\s*(?:battle[- ]?force|ships?|total)/i);
+  const deployedMatch =
+    tableText.match(/deployed[^0-9]{0,40}(\d{1,3}(?:,\d{3})*)/i) ||
+    tableText.match(/(\d{1,3}(?:,\d{3})*)\s*deployed/i);
+  const underwayMatch =
+    tableText.match(/underway[^0-9]{0,40}(\d{1,3}(?:,\d{3})*)/i) ||
+    tableText.match(/(\d{1,3}(?:,\d{3})*)\s*underway/i);
 
   if (!totalMatch && !deployedMatch && !underwayMatch) return undefined;
   return {
@@ -270,7 +307,11 @@ function parseUSNIArticle(
             existing.deploymentStatus = entry.deploymentStatus;
           }
           if (!existing.homePort && entry.homePort) existing.homePort = entry.homePort;
-          if ((!existing.activityDescription || existing.activityDescription.length < (entry.activityDescription || '').length) && entry.activityDescription) {
+          if (
+            (!existing.activityDescription ||
+              existing.activityDescription.length < (entry.activityDescription || '').length) &&
+            entry.activityDescription
+          ) {
             existing.activityDescription = entry.activityDescription;
           }
           return;
@@ -330,9 +371,13 @@ function parseUSNIArticle(
   }
 
   for (const sg of strikeGroups) {
-    const wingMatch = html.match(new RegExp(sg.name + '[\\s\\S]{0,500}Carrier Air Wing\\s*(\\w+)', 'i'));
+    const wingMatch = html.match(
+      new RegExp(sg.name + '[\\s\\S]{0,500}Carrier Air Wing\\s*(\\w+)', 'i'),
+    );
     if (wingMatch) sg.airWing = `Carrier Air Wing ${wingMatch[1]}`;
-    const desronMatch = html.match(new RegExp(sg.name + '[\\s\\S]{0,500}Destroyer Squadron\\s*(\\w+)', 'i'));
+    const desronMatch = html.match(
+      new RegExp(sg.name + '[\\s\\S]{0,500}Destroyer Squadron\\s*(\\w+)', 'i'),
+    );
     if (desronMatch) sg.destroyerSquadron = `Destroyer Squadron ${desronMatch[1]}`;
     sg.escorts = Array.from(new Set(sg.escorts));
   }
@@ -387,13 +432,17 @@ async function fetchUSNIReport(): Promise<USNIFleetReport | null> {
   const post = wpData[0]!;
   const articleUrl = (post.link as string) || `https://news.usni.org/?p=${post.id}`;
   const articleDate = (post.date as string) || new Date().toISOString();
-  const articleTitle = stripHtml(((post.title as Record<string, string>)?.rendered) || 'USNI Fleet Tracker');
-  const htmlContent = ((post.content as Record<string, string>)?.rendered) || '';
+  const articleTitle = stripHtml(
+    (post.title as Record<string, string>)?.rendered || 'USNI Fleet Tracker',
+  );
+  const htmlContent = (post.content as Record<string, string>)?.rendered || '';
 
   if (!htmlContent) return null;
 
   const report = parseUSNIArticle(htmlContent, articleUrl, articleDate, articleTitle);
-  console.log(`[USNI Fleet] Parsed: ${report.vessels.length} vessels, ${report.strikeGroups.length} CSGs, ${report.regions.length} regions`);
+  console.log(
+    `[USNI Fleet] Parsed: ${report.vessels.length} vessels, ${report.strikeGroups.length} CSGs, ${report.regions.length} regions`,
+  );
 
   if (report.parsingWarnings.length > 0) {
     console.warn('[USNI Fleet] Warnings:', report.parsingWarnings.join('; '));
@@ -413,21 +462,34 @@ export async function getUSNIFleetReport(
     if (req.forceRefresh) {
       // Bypass cachedFetchJson — fetch fresh and write both caches
       const report = await fetchUSNIReport();
-      if (!report) return { report: undefined, cached: false, stale: false, error: 'No USNI fleet tracker articles found' };
+      if (!report)
+        return {
+          report: undefined,
+          cached: false,
+          stale: false,
+          error: 'No USNI fleet tracker articles found',
+        };
       await setCachedJson(USNI_CACHE_KEY, report, USNI_CACHE_TTL);
       return { report, cached: false, stale: false, error: '' };
     }
 
     // Single atomic call — source tracking inside cachedFetchJsonWithMeta eliminates TOCTOU race
     const { data: report, source } = await cachedFetchJsonWithMeta<USNIFleetReport>(
-      USNI_CACHE_KEY, USNI_CACHE_TTL, fetchUSNIReport,
+      USNI_CACHE_KEY,
+      USNI_CACHE_TTL,
+      fetchUSNIReport,
     );
     if (report) {
       if (source === 'cache') console.log('[USNI Fleet] Cache hit');
       return { report, cached: source === 'cache', stale: false, error: '' };
     }
 
-    return { report: undefined, cached: false, stale: false, error: 'No USNI fleet tracker articles found' };
+    return {
+      report: undefined,
+      cached: false,
+      stale: false,
+      error: 'No USNI fleet tracker articles found',
+    };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.warn('[USNI Fleet] Error:', message);

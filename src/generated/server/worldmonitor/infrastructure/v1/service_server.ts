@@ -108,8 +108,7 @@ export interface RecordBaselineSnapshotResponse {
   error: string;
 }
 
-export interface GetCableHealthRequest {
-}
+export interface GetCableHealthRequest {}
 
 export interface GetCableHealthResponse {
   generatedAt: number;
@@ -130,11 +129,25 @@ export interface CableHealthEvidence {
   ts: number;
 }
 
-export type CableHealthStatus = "CABLE_HEALTH_STATUS_UNSPECIFIED" | "CABLE_HEALTH_STATUS_OK" | "CABLE_HEALTH_STATUS_DEGRADED" | "CABLE_HEALTH_STATUS_FAULT";
+export type CableHealthStatus =
+  | 'CABLE_HEALTH_STATUS_UNSPECIFIED'
+  | 'CABLE_HEALTH_STATUS_OK'
+  | 'CABLE_HEALTH_STATUS_DEGRADED'
+  | 'CABLE_HEALTH_STATUS_FAULT';
 
-export type OutageSeverity = "OUTAGE_SEVERITY_UNSPECIFIED" | "OUTAGE_SEVERITY_PARTIAL" | "OUTAGE_SEVERITY_MAJOR" | "OUTAGE_SEVERITY_TOTAL";
+export type OutageSeverity =
+  | 'OUTAGE_SEVERITY_UNSPECIFIED'
+  | 'OUTAGE_SEVERITY_PARTIAL'
+  | 'OUTAGE_SEVERITY_MAJOR'
+  | 'OUTAGE_SEVERITY_TOTAL';
 
-export type ServiceOperationalStatus = "SERVICE_OPERATIONAL_STATUS_UNSPECIFIED" | "SERVICE_OPERATIONAL_STATUS_OPERATIONAL" | "SERVICE_OPERATIONAL_STATUS_DEGRADED" | "SERVICE_OPERATIONAL_STATUS_PARTIAL_OUTAGE" | "SERVICE_OPERATIONAL_STATUS_MAJOR_OUTAGE" | "SERVICE_OPERATIONAL_STATUS_MAINTENANCE";
+export type ServiceOperationalStatus =
+  | 'SERVICE_OPERATIONAL_STATUS_UNSPECIFIED'
+  | 'SERVICE_OPERATIONAL_STATUS_OPERATIONAL'
+  | 'SERVICE_OPERATIONAL_STATUS_DEGRADED'
+  | 'SERVICE_OPERATIONAL_STATUS_PARTIAL_OUTAGE'
+  | 'SERVICE_OPERATIONAL_STATUS_MAJOR_OUTAGE'
+  | 'SERVICE_OPERATIONAL_STATUS_MAINTENANCE';
 
 export interface FieldViolation {
   field: string;
@@ -145,8 +158,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -157,7 +170,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -181,10 +194,22 @@ export interface RouteDescriptor {
 }
 
 export interface InfrastructureServiceHandler {
-  listInternetOutages(ctx: ServerContext, req: ListInternetOutagesRequest): Promise<ListInternetOutagesResponse>;
-  listServiceStatuses(ctx: ServerContext, req: ListServiceStatusesRequest): Promise<ListServiceStatusesResponse>;
-  getTemporalBaseline(ctx: ServerContext, req: GetTemporalBaselineRequest): Promise<GetTemporalBaselineResponse>;
-  recordBaselineSnapshot(ctx: ServerContext, req: RecordBaselineSnapshotRequest): Promise<RecordBaselineSnapshotResponse>;
+  listInternetOutages(
+    ctx: ServerContext,
+    req: ListInternetOutagesRequest,
+  ): Promise<ListInternetOutagesResponse>;
+  listServiceStatuses(
+    ctx: ServerContext,
+    req: ListServiceStatusesRequest,
+  ): Promise<ListServiceStatusesResponse>;
+  getTemporalBaseline(
+    ctx: ServerContext,
+    req: GetTemporalBaselineRequest,
+  ): Promise<GetTemporalBaselineResponse>;
+  recordBaselineSnapshot(
+    ctx: ServerContext,
+    req: RecordBaselineSnapshotRequest,
+  ): Promise<RecordBaselineSnapshotResponse>;
   getCableHealth(ctx: ServerContext, req: GetCableHealthRequest): Promise<GetCableHealthResponse>;
 }
 
@@ -194,14 +219,14 @@ export function createInfrastructureServiceRoutes(
 ): RouteDescriptor[] {
   return [
     {
-      method: "POST",
-      path: "/api/infrastructure/v1/list-internet-outages",
+      method: 'POST',
+      path: '/api/infrastructure/v1/list-internet-outages',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as ListInternetOutagesRequest;
+          const body = (await req.json()) as ListInternetOutagesRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("listInternetOutages", body);
+            const bodyViolations = options.validateRequest('listInternetOutages', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -216,13 +241,13 @@ export function createInfrastructureServiceRoutes(
           const result = await handler.listInternetOutages(ctx, body);
           return new Response(JSON.stringify(result as ListInternetOutagesResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -231,20 +256,20 @@ export function createInfrastructureServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/infrastructure/v1/list-service-statuses",
+      method: 'POST',
+      path: '/api/infrastructure/v1/list-service-statuses',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as ListServiceStatusesRequest;
+          const body = (await req.json()) as ListServiceStatusesRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("listServiceStatuses", body);
+            const bodyViolations = options.validateRequest('listServiceStatuses', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -259,13 +284,13 @@ export function createInfrastructureServiceRoutes(
           const result = await handler.listServiceStatuses(ctx, body);
           return new Response(JSON.stringify(result as ListServiceStatusesResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -274,20 +299,20 @@ export function createInfrastructureServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/infrastructure/v1/get-temporal-baseline",
+      method: 'POST',
+      path: '/api/infrastructure/v1/get-temporal-baseline',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetTemporalBaselineRequest;
+          const body = (await req.json()) as GetTemporalBaselineRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getTemporalBaseline", body);
+            const bodyViolations = options.validateRequest('getTemporalBaseline', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -302,13 +327,13 @@ export function createInfrastructureServiceRoutes(
           const result = await handler.getTemporalBaseline(ctx, body);
           return new Response(JSON.stringify(result as GetTemporalBaselineResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -317,20 +342,20 @@ export function createInfrastructureServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/infrastructure/v1/record-baseline-snapshot",
+      method: 'POST',
+      path: '/api/infrastructure/v1/record-baseline-snapshot',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as RecordBaselineSnapshotRequest;
+          const body = (await req.json()) as RecordBaselineSnapshotRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("recordBaselineSnapshot", body);
+            const bodyViolations = options.validateRequest('recordBaselineSnapshot', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -345,13 +370,13 @@ export function createInfrastructureServiceRoutes(
           const result = await handler.recordBaselineSnapshot(ctx, body);
           return new Response(JSON.stringify(result as RecordBaselineSnapshotResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -360,20 +385,20 @@ export function createInfrastructureServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/infrastructure/v1/get-cable-health",
+      method: 'POST',
+      path: '/api/infrastructure/v1/get-cable-health',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetCableHealthRequest;
+          const body = (await req.json()) as GetCableHealthRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getCableHealth", body);
+            const bodyViolations = options.validateRequest('getCableHealth', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -388,13 +413,13 @@ export function createInfrastructureServiceRoutes(
           const result = await handler.getCableHealth(ctx, body);
           return new Response(JSON.stringify(result as GetCableHealthResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -403,11 +428,10 @@ export function createInfrastructureServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
   ];
 }
-

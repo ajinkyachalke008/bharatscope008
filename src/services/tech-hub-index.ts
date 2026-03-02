@@ -189,7 +189,7 @@ function buildTechHubIndex(): TechHubIndex {
     'silicon beach': 'la',
     'silicon savannah': 'nairobi',
     'station f': 'paris',
-    'zhongguancun': 'beijing',
+    zhongguancun: 'beijing',
     'tech city': 'london',
   };
 
@@ -228,7 +228,8 @@ export function inferHubsFromTitle(title: string): HubMatch[] {
 
         // Calculate confidence based on keyword length and specificity
         let confidence = 0.5;
-        if (keyword.length >= 10) confidence = 0.9; // Long keywords are specific
+        if (keyword.length >= 10)
+          confidence = 0.9; // Long keywords are specific
         else if (keyword.length >= 6) confidence = 0.7;
 
         // Boost for company names (more specific)
@@ -264,5 +265,5 @@ export function getAllHubs(): TechHubLocation[] {
 
 export function getHubsByTier(tier: 'mega' | 'major' | 'emerging'): TechHubLocation[] {
   const index = buildTechHubIndex();
-  return Array.from(index.hubs.values()).filter(h => h.tier === tier);
+  return Array.from(index.hubs.values()).filter((h) => h.tier === tier);
 }

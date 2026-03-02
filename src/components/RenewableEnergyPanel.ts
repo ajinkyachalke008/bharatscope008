@@ -8,7 +8,11 @@
 
 import { Panel } from './Panel';
 import * as d3 from 'd3';
-import type { RenewableEnergyData, RegionRenewableData, CapacitySeries } from '@/services/renewable-energy-data';
+import type {
+  RenewableEnergyData,
+  RegionRenewableData,
+  CapacitySeries,
+} from '@/services/renewable-energy-data';
 import { getCSSColor } from '@/utils';
 import { replaceChildren } from '@/utils/dom-utils';
 
@@ -81,28 +85,25 @@ export class RenewableEnergyPanel extends Panel {
   /**
    * Render the animated D3 arc gauge showing global renewable electricity %.
    */
-  private renderGauge(
-    container: HTMLElement,
-    percentage: number,
-    year: number,
-  ): void {
+  private renderGauge(container: HTMLElement, percentage: number, year: number): void {
     const size = 140;
     const radius = size / 2;
     const innerRadius = radius * 0.7;
     const outerRadius = radius;
 
-    const svg = d3.select(container)
+    const svg = d3
+      .select(container)
       .append('svg')
       .attr('viewBox', `0 0 ${size} ${size}`)
       .attr('width', size)
       .attr('height', size)
       .style('display', 'block');
 
-    const g = svg.append('g')
-      .attr('transform', `translate(${radius},${radius})`);
+    const g = svg.append('g').attr('transform', `translate(${radius},${radius})`);
 
     // Arc generator
-    const arc = d3.arc()
+    const arc = d3
+      .arc()
       .innerRadius(innerRadius)
       .outerRadius(outerRadius)
       .cornerRadius(4)
@@ -116,14 +117,16 @@ export class RenewableEnergyPanel extends Panel {
 
     // Foreground arc (renewable %) -- animated from 0 to target
     const targetAngle = (percentage / 100) * Math.PI * 2;
-    const foreground = g.append('path')
+    const foreground = g
+      .append('path')
       .datum({ endAngle: 0 })
       .attr('d', arc as any)
       .attr('fill', getCSSColor('--green'));
 
     // Animate the arc from 0 to target percentage
     const interpolate = d3.interpolate(0, targetAngle);
-    foreground.transition()
+    foreground
+      .transition()
       .duration(1500)
       .ease(d3.easeCubicOut)
       .attrTween('d', () => (t: number) => {
@@ -178,31 +181,33 @@ export class RenewableEnergyPanel extends Panel {
 
     if (width <= 0) return;
 
-    const svg = d3.select(container)
+    const svg = d3
+      .select(container)
       .append('svg')
       .attr('width', containerWidth)
       .attr('height', height + margin.top + margin.bottom)
       .style('display', 'block');
 
-    const g = svg.append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
+    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const xExtent = d3.extent(historicalData, d => d.year) as [number, number];
-    const yExtent = d3.extent(historicalData, d => d.value) as [number, number];
+    const xExtent = d3.extent(historicalData, (d) => d.year) as [number, number];
+    const yExtent = d3.extent(historicalData, (d) => d.value) as [number, number];
     const yPadding = (yExtent[1] - yExtent[0]) * 0.1;
 
     const x = d3.scaleLinear().domain(xExtent).range([0, width]);
-    const y = d3.scaleLinear()
+    const y = d3
+      .scaleLinear()
       .domain([yExtent[0] - yPadding, yExtent[1] + yPadding])
       .range([height, 0]);
 
     const greenColor = getCSSColor('--green');
 
     // Area fill
-    const area = d3.area<{ year: number; value: number }>()
-      .x(d => x(d.year))
+    const area = d3
+      .area<{ year: number; value: number }>()
+      .x((d) => x(d.year))
       .y0(height)
-      .y1(d => y(d.value))
+      .y1((d) => y(d.value))
       .curve(d3.curveMonotoneX);
 
     g.append('path')
@@ -212,9 +217,10 @@ export class RenewableEnergyPanel extends Panel {
       .attr('opacity', 0.15);
 
     // Line stroke
-    const line = d3.line<{ year: number; value: number }>()
-      .x(d => x(d.year))
-      .y(d => y(d.value))
+    const line = d3
+      .line<{ year: number; value: number }>()
+      .x((d) => x(d.year))
+      .y((d) => y(d.value))
       .curve(d3.curveMonotoneX);
 
     g.append('path')
@@ -228,12 +234,9 @@ export class RenewableEnergyPanel extends Panel {
   /**
    * Render the regional breakdown with horizontal bar chart.
    */
-  private renderRegions(
-    container: HTMLElement,
-    regions: RegionRenewableData[],
-  ): void {
+  private renderRegions(container: HTMLElement, regions: RegionRenewableData[]): void {
     // Find max percentage for bar scaling
-    const maxPct = Math.max(...regions.map(r => r.percentage), 1);
+    const maxPct = Math.max(...regions.map((r) => r.percentage), 1);
 
     for (let i = 0; i < regions.length; i++) {
       const region = regions[i]!;
@@ -272,9 +275,7 @@ export class RenewableEnergyPanel extends Panel {
       const bar = document.createElement('div');
       bar.className = 'region-bar';
       // Opacity fades from 1.0 (first/highest) to 0.5 (last/lowest)
-      const opacity = regions.length > 1
-        ? 1.0 - (i / (regions.length - 1)) * 0.5
-        : 1.0;
+      const opacity = regions.length > 1 ? 1.0 - (i / (regions.length - 1)) * 0.5 : 1.0;
       Object.assign(bar.style, {
         width: `${(region.percentage / maxPct) * 100}%`,
         height: '100%',
@@ -339,14 +340,11 @@ export class RenewableEnergyPanel extends Panel {
    * - Year labels on x-axis (first + last)
    * - Compact inline legend below chart
    */
-  private renderCapacityChart(
-    container: HTMLElement,
-    series: CapacitySeries[],
-  ): void {
+  private renderCapacityChart(container: HTMLElement, series: CapacitySeries[]): void {
     // Extract series by source
-    const solarSeries = series.find(s => s.source === 'SUN');
-    const windSeries = series.find(s => s.source === 'WND');
-    const coalSeries = series.find(s => s.source === 'COL');
+    const solarSeries = series.find((s) => s.source === 'SUN');
+    const windSeries = series.find((s) => s.source === 'WND');
+    const coalSeries = series.find((s) => s.source === 'COL');
 
     // Collect all years across all series
     const allYears = new Set<number>();
@@ -358,11 +356,11 @@ export class RenewableEnergyPanel extends Panel {
     const sortedYears = [...allYears].sort((a, b) => a - b);
 
     // Build combined dataset for stacked area: { year, solar, wind }
-    const solarMap = new Map(solarSeries?.data.map(d => [d.year, d.capacityMw]) ?? []);
-    const windMap = new Map(windSeries?.data.map(d => [d.year, d.capacityMw]) ?? []);
-    const coalMap = new Map(coalSeries?.data.map(d => [d.year, d.capacityMw]) ?? []);
+    const solarMap = new Map(solarSeries?.data.map((d) => [d.year, d.capacityMw]) ?? []);
+    const windMap = new Map(windSeries?.data.map((d) => [d.year, d.capacityMw]) ?? []);
+    const coalMap = new Map(coalSeries?.data.map((d) => [d.year, d.capacityMw]) ?? []);
 
-    const combinedData = sortedYears.map(year => ({
+    const combinedData = sortedYears.map((year) => ({
       year,
       solar: solarMap.get(year) ?? 0,
       wind: windMap.get(year) ?? 0,
@@ -379,7 +377,8 @@ export class RenewableEnergyPanel extends Panel {
     if (innerWidth <= 0) return;
 
     // D3 stack for solar + wind
-    const stack = d3.stack<{ year: number; solar: number; wind: number }>()
+    const stack = d3
+      .stack<{ year: number; solar: number; wind: number }>()
       .keys(['solar', 'wind'])
       .order(d3.stackOrderNone)
       .offset(d3.stackOffsetNone);
@@ -387,28 +386,27 @@ export class RenewableEnergyPanel extends Panel {
     const stacked = stack(combinedData);
 
     // Scales
-    const xScale = d3.scaleLinear()
+    const xScale = d3
+      .scaleLinear()
       .domain([sortedYears[0]!, sortedYears[sortedYears.length - 1]!])
       .range([0, innerWidth]);
 
-    const stackedMax = d3.max(stacked, layer => d3.max(layer, d => d[1])) ?? 0;
-    const coalMax = d3.max(combinedData, d => d.coal) ?? 0;
+    const stackedMax = d3.max(stacked, (layer) => d3.max(layer, (d) => d[1])) ?? 0;
+    const coalMax = d3.max(combinedData, (d) => d.coal) ?? 0;
     const yMax = Math.max(stackedMax, coalMax) * 1.1; // 10% padding
 
-    const yScale = d3.scaleLinear()
-      .domain([0, yMax])
-      .range([innerHeight, 0]);
+    const yScale = d3.scaleLinear().domain([0, yMax]).range([innerHeight, 0]);
 
     // Create SVG
-    const svg = d3.select(container)
+    const svg = d3
+      .select(container)
       .append('svg')
       .attr('width', containerWidth)
       .attr('height', height)
       .attr('viewBox', `0 0 ${containerWidth} ${height}`)
       .style('display', 'block');
 
-    const g = svg.append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
+    const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
     // Colors
     const solarColor = getCSSColor('--yellow');
@@ -416,10 +414,11 @@ export class RenewableEnergyPanel extends Panel {
     const coalColor = getCSSColor('--red');
 
     // Area generator for stacked layers
-    const areaGen = d3.area<d3.SeriesPoint<{ year: number; solar: number; wind: number }>>()
-      .x(d => xScale(d.data.year))
-      .y0(d => yScale(d[0]))
-      .y1(d => yScale(d[1]))
+    const areaGen = d3
+      .area<d3.SeriesPoint<{ year: number; solar: number; wind: number }>>()
+      .x((d) => xScale(d.data.year))
+      .y0((d) => yScale(d[0]))
+      .y1((d) => yScale(d[1]))
       .curve(d3.curveMonotoneX);
 
     const fillColors = [solarColor, windColor];
@@ -434,10 +433,11 @@ export class RenewableEnergyPanel extends Panel {
     });
 
     // Render coal as declining area + line
-    const coalArea = d3.area<{ year: number; coal: number }>()
-      .x(d => xScale(d.year))
+    const coalArea = d3
+      .area<{ year: number; coal: number }>()
+      .x((d) => xScale(d.year))
       .y0(innerHeight)
-      .y1(d => yScale(d.coal))
+      .y1((d) => yScale(d.coal))
       .curve(d3.curveMonotoneX);
 
     g.append('path')
@@ -446,9 +446,10 @@ export class RenewableEnergyPanel extends Panel {
       .attr('fill', coalColor)
       .attr('opacity', 0.2);
 
-    const coalLine = d3.line<{ year: number; coal: number }>()
-      .x(d => xScale(d.year))
-      .y(d => yScale(d.coal))
+    const coalLine = d3
+      .line<{ year: number; coal: number }>()
+      .x((d) => xScale(d.year))
+      .y((d) => yScale(d.coal))
       .curve(d3.curveMonotoneX);
 
     g.append('path')

@@ -266,7 +266,7 @@ export class WindowedList<T> {
   constructor(
     options: WindowedListOptions,
     renderItem: (item: T, index: number) => string,
-    onRendered?: () => void
+    onRendered?: () => void,
   ) {
     this.container = options.container;
     this.chunkSize = options.chunkSize ?? 10;
@@ -347,8 +347,10 @@ export class WindowedList<T> {
 
       // Check if chunk is in viewport (with buffer)
       const bufferPx = viewportHeight * this.bufferChunks;
-      if (relativeBottom >= scrollTop - bufferPx &&
-          relativeTop <= scrollTop + viewportHeight + bufferPx) {
+      if (
+        relativeBottom >= scrollTop - bufferPx &&
+        relativeTop <= scrollTop + viewportHeight + bufferPx
+      ) {
         chunks.push(index);
       }
     }
@@ -381,9 +383,7 @@ export class WindowedList<T> {
     const endIdx = Math.min(startIdx + this.chunkSize, this.items.length);
     const chunkItems = this.items.slice(startIdx, endIdx);
 
-    const html = chunkItems
-      .map((item, i) => this.renderItem(item, startIdx + i))
-      .join('');
+    const html = chunkItems.map((item, i) => this.renderItem(item, startIdx + i)).join('');
 
     element.innerHTML = html;
     element.classList.add('rendered');
@@ -404,4 +404,3 @@ export class WindowedList<T> {
     this.items = [];
   }
 }
-

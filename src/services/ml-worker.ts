@@ -193,7 +193,7 @@ class MLWorkerManager {
   private request<T>(
     type: string,
     data: Record<string, unknown>,
-    timeoutMs = ML_THRESHOLDS.inferenceTimeoutMs
+    timeoutMs = ML_THRESHOLDS.inferenceTimeoutMs,
   ): Promise<T> {
     return new Promise((resolve, reject) => {
       if (!this.worker || !this.isReady) {
@@ -220,10 +220,7 @@ class MLWorkerManager {
   /**
    * Load a model by ID
    */
-  async loadModel(
-    modelId: string,
-    onProgress?: (progress: number) => void
-  ): Promise<boolean> {
+  async loadModel(modelId: string, onProgress?: (progress: number) => void): Promise<boolean> {
     if (!this.isReady) return false;
     if (this.loadedModels.has(modelId)) return true;
 
@@ -235,7 +232,7 @@ class MLWorkerManager {
       return await this.request<boolean>(
         'load-model',
         { modelId },
-        ML_THRESHOLDS.modelLoadTimeoutMs
+        ML_THRESHOLDS.modelLoadTimeoutMs,
       );
     } finally {
       this.modelProgressCallbacks.delete(modelId);
@@ -259,7 +256,7 @@ class MLWorkerManager {
    * Unload all optional models (non-required)
    */
   async unloadOptionalModels(): Promise<void> {
-    const optionalModels = MODEL_CONFIGS.filter(m => !m.required);
+    const optionalModels = MODEL_CONFIGS.filter((m) => !m.required);
     for (const model of optionalModels) {
       if (this.loadedModels.has(model.id)) {
         await this.unloadModel(model.id);
@@ -304,7 +301,7 @@ class MLWorkerManager {
    */
   async semanticCluster(
     embeddings: number[][],
-    threshold = ML_THRESHOLDS.semanticClusterThreshold
+    threshold = ML_THRESHOLDS.semanticClusterThreshold,
   ): Promise<number[][]> {
     if (!this.isReady) throw new Error('ML Worker not ready');
     return this.request<number[][]>('cluster-semantic', { embeddings, threshold });
@@ -315,12 +312,12 @@ class MLWorkerManager {
    */
   async clusterBySemanticSimilarity(
     items: Array<{ id: string; text: string }>,
-    threshold = ML_THRESHOLDS.semanticClusterThreshold
+    threshold = ML_THRESHOLDS.semanticClusterThreshold,
   ): Promise<string[][]> {
-    const embeddings = await this.embedTexts(items.map(i => i.text));
+    const embeddings = await this.embedTexts(items.map((i) => i.text));
     const clusterIndices = await this.semanticCluster(embeddings, threshold);
-    return clusterIndices.map(cluster =>
-      cluster.map(idx => items[idx]?.id).filter((id): id is string => id !== undefined)
+    return clusterIndices.map((cluster) =>
+      cluster.map((idx) => items[idx]?.id).filter((id): id is string => id !== undefined),
     );
   }
 

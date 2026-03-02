@@ -18,14 +18,10 @@ export const GDELT_GEO_URL = 'https://api.gdeltproject.org/api/v2/geo/geo';
 
 export function mapAcledEventType(eventType: string, subEventType: string): UnrestEventType {
   const lower = (eventType + ' ' + subEventType).toLowerCase();
-  if (lower.includes('riot') || lower.includes('mob violence'))
-    return 'UNREST_EVENT_TYPE_RIOT';
-  if (lower.includes('strike'))
-    return 'UNREST_EVENT_TYPE_STRIKE';
-  if (lower.includes('demonstration'))
-    return 'UNREST_EVENT_TYPE_DEMONSTRATION';
-  if (lower.includes('protest'))
-    return 'UNREST_EVENT_TYPE_PROTEST';
+  if (lower.includes('riot') || lower.includes('mob violence')) return 'UNREST_EVENT_TYPE_RIOT';
+  if (lower.includes('strike')) return 'UNREST_EVENT_TYPE_STRIKE';
+  if (lower.includes('demonstration')) return 'UNREST_EVENT_TYPE_DEMONSTRATION';
+  if (lower.includes('protest')) return 'UNREST_EVENT_TYPE_PROTEST';
   return 'UNREST_EVENT_TYPE_CIVIL_UNREST';
 }
 
@@ -34,10 +30,8 @@ export function mapAcledEventType(eventType: string, subEventType: string): Unre
 // ========================================================================
 
 export function classifySeverity(fatalities: number, eventType: string): SeverityLevel {
-  if (fatalities > 0 || eventType.toLowerCase().includes('riot'))
-    return 'SEVERITY_LEVEL_HIGH';
-  if (eventType.toLowerCase().includes('protest'))
-    return 'SEVERITY_LEVEL_MEDIUM';
+  if (fatalities > 0 || eventType.toLowerCase().includes('riot')) return 'SEVERITY_LEVEL_HIGH';
+  if (eventType.toLowerCase().includes('protest')) return 'SEVERITY_LEVEL_MEDIUM';
   return 'SEVERITY_LEVEL_LOW';
 }
 
@@ -49,8 +43,7 @@ export function classifyGdeltSeverity(count: number, name: string): SeverityLeve
   const lowerName = name.toLowerCase();
   if (count > 100 || lowerName.includes('riot') || lowerName.includes('clash'))
     return 'SEVERITY_LEVEL_HIGH';
-  if (count < 25)
-    return 'SEVERITY_LEVEL_LOW';
+  if (count < 25) return 'SEVERITY_LEVEL_LOW';
   return 'SEVERITY_LEVEL_MEDIUM';
 }
 
@@ -116,10 +109,8 @@ export function sortBySeverityAndRecency(events: UnrestEvent[]): UnrestEvent[] {
   };
 
   return events.sort((a, b) => {
-    const sevDiff =
-      (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3);
+    const sevDiff = (severityOrder[a.severity] ?? 3) - (severityOrder[b.severity] ?? 3);
     if (sevDiff !== 0) return sevDiff;
     return b.occurredAt - a.occurredAt;
   });
 }
-

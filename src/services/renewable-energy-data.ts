@@ -17,17 +17,17 @@ import { createCircuitBreaker } from '@/utils';
 // ---- Types ----
 
 export interface RegionRenewableData {
-  code: string;       // World Bank region code (e.g., "1W", "EAS")
-  name: string;       // Human-readable name (e.g., "World", "East Asia & Pacific")
-  percentage: number;  // Latest renewable electricity % value
-  year: number;       // Year of latest data point
+  code: string; // World Bank region code (e.g., "1W", "EAS")
+  name: string; // Human-readable name (e.g., "World", "East Asia & Pacific")
+  percentage: number; // Latest renewable electricity % value
+  year: number; // Year of latest data point
 }
 
 export interface RenewableEnergyData {
-  globalPercentage: number;          // Latest global renewable electricity %
-  globalYear: number;                // Year of latest global data
-  historicalData: Array<{ year: number; value: number }>;  // Global time-series
-  regions: RegionRenewableData[];    // Regional breakdown
+  globalPercentage: number; // Latest global renewable electricity %
+  globalYear: number; // Year of latest global data
+  historicalData: Array<{ year: number; value: number }>; // Global time-series
+  regions: RegionRenewableData[]; // Regional breakdown
 }
 
 // ---- Constants ----
@@ -55,10 +55,18 @@ const FALLBACK_DATA: RenewableEnergyData = {
   globalPercentage: 29.6,
   globalYear: 2022,
   historicalData: [
-    { year: 1990, value: 19.8 }, { year: 1995, value: 19.2 }, { year: 2000, value: 18.6 },
-    { year: 2005, value: 18.0 }, { year: 2010, value: 20.3 }, { year: 2012, value: 21.6 },
-    { year: 2014, value: 22.6 }, { year: 2016, value: 24.0 }, { year: 2018, value: 25.7 },
-    { year: 2020, value: 28.2 }, { year: 2021, value: 28.7 }, { year: 2022, value: 29.6 },
+    { year: 1990, value: 19.8 },
+    { year: 1995, value: 19.2 },
+    { year: 2000, value: 18.6 },
+    { year: 2005, value: 18.0 },
+    { year: 2010, value: 20.3 },
+    { year: 2012, value: 21.6 },
+    { year: 2014, value: 22.6 },
+    { year: 2016, value: 24.0 },
+    { year: 2018, value: 25.7 },
+    { year: 2020, value: 28.2 },
+    { year: 2021, value: 28.7 },
+    { year: 2022, value: 29.6 },
   ],
   regions: [
     { code: 'LCN', name: 'Latin America & Caribbean', percentage: 58.1, year: 2022 },
@@ -90,7 +98,7 @@ const capacityBreaker = createCircuitBreaker<CapacitySeries[]>({
 async function fetchRenewableEnergyDataFresh(): Promise<RenewableEnergyData> {
   try {
     const response = await getIndicatorData(INDICATOR_CODE, {
-      countries: REGIONS.map(r => r.code),
+      countries: REGIONS.map((r) => r.code),
       years: 35,
     });
 
@@ -103,12 +111,12 @@ async function fetchRenewableEnergyDataFresh(): Promise<RenewableEnergyData> {
 
     // Build historical time-series, filtering out null/NaN values
     const historicalData = worldData.values
-      .filter(v => v.value != null && Number.isFinite(v.value))
-      .map(v => ({
+      .filter((v) => v.value != null && Number.isFinite(v.value))
+      .map((v) => ({
         year: parseInt(v.year, 10),
         value: v.value,
       }))
-      .filter(d => !isNaN(d.year))
+      .filter((d) => !isNaN(d.year))
       .sort((a, b) => a.year - b.year);
 
     if (historicalData.length === 0) {
@@ -132,12 +140,12 @@ async function fetchRenewableEnergyDataFresh(): Promise<RenewableEnergyData> {
 
         // Find the most recent non-null value
         const validValues = countryData.values
-          .filter(v => v.value != null && Number.isFinite(v.value))
-          .map(v => ({
+          .filter((v) => v.value != null && Number.isFinite(v.value))
+          .map((v) => ({
             year: parseInt(v.year, 10),
             value: v.value,
           }))
-          .filter(d => !isNaN(d.year))
+          .filter((d) => !isNaN(d.year))
           .sort((a, b) => a.year - b.year);
 
         if (validValues.length === 0) continue;
@@ -187,8 +195,8 @@ export interface CapacityDataPoint {
 }
 
 export interface CapacitySeries {
-  source: string;   // 'SUN', 'WND', 'COL'
-  name: string;     // 'Solar', 'Wind', 'Coal'
+  source: string; // 'SUN', 'WND', 'COL'
+  name: string; // 'Solar', 'Wind', 'Coal'
   data: CapacityDataPoint[];
 }
 
@@ -200,10 +208,10 @@ export interface CapacitySeries {
 export async function fetchEnergyCapacity(): Promise<CapacitySeries[]> {
   return capacityBreaker.execute(async () => {
     const resp = await fetchEnergyCapacityRpc(['SUN', 'WND', 'COL'], 25);
-    return resp.series.map(s => ({
+    return resp.series.map((s) => ({
       source: s.energySource,
       name: s.name,
-      data: s.data.map(d => ({ year: d.year, capacityMw: d.capacityMw })),
+      data: s.data.map((d) => ({ year: d.year, capacityMw: d.capacityMw })),
     }));
   }, []);
 }

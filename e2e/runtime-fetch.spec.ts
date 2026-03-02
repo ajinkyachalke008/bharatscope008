@@ -86,11 +86,7 @@ test.describe('desktop runtime routing guardrails', () => {
 
       window.fetch = (async (input: RequestInfo | URL) => {
         const url =
-          typeof input === 'string'
-            ? input
-            : input instanceof URL
-            ? input.toString()
-            : input.url;
+          typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
 
         calls.push(url);
 
@@ -116,16 +112,21 @@ test.describe('desktop runtime routing guardrails', () => {
       delete globalWindow.__wmFetchPatched;
 
       // Set a valid WM API key so cloud fallback is allowed
-      await runtimeConfig.setSecretValue('WORLDMONITOR_API_KEY' as import('/src/services/runtime-config.ts').RuntimeSecretKey, 'wm_test_key_1234567890abcdef');
+      await runtimeConfig.setSecretValue(
+        'WORLDMONITOR_API_KEY' as import('/src/services/runtime-config.ts').RuntimeSecretKey,
+        'wm_test_key_1234567890abcdef',
+      );
 
       try {
         runtime.installRuntimeFetchPatch();
 
         const fredResponse = await window.fetch('/api/fred-data?series_id=CPIAUCSL');
-        const fredBody = await fredResponse.json() as { observations?: Array<{ value: string }> };
+        const fredBody = (await fredResponse.json()) as { observations?: Array<{ value: string }> };
 
         const stableResponse = await window.fetch('/api/stablecoin-markets');
-        const stableBody = await stableResponse.json() as { stablecoins?: Array<{ symbol: string }> };
+        const stableBody = (await stableResponse.json()) as {
+          stablecoins?: Array<{ symbol: string }>;
+        };
 
         return {
           fredStatus: fredResponse.status,
@@ -142,7 +143,10 @@ test.describe('desktop runtime routing guardrails', () => {
         } else {
           globalWindow.__TAURI__ = previousTauri;
         }
-        await runtimeConfig.setSecretValue('WORLDMONITOR_API_KEY' as import('/src/services/runtime-config.ts').RuntimeSecretKey, '');
+        await runtimeConfig.setSecretValue(
+          'WORLDMONITOR_API_KEY' as import('/src/services/runtime-config.ts').RuntimeSecretKey,
+          '',
+        );
       }
     });
 
@@ -153,8 +157,12 @@ test.describe('desktop runtime routing guardrails', () => {
 
     expect(result.calls.some((url) => url.includes('127.0.0.1:46123/api/fred-data'))).toBe(true);
     expect(result.calls.some((url) => url.includes('worldmonitor.app/api/fred-data'))).toBe(true);
-    expect(result.calls.some((url) => url.includes('127.0.0.1:46123/api/stablecoin-markets'))).toBe(true);
-    expect(result.calls.some((url) => url.includes('worldmonitor.app/api/stablecoin-markets'))).toBe(true);
+    expect(result.calls.some((url) => url.includes('127.0.0.1:46123/api/stablecoin-markets'))).toBe(
+      true,
+    );
+    expect(
+      result.calls.some((url) => url.includes('worldmonitor.app/api/stablecoin-markets')),
+    ).toBe(true);
   });
 
   test('runtime fetch patch never sends local-only endpoints to cloud', async ({ page }) => {
@@ -174,11 +182,7 @@ test.describe('desktop runtime routing guardrails', () => {
 
       window.fetch = (async (input: RequestInfo | URL) => {
         const url =
-          typeof input === 'string'
-            ? input
-            : input instanceof URL
-            ? input.toString()
-            : input.url;
+          typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
         calls.push(url);
 
         if (url.includes('127.0.0.1:46123/api/local-env-update')) {
@@ -241,21 +245,26 @@ test.describe('desktop runtime routing guardrails', () => {
     expect(result.envUpdateStatus).toBe(401);
     expect(result.validateError).toContain('ECONNREFUSED');
 
-    expect(result.calls.some((url) => url.includes('127.0.0.1:46123/api/local-env-update'))).toBe(true);
-    expect(result.calls.some((url) => url.includes('127.0.0.1:46123/api/local-validate-secret'))).toBe(true);
-    expect(result.calls.some((url) => url.includes('worldmonitor.app/api/local-env-update'))).toBe(false);
-    expect(result.calls.some((url) => url.includes('worldmonitor.app/api/local-validate-secret'))).toBe(false);
+    expect(result.calls.some((url) => url.includes('127.0.0.1:46123/api/local-env-update'))).toBe(
+      true,
+    );
+    expect(
+      result.calls.some((url) => url.includes('127.0.0.1:46123/api/local-validate-secret')),
+    ).toBe(true);
+    expect(result.calls.some((url) => url.includes('worldmonitor.app/api/local-env-update'))).toBe(
+      false,
+    );
+    expect(
+      result.calls.some((url) => url.includes('worldmonitor.app/api/local-validate-secret')),
+    ).toBe(false);
   });
 
   test('chunk preload reload guard is one-shot until app boot clears it', async ({ page }) => {
     await page.goto('/tests/runtime-harness.html');
 
     const result = await page.evaluate(async () => {
-      const {
-        buildChunkReloadStorageKey,
-        installChunkReloadGuard,
-        clearChunkReloadGuard,
-      } = await import('/src/bootstrap/chunk-reload.ts');
+      const { buildChunkReloadStorageKey, installChunkReloadGuard, clearChunkReloadGuard } =
+        await import('/src/bootstrap/chunk-reload.ts');
 
       const listeners = new Map<string, Array<() => void>>();
       const eventTarget = {
@@ -345,7 +354,8 @@ test.describe('desktop runtime routing guardrails', () => {
         globalWindow.__TAURI__ = {
           core: {
             invoke: async (command: string) => {
-              if (command !== 'get_desktop_runtime_info') throw new Error(`Unexpected command: ${command}`);
+              if (command !== 'get_desktop_runtime_info')
+                throw new Error(`Unexpected command: ${command}`);
               return { os: 'macos', arch: 'aarch64' };
             },
           },
@@ -376,8 +386,12 @@ test.describe('desktop runtime routing guardrails', () => {
       }
     });
 
-    expect(result.macArm).toBe('https://worldmonitor.app/api/download?platform=macos-arm64&variant=full');
-    expect(result.windowsX64).toBe('https://worldmonitor.app/api/download?platform=windows-exe&variant=full');
+    expect(result.macArm).toBe(
+      'https://worldmonitor.app/api/download?platform=macos-arm64&variant=full',
+    );
+    expect(result.windowsX64).toBe(
+      'https://worldmonitor.app/api/download?platform=windows-exe&variant=full',
+    );
     expect(result.linuxFallback).toBe('https://github.com/koala73/worldmonitor/releases/latest');
   });
 
@@ -400,14 +414,14 @@ test.describe('desktop runtime routing guardrails', () => {
       let map: InstanceType<typeof MapContainer> | null = null;
 
       try {
-        HTMLCanvasElement.prototype.getContext = (function (
+        HTMLCanvasElement.prototype.getContext = function (
           this: HTMLCanvasElement,
           contextId: string,
-          options?: unknown
+          options?: unknown,
         ) {
           if (contextId === 'webgl2') return null;
           return originalGetContext.call(this, contextId, options as never);
-        }) as typeof HTMLCanvasElement.prototype.getContext;
+        } as typeof HTMLCanvasElement.prototype.getContext;
 
         map = new MapContainer(mapHost, {
           zoom: 1,
@@ -438,7 +452,9 @@ test.describe('desktop runtime routing guardrails', () => {
     expect(result.svgWrapperCount).toBe(1);
   });
 
-  test('MapContainer clears partial DeckGL DOM after constructor failure fallback', async ({ page }) => {
+  test('MapContainer clears partial DeckGL DOM after constructor failure fallback', async ({
+    page,
+  }) => {
     await page.goto('/tests/runtime-harness.html');
 
     const result = await page.evaluate(async () => {
@@ -458,26 +474,26 @@ test.describe('desktop runtime routing guardrails', () => {
       let map: InstanceType<typeof MapContainer> | null = null;
 
       try {
-        HTMLCanvasElement.prototype.getContext = (function (
+        HTMLCanvasElement.prototype.getContext = function (
           this: HTMLCanvasElement,
           contextId: string,
-          options?: unknown
+          options?: unknown,
         ) {
           if (contextId === 'webgl2') {
             return {} as WebGL2RenderingContext;
           }
           return originalGetContext.call(this, contextId, options as never);
-        }) as typeof HTMLCanvasElement.prototype.getContext;
+        } as typeof HTMLCanvasElement.prototype.getContext;
 
-        Document.prototype.getElementById = (function (
+        Document.prototype.getElementById = function (
           this: Document,
-          id: string
+          id: string,
         ): HTMLElement | null {
           if (id === 'deckgl-basemap') {
             return null;
           }
           return originalGetElementById.call(this, id);
-        }) as typeof Document.prototype.getElementById;
+        } as typeof Document.prototype.getElementById;
 
         map = new MapContainer(mapHost, {
           zoom: 1,
@@ -532,15 +548,17 @@ test.describe('desktop runtime routing guardrails', () => {
         const base = symbol.length * 100;
         return {
           chart: {
-            result: [{
-              meta: {
-                regularMarketPrice: base + 1,
-                previousClose: base,
+            result: [
+              {
+                meta: {
+                  regularMarketPrice: base + 1,
+                  previousClose: base,
+                },
+                indicators: {
+                  quote: [{ close: [base - 2, base - 1, base, base + 1] }],
+                },
               },
-              indicators: {
-                quote: [{ close: [base - 2, base - 1, base, base + 1] }],
-              },
-            }],
+            ],
           },
         };
       };
@@ -555,7 +573,17 @@ test.describe('desktop runtime routing guardrails', () => {
       const apiStatuses: Array<{ name: string; status: string }> = [];
 
       // Yahoo-only symbols (same set as server handler)
-      const yahooOnly = new Set(['^GSPC', '^DJI', '^IXIC', '^VIX', 'GC=F', 'CL=F', 'NG=F', 'SI=F', 'HG=F']);
+      const yahooOnly = new Set([
+        '^GSPC',
+        '^DJI',
+        '^IXIC',
+        '^VIX',
+        'GC=F',
+        'CL=F',
+        'NG=F',
+        'SI=F',
+        'HG=F',
+      ]);
 
       window.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
         const url = toUrl(input);
@@ -570,7 +598,14 @@ test.describe('desktop runtime routing guardrails', () => {
             .filter((s: string) => yahooOnly.has(s))
             .map((s: string) => {
               const base = s.length * 100;
-              return { symbol: s, name: s, display: s, price: base + 1, change: ((base + 1) - base) / base * 100, sparkline: [base - 2, base - 1, base, base + 1] };
+              return {
+                symbol: s,
+                name: s,
+                display: s,
+                price: base + 1,
+                change: ((base + 1 - base) / base) * 100,
+                sparkline: [base - 2, base - 1, base, base + 1],
+              };
             });
           return responseJson({
             quotes,
@@ -624,12 +659,13 @@ test.describe('desktop runtime routing guardrails', () => {
       };
 
       try {
-        await (DataLoaderManager.prototype as unknown as { loadMarkets: () => Promise<void> })
-          .loadMarkets.call(fakeApp);
+        await (
+          DataLoaderManager.prototype as unknown as { loadMarkets: () => Promise<void> }
+        ).loadMarkets.call(fakeApp);
 
         // Commodities now go through listMarketQuotes (batch), not individual Yahoo calls
-        const marketQuoteCalls = calls.filter((url) =>
-          new URL(url).pathname === '/api/market/v1/list-market-quotes'
+        const marketQuoteCalls = calls.filter(
+          (url) => new URL(url).pathname === '/api/market/v1/list-market-quotes',
         );
 
         return {
@@ -654,7 +690,9 @@ test.describe('desktop runtime routing guardrails', () => {
     expect(result.marketConfigErrors.length).toBe(0);
 
     expect(result.heatmapRenders.length).toBe(0);
-    expect(result.heatmapConfigErrors).toEqual(['FINNHUB_API_KEY not configured — add in Settings']);
+    expect(result.heatmapConfigErrors).toEqual([
+      'FINNHUB_API_KEY not configured — add in Settings',
+    ]);
 
     expect(result.commoditiesRenders.some((count) => count > 0)).toBe(true);
     expect(result.commoditiesConfigErrors.length).toBe(0);
@@ -662,8 +700,12 @@ test.describe('desktop runtime routing guardrails', () => {
     expect(result.marketQuoteCalls).toBeGreaterThanOrEqual(2);
 
     expect(result.cryptoRenders.some((count) => count > 0)).toBe(true);
-    expect(result.apiStatuses.some((entry) => entry.name === 'Finnhub' && entry.status === 'error')).toBe(true);
-    expect(result.apiStatuses.some((entry) => entry.name === 'CoinGecko' && entry.status === 'ok')).toBe(true);
+    expect(
+      result.apiStatuses.some((entry) => entry.name === 'Finnhub' && entry.status === 'error'),
+    ).toBe(true);
+    expect(
+      result.apiStatuses.some((entry) => entry.name === 'CoinGecko' && entry.status === 'ok'),
+    ).toBe(true);
   });
 
   test('fetchHapiSummary maps proto countryCode to iso2 field', async ({ page }) => {
@@ -742,11 +784,7 @@ test.describe('desktop runtime routing guardrails', () => {
 
       window.fetch = (async (input: RequestInfo | URL) => {
         const url =
-          typeof input === 'string'
-            ? input
-            : input instanceof URL
-            ? input.toString()
-            : input.url;
+          typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
 
         calls.push(url);
 
@@ -773,12 +811,12 @@ test.describe('desktop runtime routing guardrails', () => {
           fetchError = err instanceof Error ? err.message : String(err);
         }
 
-        const cloudCalls = calls.filter(u => u.includes('worldmonitor.app'));
+        const cloudCalls = calls.filter((u) => u.includes('worldmonitor.app'));
 
         return {
           fetchError,
           cloudCalls: cloudCalls.length,
-          localCalls: calls.filter(u => u.includes('127.0.0.1')).length,
+          localCalls: calls.filter((u) => u.includes('127.0.0.1')).length,
         };
       } finally {
         window.fetch = originalFetch;
@@ -815,11 +853,7 @@ test.describe('desktop runtime routing guardrails', () => {
 
       window.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
         const url =
-          typeof input === 'string'
-            ? input
-            : input instanceof URL
-            ? input.toString()
-            : input.url;
+          typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
 
         calls.push(url);
 
@@ -843,18 +877,21 @@ test.describe('desktop runtime routing guardrails', () => {
       delete globalWindow.__wmFetchPatched;
 
       const testKey = 'wm_test_key_1234567890abcdef';
-      await runtimeConfig.setSecretValue('WORLDMONITOR_API_KEY' as import('/src/services/runtime-config.ts').RuntimeSecretKey, testKey);
+      await runtimeConfig.setSecretValue(
+        'WORLDMONITOR_API_KEY' as import('/src/services/runtime-config.ts').RuntimeSecretKey,
+        testKey,
+      );
 
       try {
         runtime.installRuntimeFetchPatch();
 
         const response = await window.fetch('/api/market/v1/test');
-        const body = await response.json() as { quotes?: unknown[] };
+        const body = (await response.json()) as { quotes?: unknown[] };
 
         return {
           status: response.status,
           hasQuotes: Array.isArray(body.quotes),
-          cloudCalls: calls.filter(u => u.includes('worldmonitor.app')).length,
+          cloudCalls: calls.filter((u) => u.includes('worldmonitor.app')).length,
           wmKeyHeader: capturedHeaders['X-WorldMonitor-Key'] || null,
         };
       } finally {
@@ -865,7 +902,10 @@ test.describe('desktop runtime routing guardrails', () => {
         } else {
           globalWindow.__TAURI__ = previousTauri;
         }
-        await runtimeConfig.setSecretValue('WORLDMONITOR_API_KEY' as import('/src/services/runtime-config.ts').RuntimeSecretKey, '');
+        await runtimeConfig.setSecretValue(
+          'WORLDMONITOR_API_KEY' as import('/src/services/runtime-config.ts').RuntimeSecretKey,
+          '',
+        );
       }
     });
 
@@ -875,7 +915,9 @@ test.describe('desktop runtime routing guardrails', () => {
     expect(result.wmKeyHeader).toBe('wm_test_key_1234567890abcdef');
   });
 
-  test('country-instability HAPI fallback ignores eventsCivilianTargeting in score', async ({ page }) => {
+  test('country-instability HAPI fallback ignores eventsCivilianTargeting in score', async ({
+    page,
+  }) => {
     await page.goto('/tests/runtime-harness.html');
 
     const result = await page.evaluate(async () => {

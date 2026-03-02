@@ -70,7 +70,9 @@ async function main() {
       }
       process.exit(1);
     }
-    console.log(`[version:check] OK. package.json, tauri.conf.json, and Cargo.toml are all ${targetVersion}.`);
+    console.log(
+      `[version:check] OK. package.json, tauri.conf.json, and Cargo.toml are all ${targetVersion}.`,
+    );
     return;
   }
 

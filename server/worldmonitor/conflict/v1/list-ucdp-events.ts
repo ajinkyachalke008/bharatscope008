@@ -21,8 +21,8 @@ const MAX_PAGES = 12;
 const TRAILING_WINDOW_MS = 365 * 24 * 60 * 60 * 1000;
 
 const CACHE_KEY = 'ucdp:gedevents:sebuf:v1';
-const CACHE_TTL_FULL = 6 * 60 * 60;        // 6 hours for complete results
-const CACHE_TTL_PARTIAL = 10 * 60;          // 10 minutes for partial results (M-16 port)
+const CACHE_TTL_FULL = 6 * 60 * 60; // 6 hours for complete results
+const CACHE_TTL_PARTIAL = 10 * 60; // 10 minutes for partial results (M-16 port)
 
 // In-memory fallback cache with per-entry TTL
 let fallbackCache: { data: UcdpViolenceEvent[] | null; timestamp: number; ttlMs: number } = {
@@ -84,7 +84,7 @@ async function fetchGedPage(version: string, page: number): Promise<any> {
 
 async function discoverGedVersion(): Promise<{ version: string; page0: any }> {
   // Use cached version if still valid
-  if (discoveredVersion && (Date.now() - discoveredVersionTimestamp) < VERSION_CACHE_MS) {
+  if (discoveredVersion && Date.now() - discoveredVersionTimestamp < VERSION_CACHE_MS) {
     const page0 = await fetchGedPage(discoveredVersion, 0);
     if (Array.isArray(page0?.Result)) {
       return { version: discoveredVersion, page0 };
@@ -115,7 +115,7 @@ async function discoverGedVersion(): Promise<{ version: string; page0: any }> {
 
 async function fetchUcdpGedEvents(req: ListUcdpEventsRequest): Promise<UcdpViolenceEvent[]> {
   // Negative cache: skip fetch if UCDP failed recently
-  if (lastFailureTimestamp && (Date.now() - lastFailureTimestamp) < NEGATIVE_CACHE_MS) {
+  if (lastFailureTimestamp && Date.now() - lastFailureTimestamp < NEGATIVE_CACHE_MS) {
     if (fallbackCache.data) return fallbackCache.data;
     return [];
   }
@@ -128,7 +128,7 @@ async function fetchUcdpGedEvents(req: ListUcdpEventsRequest): Promise<UcdpViole
     // Fetch pages in parallel (ported from main branch improvement #198)
     const FAILED = Symbol('failed');
     const pagesToFetch: Promise<any>[] = [];
-    for (let offset = 0; offset < MAX_PAGES && (newestPage - offset) >= 0; offset++) {
+    for (let offset = 0; offset < MAX_PAGES && newestPage - offset >= 0; offset++) {
       const page = newestPage - offset;
       if (page === 0) {
         pagesToFetch.push(Promise.resolve(page0));
@@ -144,7 +144,10 @@ async function fetchUcdpGedEvents(req: ListUcdpEventsRequest): Promise<UcdpViole
     let failedPages = 0;
 
     for (const rawData of pageResults) {
-      if (rawData === FAILED) { failedPages++; continue; }
+      if (rawData === FAILED) {
+        failedPages++;
+        continue;
+      }
       const events: any[] = Array.isArray(rawData?.Result) ? rawData.Result : [];
       allEvents.push(...events);
 
@@ -161,27 +164,29 @@ async function fetchUcdpGedEvents(req: ListUcdpEventsRequest): Promise<UcdpViole
       if (!Number.isFinite(latestDatasetMs)) return true;
       const eventMs = parseDateMs(event?.date_start);
       if (!Number.isFinite(eventMs)) return false;
-      return eventMs >= (latestDatasetMs - TRAILING_WINDOW_MS);
+      return eventMs >= latestDatasetMs - TRAILING_WINDOW_MS;
     });
 
     // Map to proto UcdpViolenceEvent
-    let mapped = filtered.map((e: any): UcdpViolenceEvent => ({
-      id: String(e.id || ''),
-      dateStart: Date.parse(e.date_start) || 0,
-      dateEnd: Date.parse(e.date_end) || 0,
-      location: {
-        latitude: Number(e.latitude) || 0,
-        longitude: Number(e.longitude) || 0,
-      },
-      country: e.country || '',
-      sideA: (e.side_a || '').substring(0, 200),
-      sideB: (e.side_b || '').substring(0, 200),
-      deathsBest: Number(e.best) || 0,
-      deathsLow: Number(e.low) || 0,
-      deathsHigh: Number(e.high) || 0,
-      violenceType: VIOLENCE_TYPE_MAP[e.type_of_violence] || 'UCDP_VIOLENCE_TYPE_UNSPECIFIED',
-      sourceOriginal: (e.source_original || '').substring(0, 300),
-    }));
+    let mapped = filtered.map(
+      (e: any): UcdpViolenceEvent => ({
+        id: String(e.id || ''),
+        dateStart: Date.parse(e.date_start) || 0,
+        dateEnd: Date.parse(e.date_end) || 0,
+        location: {
+          latitude: Number(e.latitude) || 0,
+          longitude: Number(e.longitude) || 0,
+        },
+        country: e.country || '',
+        sideA: (e.side_a || '').substring(0, 200),
+        sideB: (e.side_b || '').substring(0, 200),
+        deathsBest: Number(e.best) || 0,
+        deathsLow: Number(e.low) || 0,
+        deathsHigh: Number(e.high) || 0,
+        violenceType: VIOLENCE_TYPE_MAP[e.type_of_violence] || 'UCDP_VIOLENCE_TYPE_UNSPECIFIED',
+        sourceOriginal: (e.source_original || '').substring(0, 300),
+      }),
+    );
 
     // Filter by country if requested
     if (req.country) {
@@ -215,7 +220,7 @@ export async function listUcdpEvents(
   req: ListUcdpEventsRequest,
 ): Promise<ListUcdpEventsResponse> {
   // Check in-memory fallback cache before any async ops
-  if (fallbackCache.data && (Date.now() - fallbackCache.timestamp) < fallbackCache.ttlMs) {
+  if (fallbackCache.data && Date.now() - fallbackCache.timestamp < fallbackCache.ttlMs) {
     let events = fallbackCache.data;
     if (req.country) events = events.filter((e) => e.country === req.country);
     return { events, pagination: undefined };

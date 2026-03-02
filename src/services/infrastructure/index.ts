@@ -19,9 +19,19 @@ import { isFeatureAvailable } from '../runtime-config';
 
 // ---- Client + Circuit Breakers ----
 
-const client = new InfrastructureServiceClient('', { fetch: (...args) => globalThis.fetch(...args) });
-const outageBreaker = createCircuitBreaker<ListInternetOutagesResponse>({ name: 'Internet Outages', cacheTtlMs: 5 * 60 * 1000, persistCache: true });
-const statusBreaker = createCircuitBreaker<ListServiceStatusesResponse>({ name: 'Service Statuses', cacheTtlMs: 5 * 60 * 1000, persistCache: true });
+const client = new InfrastructureServiceClient('', {
+  fetch: (...args) => globalThis.fetch(...args),
+});
+const outageBreaker = createCircuitBreaker<ListInternetOutagesResponse>({
+  name: 'Internet Outages',
+  cacheTtlMs: 5 * 60 * 1000,
+  persistCache: true,
+});
+const statusBreaker = createCircuitBreaker<ListServiceStatusesResponse>({
+  name: 'Service Statuses',
+  cacheTtlMs: 5 * 60 * 1000,
+  persistCache: true,
+});
 
 const emptyOutageFallback: ListInternetOutagesResponse = { outages: [], pagination: undefined };
 const emptyStatusFallback: ListServiceStatusesResponse = { statuses: [] };
@@ -129,13 +139,36 @@ export interface ServiceStatusResponse {
 
 // Category map for the service IDs (matches the handler's SERVICES list)
 const CATEGORY_MAP: Record<string, string> = {
-  aws: 'cloud', azure: 'cloud', gcp: 'cloud', cloudflare: 'cloud', vercel: 'cloud',
-  netlify: 'cloud', digitalocean: 'cloud', render: 'cloud', railway: 'cloud',
-  github: 'dev', gitlab: 'dev', npm: 'dev', docker: 'dev', bitbucket: 'dev',
-  circleci: 'dev', jira: 'dev', confluence: 'dev', linear: 'dev',
-  slack: 'comm', discord: 'comm', zoom: 'comm', notion: 'comm',
-  openai: 'ai', anthropic: 'ai', replicate: 'ai',
-  stripe: 'saas', twilio: 'saas', datadog: 'saas', sentry: 'saas', supabase: 'saas',
+  aws: 'cloud',
+  azure: 'cloud',
+  gcp: 'cloud',
+  cloudflare: 'cloud',
+  vercel: 'cloud',
+  netlify: 'cloud',
+  digitalocean: 'cloud',
+  render: 'cloud',
+  railway: 'cloud',
+  github: 'dev',
+  gitlab: 'dev',
+  npm: 'dev',
+  docker: 'dev',
+  bitbucket: 'dev',
+  circleci: 'dev',
+  jira: 'dev',
+  confluence: 'dev',
+  linear: 'dev',
+  slack: 'comm',
+  discord: 'comm',
+  zoom: 'comm',
+  notion: 'comm',
+  openai: 'ai',
+  anthropic: 'ai',
+  replicate: 'ai',
+  stripe: 'saas',
+  twilio: 'saas',
+  datadog: 'saas',
+  sentry: 'saas',
+  supabase: 'saas',
 };
 
 function toServiceResult(proto: ProtoServiceStatus): ServiceStatusResult {

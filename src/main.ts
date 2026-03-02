@@ -11,10 +11,16 @@ const sentryDsn = import.meta.env.VITE_SENTRY_DSN?.trim();
 Sentry.init({
   dsn: sentryDsn || undefined,
   release: `worldmonitor@${__APP_VERSION__}`,
-  environment: location.hostname === 'worldmonitor.app' ? 'production'
-    : location.hostname.includes('vercel.app') ? 'preview'
-    : 'development',
-  enabled: Boolean(sentryDsn) && !location.hostname.startsWith('localhost') && !('__TAURI_INTERNALS__' in window),
+  environment:
+    location.hostname === 'worldmonitor.app'
+      ? 'production'
+      : location.hostname.includes('vercel.app')
+        ? 'preview'
+        : 'development',
+  enabled:
+    Boolean(sentryDsn) &&
+    !location.hostname.startsWith('localhost') &&
+    !('__TAURI_INTERNALS__' in window),
   sendDefaultPii: true,
   tracesSampleRate: 0.1,
   ignoreErrors: [
@@ -117,20 +123,35 @@ Sentry.init({
     if (msg.length <= 3 && /^[a-zA-Z_$]+$/.test(msg)) return null;
     const frames = event.exception?.values?.[0]?.stacktrace?.frames ?? [];
     // Suppress maplibre internal null-access crashes (light, placement) only when stack is in map chunk
-    if (/this\.style\._layers|reading '_layers'|this\.light is null|can't access property "(id|type|setFilter)", \w+ is (null|undefined)|Cannot read properties of null \(reading '(id|type|setFilter|_layers)'\)|null is not an object \(evaluating '\w{1,3}\.(id|style)|^\w{1,2} is null$/.test(msg)) {
-      if (frames.some(f => /\/(map|maplibre|deck-stack)-[A-Za-z0-9-]+\.js/.test(f.filename ?? ''))) return null;
+    if (
+      /this\.style\._layers|reading '_layers'|this\.light is null|can't access property "(id|type|setFilter)", \w+ is (null|undefined)|Cannot read properties of null \(reading '(id|type|setFilter|_layers)'\)|null is not an object \(evaluating '\w{1,3}\.(id|style)|^\w{1,2} is null$/.test(
+        msg,
+      )
+    ) {
+      if (
+        frames.some((f) => /\/(map|maplibre|deck-stack)-[A-Za-z0-9-]+\.js/.test(f.filename ?? ''))
+      )
+        return null;
     }
     // Suppress any TypeError that happens entirely within maplibre or deck.gl internals
     if (/^TypeError:/.test(msg) && frames.length > 0) {
-      const nonSentryFrames = frames.filter(f => !/\/sentry-[A-Za-z0-9-]+\.js/.test(f.filename ?? ''));
-      if (nonSentryFrames.length > 0 && nonSentryFrames.every(f => /\/(map|maplibre|deck-stack)-[A-Za-z0-9-]+\.js/.test(f.filename ?? ''))) return null;
+      const nonSentryFrames = frames.filter(
+        (f) => !/\/sentry-[A-Za-z0-9-]+\.js/.test(f.filename ?? ''),
+      );
+      if (
+        nonSentryFrames.length > 0 &&
+        nonSentryFrames.every((f) =>
+          /\/(map|maplibre|deck-stack)-[A-Za-z0-9-]+\.js/.test(f.filename ?? ''),
+        )
+      )
+        return null;
     }
     // Suppress errors originating entirely from blob: URLs (browser extensions)
-    if (frames.length > 0 && frames.every(f => /^blob:/.test(f.filename ?? ''))) return null;
+    if (frames.length > 0 && frames.every((f) => /^blob:/.test(f.filename ?? ''))) return null;
     // Suppress YouTube IFrame widget API internal errors
-    if (frames.some(f => /www-widgetapi\.js/.test(f.filename ?? ''))) return null;
+    if (frames.some((f) => /www-widgetapi\.js/.test(f.filename ?? ''))) return null;
     // Suppress Sentry SDK internal crashes (logs.js)
-    if (frames.some(f => /\/ingest\/static\/logs\.js/.test(f.filename ?? ''))) return null;
+    if (frames.some((f) => /\/ingest\/static\/logs\.js/.test(f.filename ?? ''))) return null;
     return event;
   },
 });
@@ -163,10 +184,12 @@ initMetaTags();
 
 // In desktop mode, route /api/* calls to the local Tauri sidecar backend.
 installRuntimeFetchPatch();
-loadDesktopSecrets().then(async () => {
-  await initAnalytics();
-  trackApiKeysSnapshot();
-}).catch(() => {});
+loadDesktopSecrets()
+  .then(async () => {
+    await initAnalytics();
+    trackApiKeysSnapshot();
+  })
+  .catch(() => {});
 
 // Apply stored theme preference before app initialization (safety net for inline script)
 applyStoredTheme();
@@ -193,14 +216,14 @@ if (urlParams.get('settings') === '1') {
     async ([i18n, m]) => {
       await i18n.initI18n();
       m.initSettingsWindow();
-    }
+    },
   );
 } else if (urlParams.get('live-channels') === '1') {
   void Promise.all([import('./services/i18n'), import('./live-channels-window')]).then(
     async ([i18n, m]) => {
       await i18n.initI18n();
       m.initLiveChannelsWindow();
-    }
+    },
   );
 } else {
   const app = new App('app');
@@ -238,7 +261,8 @@ if ('__TAURI_INTERNALS__' in window || '__TAURI__' in window) {
   document.addEventListener('contextmenu', (e) => {
     const target = e.target as HTMLElement;
     // Allow native menu on text inputs/textareas for copy/paste
-    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+      return;
     e.preventDefault();
   });
 }
@@ -248,10 +272,15 @@ if (!('__TAURI_INTERNALS__' in window) && !('__TAURI__' in window)) {
     registerSW({
       onRegisteredSW(_swUrl, registration) {
         if (registration) {
-          setInterval(async () => {
-            if (!navigator.onLine) return;
-            try { await registration.update(); } catch {}
-          }, 60 * 60 * 1000);
+          setInterval(
+            async () => {
+              if (!navigator.onLine) return;
+              try {
+                await registration.update();
+              } catch {}
+            },
+            60 * 60 * 1000,
+          );
         }
       },
       onOfflineReady() {

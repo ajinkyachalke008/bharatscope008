@@ -71,13 +71,31 @@ export interface PaginationResponse {
   totalCount: number;
 }
 
-export type SeverityLevel = "SEVERITY_LEVEL_UNSPECIFIED" | "SEVERITY_LEVEL_LOW" | "SEVERITY_LEVEL_MEDIUM" | "SEVERITY_LEVEL_HIGH";
+export type SeverityLevel =
+  | 'SEVERITY_LEVEL_UNSPECIFIED'
+  | 'SEVERITY_LEVEL_LOW'
+  | 'SEVERITY_LEVEL_MEDIUM'
+  | 'SEVERITY_LEVEL_HIGH';
 
-export type ConfidenceLevel = "CONFIDENCE_LEVEL_UNSPECIFIED" | "CONFIDENCE_LEVEL_LOW" | "CONFIDENCE_LEVEL_MEDIUM" | "CONFIDENCE_LEVEL_HIGH";
+export type ConfidenceLevel =
+  | 'CONFIDENCE_LEVEL_UNSPECIFIED'
+  | 'CONFIDENCE_LEVEL_LOW'
+  | 'CONFIDENCE_LEVEL_MEDIUM'
+  | 'CONFIDENCE_LEVEL_HIGH';
 
-export type UnrestEventType = "UNREST_EVENT_TYPE_UNSPECIFIED" | "UNREST_EVENT_TYPE_PROTEST" | "UNREST_EVENT_TYPE_RIOT" | "UNREST_EVENT_TYPE_STRIKE" | "UNREST_EVENT_TYPE_DEMONSTRATION" | "UNREST_EVENT_TYPE_CIVIL_UNREST";
+export type UnrestEventType =
+  | 'UNREST_EVENT_TYPE_UNSPECIFIED'
+  | 'UNREST_EVENT_TYPE_PROTEST'
+  | 'UNREST_EVENT_TYPE_RIOT'
+  | 'UNREST_EVENT_TYPE_STRIKE'
+  | 'UNREST_EVENT_TYPE_DEMONSTRATION'
+  | 'UNREST_EVENT_TYPE_CIVIL_UNREST';
 
-export type UnrestSourceType = "UNREST_SOURCE_TYPE_UNSPECIFIED" | "UNREST_SOURCE_TYPE_ACLED" | "UNREST_SOURCE_TYPE_GDELT" | "UNREST_SOURCE_TYPE_RSS";
+export type UnrestSourceType =
+  | 'UNREST_SOURCE_TYPE_UNSPECIFIED'
+  | 'UNREST_SOURCE_TYPE_ACLED'
+  | 'UNREST_SOURCE_TYPE_GDELT'
+  | 'UNREST_SOURCE_TYPE_RSS';
 
 export interface FieldViolation {
   field: string;
@@ -88,8 +106,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -100,7 +118,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -124,7 +142,10 @@ export interface RouteDescriptor {
 }
 
 export interface UnrestServiceHandler {
-  listUnrestEvents(ctx: ServerContext, req: ListUnrestEventsRequest): Promise<ListUnrestEventsResponse>;
+  listUnrestEvents(
+    ctx: ServerContext,
+    req: ListUnrestEventsRequest,
+  ): Promise<ListUnrestEventsResponse>;
 }
 
 export function createUnrestServiceRoutes(
@@ -133,14 +154,14 @@ export function createUnrestServiceRoutes(
 ): RouteDescriptor[] {
   return [
     {
-      method: "POST",
-      path: "/api/unrest/v1/list-unrest-events",
+      method: 'POST',
+      path: '/api/unrest/v1/list-unrest-events',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as ListUnrestEventsRequest;
+          const body = (await req.json()) as ListUnrestEventsRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("listUnrestEvents", body);
+            const bodyViolations = options.validateRequest('listUnrestEvents', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -155,13 +176,13 @@ export function createUnrestServiceRoutes(
           const result = await handler.listUnrestEvents(ctx, body);
           return new Response(JSON.stringify(result as ListUnrestEventsResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -170,11 +191,10 @@ export function createUnrestServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
   ];
 }
-

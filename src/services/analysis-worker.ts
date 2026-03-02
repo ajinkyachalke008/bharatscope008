@@ -94,11 +94,11 @@ class AnalysisWorkerManager {
 
           if (data.type === 'cluster-result') {
             // Deserialize dates
-            const clusters = data.clusters.map(cluster => ({
+            const clusters = data.clusters.map((cluster) => ({
               ...cluster,
               firstSeen: new Date(cluster.firstSeen),
               lastUpdated: new Date(cluster.lastUpdated),
-              allItems: cluster.allItems.map(item => ({
+              allItems: cluster.allItems.map((item) => ({
                 ...item,
                 pubDate: new Date(item.pubDate),
               })),
@@ -106,7 +106,7 @@ class AnalysisWorkerManager {
             pending.resolve(clusters);
           } else if (data.type === 'correlation-result') {
             // Deserialize dates
-            const signals = data.signals.map(signal => ({
+            const signals = data.signals.map((signal) => ({
               ...signal,
               timestamp: new Date(signal.timestamp),
             }));
@@ -207,7 +207,7 @@ class AnalysisWorkerManager {
   async analyzeCorrelations(
     clusters: ClusteredEvent[],
     predictions: PredictionMarket[],
-    markets: MarketData[]
+    markets: MarketData[],
   ): Promise<CorrelationSignal[]> {
     await this.waitForReady();
 

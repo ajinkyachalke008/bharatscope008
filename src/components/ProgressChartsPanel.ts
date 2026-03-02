@@ -38,9 +38,10 @@ export class ProgressChartsPanel extends Panel {
     replaceChildren(this.content);
 
     // Filter out empty datasets
-    const valid = datasets.filter(ds => ds.data.length > 0);
+    const valid = datasets.filter((ds) => ds.data.length > 0);
     if (valid.length === 0) {
-      this.content.innerHTML = '<div class="progress-charts-empty" style="padding:16px;color:var(--text-dim);text-align:center;">No progress data available</div>';
+      this.content.innerHTML =
+        '<div class="progress-charts-empty" style="padding:16px;color:var(--text-dim);text-align:center;">No progress data available</div>';
       return;
     }
 
@@ -147,58 +148,53 @@ export class ProgressChartsPanel extends Panel {
   /**
    * Render D3 area chart inside a container div.
    */
-  private renderD3Chart(
-    container: HTMLElement,
-    data: ProgressDataPoint[],
-    color: string,
-  ): void {
+  private renderD3Chart(container: HTMLElement, data: ProgressDataPoint[], color: string): void {
     const containerWidth = this.content.clientWidth - 16; // 8px padding each side
     if (containerWidth <= 0) return;
 
     const width = containerWidth - CHART_MARGIN.left - CHART_MARGIN.right;
     const height = CHART_HEIGHT;
 
-    const svg = d3.select(container)
+    const svg = d3
+      .select(container)
       .append('svg')
       .attr('width', containerWidth)
       .attr('height', height + CHART_MARGIN.top + CHART_MARGIN.bottom)
       .style('display', 'block');
 
-    const g = svg.append('g')
+    const g = svg
+      .append('g')
       .attr('transform', `translate(${CHART_MARGIN.left},${CHART_MARGIN.top})`);
 
     // Scales
-    const xExtent = d3.extent(data, d => d.year) as [number, number];
-    const yExtent = d3.extent(data, d => d.value) as [number, number];
+    const xExtent = d3.extent(data, (d) => d.year) as [number, number];
+    const yExtent = d3.extent(data, (d) => d.value) as [number, number];
     const yPadding = (yExtent[1] - yExtent[0]) * 0.1;
 
-    const x = d3.scaleLinear()
-      .domain(xExtent)
-      .range([0, width]);
+    const x = d3.scaleLinear().domain(xExtent).range([0, width]);
 
-    const y = d3.scaleLinear()
+    const y = d3
+      .scaleLinear()
       .domain([yExtent[0] - yPadding, yExtent[1] + yPadding])
       .range([height, 0]);
 
     // Area generator with smooth curve
-    const area = d3.area<ProgressDataPoint>()
-      .x(d => x(d.year))
+    const area = d3
+      .area<ProgressDataPoint>()
+      .x((d) => x(d.year))
       .y0(height)
-      .y1(d => y(d.value))
+      .y1((d) => y(d.value))
       .curve(d3.curveMonotoneX);
 
     // Line generator for top edge
-    const line = d3.line<ProgressDataPoint>()
-      .x(d => x(d.year))
-      .y(d => y(d.value))
+    const line = d3
+      .line<ProgressDataPoint>()
+      .x((d) => x(d.year))
+      .y((d) => y(d.value))
       .curve(d3.curveMonotoneX);
 
     // Filled area
-    g.append('path')
-      .datum(data)
-      .attr('d', area)
-      .attr('fill', color)
-      .attr('opacity', 0.2);
+    g.append('path').datum(data).attr('d', area).attr('fill', color).attr('opacity', 0.2);
 
     // Stroke line
     g.append('path')
@@ -209,31 +205,26 @@ export class ProgressChartsPanel extends Panel {
       .attr('stroke-width', 2);
 
     // X axis
-    const xAxis = d3.axisBottom(x)
+    const xAxis = d3
+      .axisBottom(x)
       .ticks(Math.min(5, data.length))
-      .tickFormat(d => String(d));
+      .tickFormat((d) => String(d));
 
-    const xAxisG = g.append('g')
-      .attr('transform', `translate(0,${height})`)
-      .call(xAxis);
+    const xAxisG = g.append('g').attr('transform', `translate(0,${height})`).call(xAxis);
 
-    xAxisG.selectAll('text')
-      .attr('fill', 'var(--text-dim)')
-      .attr('font-size', '9px');
+    xAxisG.selectAll('text').attr('fill', 'var(--text-dim)').attr('font-size', '9px');
     xAxisG.selectAll('line').attr('stroke', 'var(--border-subtle)');
     xAxisG.select('.domain').attr('stroke', 'var(--border-subtle)');
 
     // Y axis
-    const yAxis = d3.axisLeft(y)
+    const yAxis = d3
+      .axisLeft(y)
       .ticks(3)
-      .tickFormat(d => formatAxisValue(d as number));
+      .tickFormat((d) => formatAxisValue(d as number));
 
-    const yAxisG = g.append('g')
-      .call(yAxis);
+    const yAxisG = g.append('g').call(yAxis);
 
-    yAxisG.selectAll('text')
-      .attr('fill', 'var(--text-dim)')
-      .attr('font-size', '9px');
+    yAxisG.selectAll('text').attr('fill', 'var(--text-dim)').attr('font-size', '9px');
     yAxisG.selectAll('line').attr('stroke', 'var(--border-subtle)');
     yAxisG.select('.domain').attr('stroke', 'var(--border-subtle)');
 
@@ -257,10 +248,11 @@ export class ProgressChartsPanel extends Panel {
     const tooltip = this.tooltip;
     if (!tooltip) return;
 
-    const bisector = d3.bisector<ProgressDataPoint, number>(d => d.year).left;
+    const bisector = d3.bisector<ProgressDataPoint, number>((d) => d.year).left;
 
     // Invisible overlay rect for mouse events
-    const overlay = g.append('rect')
+    const overlay = g
+      .append('rect')
       .attr('width', width)
       .attr('height', height)
       .attr('fill', 'none')
@@ -268,13 +260,15 @@ export class ProgressChartsPanel extends Panel {
       .style('cursor', 'crosshair');
 
     // Vertical line + dot (hidden by default)
-    const focusLine = g.append('line')
+    const focusLine = g
+      .append('line')
       .attr('stroke', color)
       .attr('stroke-width', 1)
       .attr('stroke-dasharray', '3,3')
       .attr('opacity', 0);
 
-    const focusDot = g.append('circle')
+    const focusDot = g
+      .append('circle')
       .attr('r', 3.5)
       .attr('fill', color)
       .attr('stroke', '#fff')
@@ -289,19 +283,19 @@ export class ProgressChartsPanel extends Panel {
         const d0 = data[idx - 1];
         const d1 = data[idx];
         if (!d0) return;
-        const nearest = d1 && (yearVal - d0.year > d1.year - yearVal) ? d1 : d0;
+        const nearest = d1 && yearVal - d0.year > d1.year - yearVal ? d1 : d0;
 
         const cx = x(nearest.year);
         const cy = y(nearest.value);
 
         focusLine
-          .attr('x1', cx).attr('x2', cx)
-          .attr('y1', 0).attr('y2', height)
+          .attr('x1', cx)
+          .attr('x2', cx)
+          .attr('y1', 0)
+          .attr('y2', height)
           .attr('opacity', 0.4);
 
-        focusDot
-          .attr('cx', cx).attr('cy', cy)
-          .attr('opacity', 1);
+        focusDot.attr('cx', cx).attr('cy', cy).attr('opacity', 1);
 
         tooltip.textContent = `${nearest.year}: ${formatTooltipValue(nearest.value)}`;
         tooltip.style.display = 'block';

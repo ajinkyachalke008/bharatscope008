@@ -51,25 +51,34 @@ function getRelayRequestHeaders(): Record<string, string> {
 // Two bounding boxes covering all 9 POSTURE_THEATERS instead of fetching every
 // aircraft globally.  Returns ~hundreds of relevant states instead of ~10,000+.
 const THEATER_QUERY_REGIONS = [
-  { name: 'WESTERN', lamin: 10, lamax: 66, lomin: 9, lomax: 66 },   // Baltic→Yemen, Baltic→Iran
+  { name: 'WESTERN', lamin: 10, lamax: 66, lomin: 9, lomax: 66 }, // Baltic→Yemen, Baltic→Iran
   { name: 'PACIFIC', lamin: 4, lamax: 44, lomin: 104, lomax: 133 }, // SCS→Korea
 ];
 
-function parseOpenSkyStates(
-  data: { states?: Array<[string, string, ...unknown[]]> },
-): RawFlight[] {
+function parseOpenSkyStates(data: { states?: Array<[string, string, ...unknown[]]> }): RawFlight[] {
   if (!data.states) return [];
   const flights: RawFlight[] = [];
   for (const state of data.states) {
     const [icao24, callsign, , , , lon, lat, altitude, onGround, velocity, heading] = state as [
-      string, string, unknown, unknown, unknown, number | null, number | null, number | null, boolean, number | null, number | null,
+      string,
+      string,
+      unknown,
+      unknown,
+      unknown,
+      number | null,
+      number | null,
+      number | null,
+      boolean,
+      number | null,
+      number | null,
     ];
     if (lat == null || lon == null || onGround) continue;
     if (!isMilitaryCallsign(callsign) && !isMilitaryHex(icao24)) continue;
     flights.push({
       id: icao24,
       callsign: callsign?.trim() || '',
-      lat, lon,
+      lat,
+      lon,
       altitude: altitude ?? 0,
       heading: heading ?? 0,
       speed: (velocity as number) ?? 0,
@@ -83,7 +92,9 @@ async function fetchMilitaryFlightsFromOpenSky(): Promise<RawFlight[]> {
   const isSidecar = (process.env.LOCAL_API_MODE || '').includes('sidecar');
   const baseUrl = isSidecar
     ? 'https://opensky-network.org/api/states/all'
-    : process.env.WS_RELAY_URL ? process.env.WS_RELAY_URL + '/opensky' : null;
+    : process.env.WS_RELAY_URL
+      ? process.env.WS_RELAY_URL + '/opensky'
+      : null;
 
   if (!baseUrl) return [];
 
@@ -131,7 +142,12 @@ async function fetchMilitaryFlightsFromWingbits(): Promise<RawFlight[] | null> {
   try {
     const resp = await fetch('https://customer-api.wingbits.com/v1/flights', {
       method: 'POST',
-      headers: { 'x-api-key': apiKey, Accept: 'application/json', 'Content-Type': 'application/json', 'User-Agent': CHROME_UA },
+      headers: {
+        'x-api-key': apiKey,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'User-Agent': CHROME_UA,
+      },
       body: JSON.stringify(areas),
       signal: AbortSignal.timeout(15_000),
     });
@@ -148,7 +164,9 @@ async function fetchMilitaryFlightsFromWingbits(): Promise<RawFlight[] | null> {
     const seenIds = new Set<string>();
 
     for (const areaResult of data) {
-      const flightList = Array.isArray(areaResult.flights || areaResult) ? (areaResult.flights || areaResult) as Array<Record<string, unknown>> : [];
+      const flightList = Array.isArray(areaResult.flights || areaResult)
+        ? ((areaResult.flights || areaResult) as Array<Record<string, unknown>>)
+        : [];
       for (const f of flightList) {
         const icao24 = (f.h || f.icao24 || f.id) as string;
         if (!icao24 || seenIds.has(icao24)) continue;
@@ -181,8 +199,11 @@ async function fetchMilitaryFlightsFromWingbits(): Promise<RawFlight[] | null> {
 function calculatePostures(flights: RawFlight[]): TheaterPosture[] {
   return POSTURE_THEATERS.map((theater) => {
     const theaterFlights = flights.filter(
-      (f) => f.lat >= theater.bounds.south && f.lat <= theater.bounds.north &&
-        f.lon >= theater.bounds.west && f.lon <= theater.bounds.east,
+      (f) =>
+        f.lat >= theater.bounds.south &&
+        f.lat <= theater.bounds.north &&
+        f.lon >= theater.bounds.west &&
+        f.lon <= theater.bounds.east,
     );
 
     const total = theaterFlights.length;
@@ -192,11 +213,12 @@ function calculatePostures(flights: RawFlight[]): TheaterPosture[] {
       fighters: theaterFlights.filter((f) => f.aircraftType === 'fighter').length,
     };
 
-    const postureLevel = total >= theater.thresholds.critical
-      ? 'critical'
-      : total >= theater.thresholds.elevated
-        ? 'elevated'
-        : 'normal';
+    const postureLevel =
+      total >= theater.thresholds.critical
+        ? 'critical'
+        : total >= theater.thresholds.elevated
+          ? 'elevated'
+          : 'normal';
 
     const strikeCapable =
       byType.tankers >= theater.strikeIndicators.minTankers &&
@@ -264,7 +286,9 @@ export async function getTheaterPosture(
       fetchTheaterPostureFresh,
     );
     if (result) return result;
-  } catch { /* upstream failed — fall through to stale/backup */ }
+  } catch {
+    /* upstream failed — fall through to stale/backup */
+  }
 
   const stale = (await getCachedJson(STALE_CACHE_KEY)) as GetTheaterPostureResponse | null;
   if (stale) return stale;

@@ -35,7 +35,7 @@ const breaker = createCircuitBreaker<PositiveGeoEvent[]>({
 export async function fetchPositiveGeoEvents(): Promise<PositiveGeoEvent[]> {
   return breaker.execute(async () => {
     const response = await client.listPositiveGeoEvents({});
-    return response.events.map(event => ({
+    return response.events.map((event) => ({
       lat: event.latitude,
       lon: event.longitude,
       name: event.name,

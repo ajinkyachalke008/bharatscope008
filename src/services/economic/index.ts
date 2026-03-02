@@ -30,25 +30,55 @@ import { dataFreshness } from '../data-freshness';
 // ---- Client + Circuit Breakers ----
 
 const client = new EconomicServiceClient('', { fetch: (...args) => globalThis.fetch(...args) });
-const fredBreakers = new Map<string, ReturnType<typeof createCircuitBreaker<GetFredSeriesResponse>>>();
+const fredBreakers = new Map<
+  string,
+  ReturnType<typeof createCircuitBreaker<GetFredSeriesResponse>>
+>();
 
 function getFredBreaker(seriesId: string) {
   if (!fredBreakers.has(seriesId)) {
-    fredBreakers.set(seriesId, createCircuitBreaker<GetFredSeriesResponse>({
-      name: `FRED:${seriesId}`,
-      cacheTtlMs: 15 * 60 * 1000,
-      persistCache: true,
-    }));
+    fredBreakers.set(
+      seriesId,
+      createCircuitBreaker<GetFredSeriesResponse>({
+        name: `FRED:${seriesId}`,
+        cacheTtlMs: 15 * 60 * 1000,
+        persistCache: true,
+      }),
+    );
   }
   return fredBreakers.get(seriesId)!;
 }
-const wbBreaker = createCircuitBreaker<ListWorldBankIndicatorsResponse>({ name: 'World Bank', cacheTtlMs: 30 * 60 * 1000, persistCache: true });
-const eiaBreaker = createCircuitBreaker<GetEnergyPricesResponse>({ name: 'EIA Energy', cacheTtlMs: 15 * 60 * 1000, persistCache: true });
-const capacityBreaker = createCircuitBreaker<GetEnergyCapacityResponse>({ name: 'EIA Capacity', cacheTtlMs: 30 * 60 * 1000, persistCache: true });
+const wbBreaker = createCircuitBreaker<ListWorldBankIndicatorsResponse>({
+  name: 'World Bank',
+  cacheTtlMs: 30 * 60 * 1000,
+  persistCache: true,
+});
+const eiaBreaker = createCircuitBreaker<GetEnergyPricesResponse>({
+  name: 'EIA Energy',
+  cacheTtlMs: 15 * 60 * 1000,
+  persistCache: true,
+});
+const capacityBreaker = createCircuitBreaker<GetEnergyCapacityResponse>({
+  name: 'EIA Capacity',
+  cacheTtlMs: 30 * 60 * 1000,
+  persistCache: true,
+});
 
-const bisPolicyBreaker = createCircuitBreaker<GetBisPolicyRatesResponse>({ name: 'BIS Policy', cacheTtlMs: 30 * 60 * 1000, persistCache: true });
-const bisEerBreaker = createCircuitBreaker<GetBisExchangeRatesResponse>({ name: 'BIS EER', cacheTtlMs: 30 * 60 * 1000, persistCache: true });
-const bisCreditBreaker = createCircuitBreaker<GetBisCreditResponse>({ name: 'BIS Credit', cacheTtlMs: 30 * 60 * 1000, persistCache: true });
+const bisPolicyBreaker = createCircuitBreaker<GetBisPolicyRatesResponse>({
+  name: 'BIS Policy',
+  cacheTtlMs: 30 * 60 * 1000,
+  persistCache: true,
+});
+const bisEerBreaker = createCircuitBreaker<GetBisExchangeRatesResponse>({
+  name: 'BIS EER',
+  cacheTtlMs: 30 * 60 * 1000,
+  persistCache: true,
+});
+const bisCreditBreaker = createCircuitBreaker<GetBisCreditResponse>({
+  name: 'BIS Credit',
+  cacheTtlMs: 30 * 60 * 1000,
+  persistCache: true,
+});
 
 const emptyFredFallback: GetFredSeriesResponse = { series: undefined };
 const emptyWbFallback: ListWorldBankIndicatorsResponse = { data: [], pagination: undefined };
@@ -222,7 +252,11 @@ export async function checkEiaStatus(): Promise<boolean> {
 
 export async function fetchOilAnalytics(): Promise<OilAnalytics> {
   const empty: OilAnalytics = {
-    wtiPrice: null, brentPrice: null, usProduction: null, usInventory: null, fetchedAt: new Date(),
+    wtiPrice: null,
+    brentPrice: null,
+    usProduction: null,
+    usInventory: null,
+    fetchedAt: new Date(),
   };
 
   if (!isFeatureAvailable('energyEia')) return empty;
@@ -243,8 +277,12 @@ export async function fetchOilAnalytics(): Promise<OilAnalytics> {
       fetchedAt: new Date(),
     };
 
-    const metricCount = [result.wtiPrice, result.brentPrice, result.usProduction, result.usInventory]
-      .filter(Boolean).length;
+    const metricCount = [
+      result.wtiPrice,
+      result.brentPrice,
+      result.usProduction,
+      result.usInventory,
+    ].filter(Boolean).length;
     if (metricCount > 0) {
       dataFreshness.recordUpdate('oil', metricCount);
     }
@@ -266,9 +304,12 @@ export function formatOilValue(value: number, unit: string): string {
 
 export function getTrendIndicator(trend: OilMetric['trend']): string {
   switch (trend) {
-    case 'up': return '\u25B2';
-    case 'down': return '\u25BC';
-    default: return '\u25CF';
+    case 'up':
+      return '\u25B2';
+    case 'down':
+      return '\u25BC';
+    default:
+      return '\u25CF';
   }
 }
 
@@ -276,9 +317,12 @@ export function getTrendColor(trend: OilMetric['trend'], inverse = false): strin
   const upColor = inverse ? getCSSColor('--semantic-normal') : getCSSColor('--semantic-critical');
   const downColor = inverse ? getCSSColor('--semantic-critical') : getCSSColor('--semantic-normal');
   switch (trend) {
-    case 'up': return upColor;
-    case 'down': return downColor;
-    default: return getCSSColor('--text-dim');
+    case 'up':
+      return upColor;
+    case 'down':
+      return downColor;
+    default:
+      return getCSSColor('--text-dim');
   }
 }
 
@@ -359,16 +403,59 @@ const TECH_INDICATORS: Record<string, string> = {
 };
 
 const TECH_COUNTRIES = [
-  'USA', 'CHN', 'JPN', 'DEU', 'KOR', 'GBR', 'IND', 'ISR', 'SGP', 'TWN',
-  'FRA', 'CAN', 'SWE', 'NLD', 'CHE', 'FIN', 'IRL', 'AUS', 'BRA', 'IDN',
-  'ARE', 'SAU', 'QAT', 'BHR', 'EGY', 'TUR',
-  'MYS', 'THA', 'VNM', 'PHL',
-  'ESP', 'ITA', 'POL', 'CZE', 'DNK', 'NOR', 'AUT', 'BEL', 'PRT', 'EST',
-  'MEX', 'ARG', 'CHL', 'COL',
-  'ZAF', 'NGA', 'KEN',
+  'USA',
+  'CHN',
+  'JPN',
+  'DEU',
+  'KOR',
+  'GBR',
+  'IND',
+  'ISR',
+  'SGP',
+  'TWN',
+  'FRA',
+  'CAN',
+  'SWE',
+  'NLD',
+  'CHE',
+  'FIN',
+  'IRL',
+  'AUS',
+  'BRA',
+  'IDN',
+  'ARE',
+  'SAU',
+  'QAT',
+  'BHR',
+  'EGY',
+  'TUR',
+  'MYS',
+  'THA',
+  'VNM',
+  'PHL',
+  'ESP',
+  'ITA',
+  'POL',
+  'CZE',
+  'DNK',
+  'NOR',
+  'AUT',
+  'BEL',
+  'PRT',
+  'EST',
+  'MEX',
+  'ARG',
+  'CHL',
+  'COL',
+  'ZAF',
+  'NGA',
+  'KEN',
 ];
 
-export async function getAvailableIndicators(): Promise<{ indicators: Record<string, string>; defaultCountries: string[] }> {
+export async function getAvailableIndicators(): Promise<{
+  indicators: Record<string, string>;
+  defaultCountries: string[];
+}> {
   return { indicators: TECH_INDICATORS, defaultCountries: TECH_COUNTRIES };
 }
 
@@ -410,7 +497,9 @@ function buildWorldBankResponse(
     c.values.sort((a, b) => a.year.localeCompare(b.year));
   }
 
-  timeSeries.sort((a, b) => b.year.localeCompare(a.year) || a.countryCode.localeCompare(b.countryCode));
+  timeSeries.sort(
+    (a, b) => b.year.localeCompare(a.year) || a.countryCode.localeCompare(b.countryCode),
+  );
 
   return {
     indicator,
@@ -441,25 +530,10 @@ export async function getIndicatorData(
 }
 
 export const INDICATOR_PRESETS = {
-  digitalInfrastructure: [
-    'IT.NET.USER.ZS',
-    'IT.CEL.SETS.P2',
-    'IT.NET.BBND.P2',
-    'IT.NET.SECR.P6',
-  ],
-  innovation: [
-    'GB.XPD.RSDV.GD.ZS',
-    'IP.PAT.RESD',
-    'IP.PAT.NRES',
-  ],
-  techTrade: [
-    'TX.VAL.TECH.MF.ZS',
-    'BX.GSR.CCIS.ZS',
-  ],
-  education: [
-    'SE.TER.ENRR',
-    'SE.XPD.TOTL.GD.ZS',
-  ],
+  digitalInfrastructure: ['IT.NET.USER.ZS', 'IT.CEL.SETS.P2', 'IT.NET.BBND.P2', 'IT.NET.SECR.P6'],
+  innovation: ['GB.XPD.RSDV.GD.ZS', 'IP.PAT.RESD', 'IP.PAT.NRES'],
+  techTrade: ['TX.VAL.TECH.MF.ZS', 'BX.GSR.CCIS.ZS'],
+  education: ['SE.TER.ENRR', 'SE.XPD.TOTL.GD.ZS'],
 } as const;
 
 export interface TechReadinessScore {
@@ -533,7 +607,9 @@ export async function getTechReadinessRankings(
   }
 
   scores.sort((a, b) => b.score - a.score);
-  scores.forEach((s, i) => { s.rank = i + 1; });
+  scores.forEach((s, i) => {
+    s.rank = i + 1;
+  });
 
   return scores;
 }
@@ -559,7 +635,12 @@ export interface BisData {
 }
 
 export async function fetchBisData(): Promise<BisData> {
-  const empty: BisData = { policyRates: [], exchangeRates: [], creditToGdp: [], fetchedAt: new Date() };
+  const empty: BisData = {
+    policyRates: [],
+    exchangeRates: [],
+    creditToGdp: [],
+    fetchedAt: new Date(),
+  };
   try {
     const [policy, eer, credit] = await Promise.all([
       bisPolicyBreaker.execute(() => client.getBisPolicyRates({}), emptyBisPolicyFallback),

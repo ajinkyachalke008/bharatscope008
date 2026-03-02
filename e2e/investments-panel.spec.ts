@@ -7,10 +7,11 @@ test.describe('GCC investments coverage', () => {
     const result = await page.evaluate(async () => {
       const { focusInvestmentOnMap } = await import('/src/services/investments-focus.ts');
 
-      const calls: { layers: string[]; center: { lat: number; lon: number; zoom: number } | null } = {
-        layers: [],
-        center: null,
-      };
+      const calls: { layers: string[]; center: { lat: number; lon: number; zoom: number } | null } =
+        {
+          layers: [],
+          center: null,
+        };
 
       const map = {
         enableLayer: (layer: string) => {
@@ -30,7 +31,7 @@ test.describe('GCC investments coverage', () => {
         },
         mapLayers as unknown as { gulfInvestments: boolean } & Record<string, boolean>,
         24.4667,
-        54.3667
+        54.3667,
       );
 
       return {
@@ -54,7 +55,7 @@ test.describe('GCC investments coverage', () => {
       const { InvestmentsPanel } = await import('/src/components/InvestmentsPanel.ts');
       const { GULF_INVESTMENTS } = await import('/src/config/gulf-fdi.ts');
 
-      const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
+      const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
       const pollUntil = async (pred: () => boolean, maxMs = 2000) => {
         for (let i = 0; i < maxMs / 50 && !pred(); i++) await wait(50);
       };
@@ -88,7 +89,7 @@ test.describe('GCC investments coverage', () => {
 
       // --- Country filter ---
       const countrySelect = root.querySelector<HTMLSelectElement>(
-        '.fdi-filter[data-filter="investingCountry"]'
+        '.fdi-filter[data-filter="investingCountry"]',
       )!;
       countrySelect.value = 'SA';
       countrySelect.dispatchEvent(new Event('change', { bubbles: true }));
@@ -101,19 +102,23 @@ test.describe('GCC investments coverage', () => {
       let investmentSort = root.querySelector<HTMLElement>('.fdi-sort[data-sort="investmentUSD"]');
       const rowsBefore1 = root.querySelector<HTMLElement>('.fdi-row')?.dataset.id;
       investmentSort?.click(); // asc
-      await pollUntil(() => root.querySelector<HTMLElement>('.fdi-row')?.dataset.id !== rowsBefore1);
+      await pollUntil(
+        () => root.querySelector<HTMLElement>('.fdi-row')?.dataset.id !== rowsBefore1,
+      );
       // Re-query after sort re-render
       investmentSort = root.querySelector<HTMLElement>('.fdi-sort[data-sort="investmentUSD"]');
       const rowsBefore2 = root.querySelector<HTMLElement>('.fdi-row')?.dataset.id;
       investmentSort?.click(); // desc
-      await pollUntil(() => root.querySelector<HTMLElement>('.fdi-row')?.dataset.id !== rowsBefore2);
+      await pollUntil(
+        () => root.querySelector<HTMLElement>('.fdi-row')?.dataset.id !== rowsBefore2,
+      );
 
       const firstRow = root.querySelector<HTMLElement>('.fdi-row');
       const firstRowId = firstRow?.dataset.id ?? null;
-      const expectedTopSaId = GULF_INVESTMENTS
-        .filter((inv) => inv.investingCountry === 'SA')
-        .slice()
-        .sort((a, b) => (b.investmentUSD ?? -1) - (a.investmentUSD ?? -1))[0]?.id ?? null;
+      const expectedTopSaId =
+        GULF_INVESTMENTS.filter((inv) => inv.investingCountry === 'SA')
+          .slice()
+          .sort((a, b) => (b.investmentUSD ?? -1) - (a.investmentUSD ?? -1))[0]?.id ?? null;
 
       firstRow?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 

@@ -81,7 +81,13 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
   {
     id: 'security',
     label: 'Security & Threats',
-    features: ['internetOutages', 'acledConflicts', 'abuseChThreatIntel', 'alienvaultOtxThreatIntel', 'abuseIpdbThreatIntel'],
+    features: [
+      'internetOutages',
+      'acledConflicts',
+      'abuseChThreatIntel',
+      'alienvaultOtxThreatIntel',
+      'abuseIpdbThreatIntel',
+    ],
   },
   {
     id: 'tracking',

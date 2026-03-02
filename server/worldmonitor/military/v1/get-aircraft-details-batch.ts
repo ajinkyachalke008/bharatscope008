@@ -23,9 +23,7 @@ export async function getAircraftDetailsBatch(
   const apiKey = process.env.WINGBITS_API_KEY;
   if (!apiKey) return { results: {}, fetched: 0, requested: 0, configured: false };
 
-  const normalized = req.icao24s
-    .map((id) => id.trim().toLowerCase())
-    .filter((id) => id.length > 0);
+  const normalized = req.icao24s.map((id) => id.trim().toLowerCase()).filter((id) => id.length > 0);
   const uniqueSorted = Array.from(new Set(normalized)).sort();
   const limitedList = uniqueSorted.slice(0, 10);
 
@@ -61,10 +59,13 @@ export async function getAircraftDetailsBatch(
       SINGLE_TTL,
       async () => {
         try {
-          const resp = await fetch(`https://customer-api.wingbits.com/v1/flights/details/${icao24}`, {
-            headers: { 'x-api-key': apiKey, Accept: 'application/json', 'User-Agent': CHROME_UA },
-            signal: AbortSignal.timeout(10_000),
-          });
+          const resp = await fetch(
+            `https://customer-api.wingbits.com/v1/flights/details/${icao24}`,
+            {
+              headers: { 'x-api-key': apiKey, Accept: 'application/json', 'User-Agent': CHROME_UA },
+              signal: AbortSignal.timeout(10_000),
+            },
+          );
           if (resp.status === 404) {
             return { details: null, configured: true };
           }
@@ -73,7 +74,9 @@ export async function getAircraftDetailsBatch(
             const details = mapWingbitsDetails(icao24, data);
             return { details, configured: true };
           }
-        } catch { /* skip failed lookups */ }
+        } catch {
+          /* skip failed lookups */
+        }
         return null;
       },
     );

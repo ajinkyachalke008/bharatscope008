@@ -91,15 +91,20 @@ export const STREAM_QUALITY_OPTIONS: { value: StreamQuality; label: string }[] =
 export function getStreamQuality(): StreamQuality {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_STREAM_QUALITY);
-    if (raw && ['auto', 'small', 'medium', 'large', 'hd720'].includes(raw)) return raw as StreamQuality;
-  } catch { /* ignore */ }
+    if (raw && ['auto', 'small', 'medium', 'large', 'hd720'].includes(raw))
+      return raw as StreamQuality;
+  } catch {
+    /* ignore */
+  }
   return 'auto';
 }
 
 export function setStreamQuality(quality: StreamQuality): void {
   try {
     localStorage.setItem(STORAGE_KEY_STREAM_QUALITY, quality);
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   window.dispatchEvent(new CustomEvent(STREAM_QUALITY_EVENT, { detail: { quality } }));
 }
 

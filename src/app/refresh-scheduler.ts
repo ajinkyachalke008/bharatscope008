@@ -39,7 +39,7 @@ export class RefreshScheduler implements AppModule {
     name: string,
     fn: () => Promise<void>,
     intervalMs: number,
-    condition?: () => boolean
+    condition?: () => boolean,
   ): void {
     const HIDDEN_REFRESH_MULTIPLIER = 4;
     const JITTER_FRACTION = 0.1;
@@ -96,7 +96,10 @@ export class RefreshScheduler implements AppModule {
       if (pending) clearTimeout(pending);
       const delay = stagger;
       stagger += 150;
-      this.refreshTimeoutIds.set(name, setTimeout(() => void run(), delay));
+      this.refreshTimeoutIds.set(
+        name,
+        setTimeout(() => void run(), delay),
+      );
     }
   }
 

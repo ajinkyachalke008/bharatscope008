@@ -1,4 +1,9 @@
-import type { MilitaryVessel, MilitaryVesselCluster, USNIFleetReport, USNIVesselEntry } from '@/types';
+import type {
+  MilitaryVessel,
+  MilitaryVesselCluster,
+  USNIFleetReport,
+  USNIVesselEntry,
+} from '@/types';
 import { createCircuitBreaker } from '@/utils';
 import { getUSNIRegionApproxCoords, getUSNIRegionCoords } from '@/config/military';
 import {
@@ -79,7 +84,7 @@ function scatterOffset(hullNumber: string, index: number): { lat: number; lon: n
   let hash = 0;
   const str = hullNumber || String(index);
   for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash = (hash << 5) - hash + str.charCodeAt(i);
     hash |= 0;
   }
   const angle = (hash % 360) * (Math.PI / 180);
@@ -118,12 +123,19 @@ export function mergeUSNIWithAIS(
   // Also try name matching for vessels without hull numbers
   for (const vessel of merged) {
     if (vessel.usniRegion) continue; // Already matched
-    const aisName = vessel.name.replace(/^USS\s+/i, '').toUpperCase().trim();
+    const aisName = vessel.name
+      .replace(/^USS\s+/i, '')
+      .toUpperCase()
+      .trim();
     if (!aisName) continue;
 
     for (const usniVessel of usniReport.vessels) {
       if (matchedHulls.has(normalizeHull(usniVessel.hullNumber))) continue;
-      const usniName = usniVessel.name.replace(/^USS\s+/i, '').replace(/^USNS\s+/i, '').toUpperCase().trim();
+      const usniName = usniVessel.name
+        .replace(/^USS\s+/i, '')
+        .replace(/^USNS\s+/i, '')
+        .toUpperCase()
+        .trim();
       if (aisName === usniName || aisName.includes(usniName) || usniName.includes(aisName)) {
         vessel.usniRegion = usniVessel.region;
         vessel.usniDeploymentStatus = usniVessel.deploymentStatus;
@@ -143,9 +155,10 @@ export function mergeUSNIWithAIS(
     if (matchedHulls.has(normalizeHull(usniVessel.hullNumber))) continue;
 
     const coords = getUSNIRegionCoords(usniVessel.region);
-    const hasParsedCoords = Number.isFinite(usniVessel.regionLat)
-      && Number.isFinite(usniVessel.regionLon)
-      && !(usniVessel.regionLat === 0 && usniVessel.regionLon === 0);
+    const hasParsedCoords =
+      Number.isFinite(usniVessel.regionLat) &&
+      Number.isFinite(usniVessel.regionLon) &&
+      !(usniVessel.regionLat === 0 && usniVessel.regionLon === 0);
     const fallbackCoords = getUSNIRegionApproxCoords(usniVessel.region);
     const baseLat = coords?.lat ?? (hasParsedCoords ? usniVessel.regionLat : fallbackCoords.lat);
     const baseLon = coords?.lon ?? (hasParsedCoords ? usniVessel.regionLon : fallbackCoords.lon);

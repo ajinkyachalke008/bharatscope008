@@ -21,7 +21,7 @@ export function buildChunkReloadStorageKey(version: string): string {
 
 export function installChunkReloadGuard(
   version: string,
-  options: ChunkReloadGuardOptions = {}
+  options: ChunkReloadGuardOptions = {},
 ): string {
   const storageKey = buildChunkReloadStorageKey(version);
   const eventName = options.eventName ?? 'vite:preloadError';
@@ -38,6 +38,9 @@ export function installChunkReloadGuard(
   return storageKey;
 }
 
-export function clearChunkReloadGuard(storageKey: string, storage: StorageLike = sessionStorage): void {
+export function clearChunkReloadGuard(
+  storageKey: string,
+  storage: StorageLike = sessionStorage,
+): void {
   storage.removeItem(storageKey);
 }

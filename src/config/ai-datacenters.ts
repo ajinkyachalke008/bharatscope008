@@ -85,8 +85,8 @@ export const AI_DATA_CENTERS: AIDataCenter[] = [
     name: 'OpenAI/Microsoft Atlanta',
     owner: 'OpenAI,Microsoft',
     country: 'United States of America',
-    lat: 33.7490,
-    lon: -84.3880,
+    lat: 33.749,
+    lon: -84.388,
     status: 'planned',
     chipType: 'NVIDIA B200',
     chipCount: 300000,
@@ -2188,7 +2188,7 @@ export const AI_DATA_CENTERS: AIDataCenter[] = [
   },
   {
     id: 'dc-57',
-    name: 'Sakura\'s B200s Phase 2',
+    name: "Sakura's B200s Phase 2",
     owner: 'Sakura Internet',
     country: 'Japan',
     lat: 36.2048,
@@ -2936,7 +2936,7 @@ export const AI_DATA_CENTERS: AIDataCenter[] = [
   },
   {
     id: 'dc-157',
-    name: 'Sakura\'s H100s Phase 1',
+    name: "Sakura's H100s Phase 1",
     owner: 'Sakura Internet',
     country: 'Japan',
     lat: 36.923,
@@ -3851,7 +3851,7 @@ export const AI_DATA_CENTERS: AIDataCenter[] = [
   },
   {
     id: 'dc-195',
-    name: 'NHN Cloud\'s National AI Data Center',
+    name: "NHN Cloud's National AI Data Center",
     owner: 'NHN Corporation',
     country: 'Korea (Republic of)',
     lat: 35.6821,

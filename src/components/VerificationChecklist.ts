@@ -9,7 +9,7 @@ export interface VerificationCheck {
 }
 
 export interface VerificationResult {
-  score: number;  // 0-100
+  score: number; // 0-100
   checks: VerificationCheck[];
   verdict: 'verified' | 'likely' | 'uncertain' | 'unreliable';
   notes: string[];
@@ -17,14 +17,44 @@ export interface VerificationResult {
 
 function getVerificationTemplate(): VerificationCheck[] {
   return [
-    { id: 'recency', label: t('components.verification.checks.recency'), checked: false, icon: '🕐' },
-    { id: 'geolocation', label: t('components.verification.checks.geolocation'), checked: false, icon: '📍' },
+    {
+      id: 'recency',
+      label: t('components.verification.checks.recency'),
+      checked: false,
+      icon: '🕐',
+    },
+    {
+      id: 'geolocation',
+      label: t('components.verification.checks.geolocation'),
+      checked: false,
+      icon: '📍',
+    },
     { id: 'source', label: t('components.verification.checks.source'), checked: false, icon: '📰' },
-    { id: 'crossref', label: t('components.verification.checks.crossref'), checked: false, icon: '🔗' },
+    {
+      id: 'crossref',
+      label: t('components.verification.checks.crossref'),
+      checked: false,
+      icon: '🔗',
+    },
     { id: 'no_ai', label: t('components.verification.checks.noAi'), checked: false, icon: '🤖' },
-    { id: 'no_recrop', label: t('components.verification.checks.noRecrop'), checked: false, icon: '🔄' },
-    { id: 'metadata', label: t('components.verification.checks.metadata'), checked: false, icon: '📋' },
-    { id: 'context', label: t('components.verification.checks.context'), checked: false, icon: '📖' },
+    {
+      id: 'no_recrop',
+      label: t('components.verification.checks.noRecrop'),
+      checked: false,
+      icon: '🔄',
+    },
+    {
+      id: 'metadata',
+      label: t('components.verification.checks.metadata'),
+      checked: false,
+      icon: '📋',
+    },
+    {
+      id: 'context',
+      label: t('components.verification.checks.context'),
+      checked: false,
+      icon: '📖',
+    },
   ];
 }
 
@@ -34,9 +64,7 @@ export class VerificationChecklist extends Component {
   private manualNote: string = '';
 
   private toggleCheck(id: string): void {
-    this.checks = this.checks.map(c =>
-      c.id === id ? { ...c, checked: !c.checked } : c
-    );
+    this.checks = this.checks.map((c) => (c.id === id ? { ...c, checked: !c.checked } : c));
     this.setState({});
   }
 
@@ -49,7 +77,7 @@ export class VerificationChecklist extends Component {
   }
 
   private calculateResult(): VerificationResult {
-    const checkedCount = this.checks.filter(c => c.checked).length;
+    const checkedCount = this.checks.filter((c) => c.checked).length;
     const score = Math.round((checkedCount / this.checks.length) * 100);
 
     let verdict: VerificationResult['verdict'];
@@ -85,23 +113,35 @@ export class VerificationChecklist extends Component {
       unreliable: t('components.verification.verdicts.unreliable'),
     };
 
-    return h('div', { class: 'verification-checklist' },
-      h('div', { class: 'checklist-header' },
+    return h(
+      'div',
+      { class: 'verification-checklist' },
+      h(
+        'div',
+        { class: 'checklist-header' },
         h('h3', null, t('components.verification.title')),
         h('p', { class: 'hint' }, t('components.verification.hint')),
       ),
-      h('div', {
-        class: 'score-display',
-        style: `background-color: ${verdictColors[result.verdict]}20; border-color: ${verdictColors[result.verdict]}`,
-      },
+      h(
+        'div',
+        {
+          class: 'score-display',
+          style: `background-color: ${verdictColors[result.verdict]}20; border-color: ${verdictColors[result.verdict]}`,
+        },
         h('div', { class: 'score-value' }, `${result.score}%`),
-        h('div', { class: 'score-label', style: `color: ${verdictColors[result.verdict]}` },
+        h(
+          'div',
+          { class: 'score-label', style: `color: ${verdictColors[result.verdict]}` },
           verdictLabels[result.verdict],
         ),
       ),
-      h('div', { class: 'checks-grid' },
-        ...this.checks.map(check =>
-          h('label', { key: check.id, class: `check-item ${check.checked ? 'checked' : ''}` },
+      h(
+        'div',
+        { class: 'checks-grid' },
+        ...this.checks.map((check) =>
+          h(
+            'label',
+            { key: check.id, class: `check-item ${check.checked ? 'checked' : ''}` },
             h('input', {
               type: 'checkbox',
               checked: check.checked,
@@ -109,33 +149,50 @@ export class VerificationChecklist extends Component {
             }),
             h('span', { class: 'icon' }, check.icon),
             h('span', { class: 'label' }, check.label),
-          )
+          ),
         ),
       ),
-      h('div', { class: 'notes-section' },
+      h(
+        'div',
+        { class: 'notes-section' },
         h('h4', null, t('components.verification.notesTitle')),
-        h('div', { class: 'notes-list' },
+        h(
+          'div',
+          { class: 'notes-list' },
           this.notes.length === 0
             ? h('p', { class: 'empty' }, t('components.verification.noNotes'))
-            : this.notes.map((note, i) =>
-                h('div', { key: i, class: 'note-item' }, `• ${note}`)
-              ),
+            : this.notes.map((note, i) => h('div', { key: i, class: 'note-item' }, `• ${note}`)),
         ),
-        h('div', { class: 'add-note' },
+        h(
+          'div',
+          { class: 'add-note' },
           h('input', {
             type: 'text',
             value: this.manualNote,
-            onInput: (e: Event) => { this.manualNote = (e.target as HTMLInputElement).value; },
+            onInput: (e: Event) => {
+              this.manualNote = (e.target as HTMLInputElement).value;
+            },
             placeholder: t('components.verification.addNotePlaceholder'),
-            onKeyPress: (e: KeyboardEvent) => { if (e.key === 'Enter') this.addNote(); },
+            onKeyPress: (e: KeyboardEvent) => {
+              if (e.key === 'Enter') this.addNote();
+            },
           }),
           h('button', { onClick: () => this.addNote() }, t('components.verification.add')),
         ),
       ),
-      h('div', { class: 'checklist-actions' },
-        h('button', { class: 'reset-btn', onClick: () => this.reset() }, t('components.verification.resetChecklist')),
+      h(
+        'div',
+        { class: 'checklist-actions' },
+        h(
+          'button',
+          { class: 'reset-btn', onClick: () => this.reset() },
+          t('components.verification.resetChecklist'),
+        ),
       ),
-      h('style', null, `
+      h(
+        'style',
+        null,
+        `
         .verification-checklist { background: var(--bg); border-radius: 8px; padding: 16px; max-width: 400px; }
         .checklist-header h3 { margin: 0 0 4px; font-size: 14px; color: var(--accent); }
         .hint { margin: 0; font-size: 11px; color: var(--text-muted); }
@@ -160,7 +217,8 @@ export class VerificationChecklist extends Component {
         .checklist-actions { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
         .reset-btn { width: 100%; padding: 8px; background: var(--border); border: none; border-radius: 4px; color: var(--text-dim); font-size: 12px; cursor: pointer; }
         .reset-btn:hover { background: var(--border-strong); color: var(--text-faint); }
-      `),
+      `,
+      ),
     );
   }
 }

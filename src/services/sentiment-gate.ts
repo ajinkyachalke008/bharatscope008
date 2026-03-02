@@ -19,7 +19,7 @@ const BATCH_SIZE = 20; // ML_THRESHOLDS.maxTextsPerBatch from ml-config.ts
  */
 export async function filterBySentiment(
   items: NewsItem[],
-  threshold = DEFAULT_THRESHOLD
+  threshold = DEFAULT_THRESHOLD,
 ): Promise<NewsItem[]> {
   if (items.length === 0) return [];
 
@@ -33,7 +33,9 @@ export async function filterBySentiment(
         console.log(`[SentimentGate] Using override threshold: ${threshold}`);
       }
     }
-  } catch { /* ignore localStorage errors */ }
+  } catch {
+    /* ignore localStorage errors */
+  }
 
   // Graceful degradation: if ML not available, pass all items through
   if (!mlWorker.isAvailable) {
@@ -42,7 +44,7 @@ export async function filterBySentiment(
   }
 
   try {
-    const titles = items.map(item => item.title);
+    const titles = items.map((item) => item.title);
     const allResults: Array<{ label: string; score: number }> = [];
 
     // Batch to avoid overwhelming the worker
@@ -57,10 +59,15 @@ export async function filterBySentiment(
       return result && result.label === 'positive' && result.score >= threshold;
     });
 
-    console.log(`[SentimentGate] ${passed.length}/${items.length} items passed (threshold=${threshold})`);
+    console.log(
+      `[SentimentGate] ${passed.length}/${items.length} items passed (threshold=${threshold})`,
+    );
     return passed;
   } catch (err) {
-    console.warn('[SentimentGate] Sentiment classification failed, passing all items through:', err);
+    console.warn(
+      '[SentimentGate] Sentiment classification failed, passing all items through:',
+      err,
+    );
     return items;
   }
 }

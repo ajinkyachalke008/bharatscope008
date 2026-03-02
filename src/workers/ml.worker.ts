@@ -87,7 +87,7 @@ const loadedPipelines = new Map<string, any>();
 const loadingPromises = new Map<string, Promise<void>>();
 
 function getModelConfig(modelId: string): ModelConfig | undefined {
-  return MODEL_CONFIGS.find(m => m.id === modelId);
+  return MODEL_CONFIGS.find((m) => m.id === modelId);
 }
 
 async function loadModel(modelId: string): Promise<void> {
@@ -107,7 +107,13 @@ async function loadModel(modelId: string): Promise<void> {
     // Suppress verbose ONNX Runtime warnings (CleanUnusedInitializersAndNodeArgs)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ort = (globalThis as any).ort;
-    if (ort?.env) { try { ort.env.logLevel = 'error'; } catch { /* ignore */ } }
+    if (ort?.env) {
+      try {
+        ort.env.logLevel = 'error';
+      } catch {
+        /* ignore */
+      }
+    }
 
     const pipe = await pipeline(config.task, config.hfModel, {
       progress_callback: (progress: { status: string; progress?: number }) => {
@@ -171,7 +177,9 @@ async function summarizeTexts(texts: string[], modelId = 'summarization'): Promi
   return results;
 }
 
-async function classifySentiment(texts: string[]): Promise<Array<{ label: string; score: number }>> {
+async function classifySentiment(
+  texts: string[],
+): Promise<Array<{ label: string; score: number }>> {
   await loadModel('sentiment');
   const pipe = loadedPipelines.get('sentiment')!;
 
@@ -205,13 +213,15 @@ async function extractEntities(texts: string[]): Promise<NEREntity[][]> {
   const results: NEREntity[][] = [];
   for (const text of texts) {
     const output = await pipe(text);
-    const entities = (output as Array<{
-      entity_group: string;
-      score: number;
-      word: string;
-      start: number;
-      end: number;
-    }>).map(e => ({
+    const entities = (
+      output as Array<{
+        entity_group: string;
+        score: number;
+        word: string;
+        start: number;
+        end: number;
+      }>
+    ).map((e) => ({
       text: e.word,
       type: e.entity_group,
       confidence: e.score,
@@ -241,10 +251,7 @@ function cosineSimilarity(a: number[], b: number[]): number {
   return denominator === 0 ? 0 : dotProduct / denominator;
 }
 
-function semanticCluster(
-  embeddings: number[][],
-  threshold: number
-): number[][] {
+function semanticCluster(embeddings: number[][], threshold: number): number[][] {
   const n = embeddings.length;
   const clusters: number[][] = [];
   const assigned = new Set<number>();

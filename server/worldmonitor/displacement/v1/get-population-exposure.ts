@@ -37,11 +37,26 @@ const PRIORITY_COUNTRIES: Record<string, { name: string; pop: number; area: numb
 };
 
 const EXPOSURE_CENTROIDS: Record<string, [number, number]> = {
-  UKR: [48.4, 31.2], RUS: [61.5, 105.3], ISR: [31.0, 34.8], PSE: [31.9, 35.2],
-  SYR: [35.0, 38.0], IRN: [32.4, 53.7], TWN: [23.7, 121.0], ETH: [9.1, 40.5],
-  SDN: [15.5, 32.5], SSD: [6.9, 31.3], SOM: [5.2, 46.2], YEM: [15.6, 48.5],
-  AFG: [33.9, 67.7], PAK: [30.4, 69.3], IND: [20.6, 79.0], MMR: [19.8, 96.7],
-  COD: [-4.0, 21.8], NGA: [9.1, 7.5], MLI: [17.6, -4.0], BFA: [12.3, -1.6],
+  UKR: [48.4, 31.2],
+  RUS: [61.5, 105.3],
+  ISR: [31.0, 34.8],
+  PSE: [31.9, 35.2],
+  SYR: [35.0, 38.0],
+  IRN: [32.4, 53.7],
+  TWN: [23.7, 121.0],
+  ETH: [9.1, 40.5],
+  SDN: [15.5, 32.5],
+  SSD: [6.9, 31.3],
+  SOM: [5.2, 46.2],
+  YEM: [15.6, 48.5],
+  AFG: [33.9, 67.7],
+  PAK: [30.4, 69.3],
+  IND: [20.6, 79.0],
+  MMR: [19.8, 96.7],
+  COD: [-4.0, 21.8],
+  NGA: [9.1, 7.5],
+  MLI: [17.6, -4.0],
+  BFA: [12.3, -1.6],
 };
 
 // ---------- RPC handler ----------
@@ -83,12 +98,14 @@ export async function getPopulationExposure(
   }
 
   // Default: countries mode
-  const countries: CountryPopulationEntry[] = Object.entries(PRIORITY_COUNTRIES).map(([code, info]) => ({
-    code,
-    name: info.name,
-    population: info.pop,
-    densityPerKm2: Math.round(info.pop / info.area),
-  }));
+  const countries: CountryPopulationEntry[] = Object.entries(PRIORITY_COUNTRIES).map(
+    ([code, info]) => ({
+      code,
+      name: info.name,
+      population: info.pop,
+      densityPerKm2: Math.round(info.pop / info.area),
+    }),
+  );
 
   return { success: true, countries };
 }

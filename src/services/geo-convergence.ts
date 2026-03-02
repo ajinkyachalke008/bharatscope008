@@ -26,7 +26,7 @@ export function ingestGeoEvent(
   lat: number,
   lon: number,
   type: GeoEventType,
-  timestamp: Date = new Date()
+  timestamp: Date = new Date(),
 ): void {
   const cellId = getCellId(lat, lon);
 
@@ -84,7 +84,12 @@ export function ingestVessels(vessels: MilitaryVessel[]): void {
 
 export function ingestEarthquakes(quakes: Earthquake[]): void {
   for (const q of quakes) {
-    ingestGeoEvent(q.location?.latitude ?? 0, q.location?.longitude ?? 0, 'earthquake', new Date(q.occurredAt));
+    ingestGeoEvent(
+      q.location?.latitude ?? 0,
+      q.location?.longitude ?? 0,
+      'earthquake',
+      new Date(q.occurredAt),
+    );
   }
 }
 
@@ -107,8 +112,7 @@ export function detectGeoConvergence(seenAlerts: Set<string>): GeoConvergenceAle
       if (seenAlerts.has(cellId)) continue;
 
       const types = Array.from(cell.events.keys());
-      const totalEvents = Array.from(cell.events.values())
-        .reduce((sum, d) => sum + d.count, 0);
+      const totalEvents = Array.from(cell.events.values()).reduce((sum, d) => sum + d.count, 0);
 
       const typeScore = cell.events.size * 25;
       const countBoost = Math.min(25, totalEvents * 2);
@@ -134,7 +138,9 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -184,7 +190,7 @@ export function getLocationName(lat: number, lon: number): string {
 }
 
 export function geoConvergenceToSignal(alert: GeoConvergenceAlert): CorrelationSignalCore {
-  const typeDescriptions = alert.types.map(t => TYPE_LABELS[t]).join(', ');
+  const typeDescriptions = alert.types.map((t) => TYPE_LABELS[t]).join(', ');
   const locationName = getLocationName(alert.lat, alert.lon);
 
   return {
@@ -228,7 +234,11 @@ export function debugGetCells(): Map<string, unknown> {
   return new Map(cells);
 }
 
-export function getAlertsNearLocation(lat: number, lon: number, radiusKm: number): { score: number; types: number } | null {
+export function getAlertsNearLocation(
+  lat: number,
+  lon: number,
+  radiusKm: number,
+): { score: number; types: number } | null {
   pruneOldEvents();
 
   let maxScore = 0;

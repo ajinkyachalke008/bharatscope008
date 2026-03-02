@@ -1,11 +1,28 @@
-import type { SocialUnrestEvent, MilitaryFlight, MilitaryVessel, ClusteredEvent, InternetOutage } from '@/types';
+import type {
+  SocialUnrestEvent,
+  MilitaryFlight,
+  MilitaryVessel,
+  ClusteredEvent,
+  InternetOutage,
+} from '@/types';
 import { INTEL_HOTSPOTS, CONFLICT_ZONES, STRATEGIC_WATERWAYS } from '@/config/geo';
-import { CURATED_COUNTRIES, DEFAULT_BASELINE_RISK, DEFAULT_EVENT_MULTIPLIER, getHotspotCountries } from '@/config/countries';
+import {
+  CURATED_COUNTRIES,
+  DEFAULT_BASELINE_RISK,
+  DEFAULT_EVENT_MULTIPLIER,
+  getHotspotCountries,
+} from '@/config/countries';
 import { focalPointDetector } from './focal-point-detector';
 import type { ConflictEvent, UcdpConflictStatus, HapiConflictSummary } from './conflict';
 import type { CountryDisplacement } from '@/services/displacement';
 import type { ClimateAnomaly } from '@/services/climate';
-import { getCountryAtCoordinates, iso3ToIso2Code, nameToCountryCode, getCountryNameByCode, matchCountryNamesInText } from './country-geometry';
+import {
+  getCountryAtCoordinates,
+  iso3ToIso2Code,
+  nameToCountryCode,
+  getCountryNameByCode,
+  matchCountryNamesInText,
+} from './country-geometry';
 
 export interface CountryScore {
   code: string;
@@ -71,7 +88,11 @@ export function isInLearningMode(): boolean {
   return true;
 }
 
-export function getLearningProgress(): { inLearning: boolean; remainingMinutes: number; progress: number } {
+export function getLearningProgress(): {
+  inLearning: boolean;
+  remainingMinutes: number;
+  progress: number;
+} {
   if (hasCachedScoresAvailable || isLearningComplete) {
     return { inLearning: false, remainingMinutes: 0, progress: 100 };
   }
@@ -117,7 +138,18 @@ const countryDataMap = new Map<string, CountryData>();
 const previousScores = new Map<string, number>();
 
 function initCountryData(): CountryData {
-  return { protests: [], conflicts: [], ucdpStatus: null, hapiSummary: null, militaryFlights: [], militaryVessels: [], newsEvents: [], outages: [], displacementOutflow: 0, climateStress: 0 };
+  return {
+    protests: [],
+    conflicts: [],
+    ucdpStatus: null,
+    hapiSummary: null,
+    militaryFlights: [],
+    militaryVessels: [],
+    newsEvents: [],
+    outages: [],
+    displacementOutflow: 0,
+    climateStress: 0,
+  };
 }
 
 export function clearCountryData(): void {
@@ -138,7 +170,7 @@ export type { CountryData };
 function normalizeCountryName(name: string): string | null {
   const lower = name.toLowerCase();
   for (const [code, cfg] of Object.entries(CURATED_COUNTRIES)) {
-    if (cfg.scoringKeywords.some(kw => lower.includes(kw))) return code;
+    if (cfg.scoringKeywords.some((kw) => lower.includes(kw))) return code;
   }
   return nameToCountryCode(lower);
 }
@@ -147,7 +179,10 @@ export function ingestProtestsForCII(events: SocialUnrestEvent[]): void {
   for (const e of events) {
     processedCount++;
     const code = normalizeCountryName(e.country);
-    if (!code) { unmappedCount++; continue; }
+    if (!code) {
+      unmappedCount++;
+      continue;
+    }
     if (!countryDataMap.has(code)) countryDataMap.set(code, initCountryData());
     countryDataMap.get(code)!.protests.push(e);
     trackHotspotActivity(e.lat, e.lon, e.severity === 'high' ? 2 : 1);
@@ -158,7 +193,10 @@ export function ingestConflictsForCII(events: ConflictEvent[]): void {
   for (const e of events) {
     processedCount++;
     const code = normalizeCountryName(e.country);
-    if (!code) { unmappedCount++; continue; }
+    if (!code) {
+      unmappedCount++;
+      continue;
+    }
     if (!countryDataMap.has(code)) countryDataMap.set(code, initCountryData());
     countryDataMap.get(code)!.conflicts.push(e);
     trackHotspotActivity(e.lat, e.lon, e.fatalities > 0 ? 3 : 2);
@@ -169,7 +207,10 @@ export function ingestUcdpForCII(classifications: Map<string, UcdpConflictStatus
   for (const [code, status] of classifications) {
     processedCount++;
     const iso2 = ensureISO2(code);
-    if (!iso2) { unmappedCount++; continue; }
+    if (!iso2) {
+      unmappedCount++;
+      continue;
+    }
     if (!countryDataMap.has(iso2)) countryDataMap.set(iso2, initCountryData());
     countryDataMap.get(iso2)!.ucdpStatus = status;
   }
@@ -179,7 +220,10 @@ export function ingestHapiForCII(summaries: Map<string, HapiConflictSummary>): v
   for (const [code, summary] of summaries) {
     processedCount++;
     const iso2 = ensureISO2(code);
-    if (!iso2) { unmappedCount++; continue; }
+    if (!iso2) {
+      unmappedCount++;
+      continue;
+    }
     if (!countryDataMap.has(iso2)) countryDataMap.set(iso2, initCountryData());
     countryDataMap.get(iso2)!.hapiSummary = summary;
   }
@@ -201,7 +245,10 @@ export function ingestDisplacementForCII(countries: CountryDisplacement[]): void
     if (!code) {
       code = nameToCountryCode(c.name);
     }
-    if (!code) { unmappedCount++; continue; }
+    if (!code) {
+      unmappedCount++;
+      continue;
+    }
     if (!countryDataMap.has(code)) countryDataMap.set(code, initCountryData());
     const outflow = c.refugees + c.asylumSeekers;
     countryDataMap.get(code)!.displacementOutflow = outflow;
@@ -209,8 +256,10 @@ export function ingestDisplacementForCII(countries: CountryDisplacement[]): void
 }
 
 const ZONE_COUNTRY_MAP: Record<string, string[]> = {
-  'Ukraine': ['UA'], 'Middle East': ['IR', 'IL', 'SA', 'SY', 'YE'],
-  'South Asia': ['PK', 'IN'], 'Myanmar': ['MM'],
+  Ukraine: ['UA'],
+  'Middle East': ['IR', 'IL', 'SA', 'SY', 'YE'],
+  'South Asia': ['PK', 'IN'],
+  Myanmar: ['MM'],
 };
 
 export function ingestClimateForCII(anomalies: ClimateAnomaly[]): void {
@@ -224,7 +273,10 @@ export function ingestClimateForCII(anomalies: ClimateAnomaly[]): void {
     for (const code of codes) {
       if (!countryDataMap.has(code)) countryDataMap.set(code, initCountryData());
       const stress = a.severity === 'extreme' ? 15 : 8;
-      countryDataMap.get(code)!.climateStress = Math.max(countryDataMap.get(code)!.climateStress, stress);
+      countryDataMap.get(code)!.climateStress = Math.max(
+        countryDataMap.get(code)!.climateStress,
+        stress,
+      );
     }
   }
 }
@@ -238,7 +290,9 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -260,7 +314,10 @@ function trackHotspotActivity(lat: number, lon: number, weight: number = 1): voi
     const dist = haversineKm(lat, lon, zoneLat, zoneLon);
     if (dist < 300) {
       const zoneCountries: Record<string, string[]> = {
-        ukraine: ['UA', 'RU'], gaza: ['IL', 'IR'], sudan: ['SA'], myanmar: ['MM'],
+        ukraine: ['UA', 'RU'],
+        gaza: ['IL', 'IR'],
+        sudan: ['SA'],
+        myanmar: ['MM'],
       };
       const countries = zoneCountries[zone.id] || [];
       for (const code of countries) {
@@ -273,8 +330,11 @@ function trackHotspotActivity(lat: number, lon: number, weight: number = 1): voi
     const dist = haversineKm(lat, lon, waterway.lat, waterway.lon);
     if (dist < 200) {
       const waterwayCountries: Record<string, string[]> = {
-        taiwan_strait: ['TW', 'CN'], hormuz_strait: ['IR', 'SA'],
-        bab_el_mandeb: ['YE', 'SA'], suez: ['IL'], bosphorus: ['TR'],
+        taiwan_strait: ['TW', 'CN'],
+        hormuz_strait: ['IR', 'SA'],
+        bab_el_mandeb: ['YE', 'SA'],
+        suez: ['IL'],
+        bosphorus: ['TR'],
       };
       const countries = waterwayCountries[waterway.id] || [];
       for (const code of countries) {
@@ -351,7 +411,7 @@ export function ingestNewsForCII(events: ClusteredEvent[]): void {
     const matched = new Set<string>();
 
     for (const [code, cfg] of Object.entries(CURATED_COUNTRIES)) {
-      if (cfg.scoringKeywords.some(kw => title.includes(kw))) {
+      if (cfg.scoringKeywords.some((kw) => title.includes(kw))) {
         matched.add(code);
       }
     }
@@ -371,7 +431,10 @@ export function ingestOutagesForCII(outages: InternetOutage[]): void {
   for (const o of outages) {
     processedCount++;
     const code = normalizeCountryName(o.country);
-    if (!code) { unmappedCount++; continue; }
+    if (!code) {
+      unmappedCount++;
+      continue;
+    }
     if (!countryDataMap.has(code)) countryDataMap.set(code, initCountryData());
     countryDataMap.get(code)!.outages.push(o);
   }
@@ -387,7 +450,7 @@ function calcUnrestScore(data: CountryData, countryCode: string): number {
 
   if (protestCount > 0) {
     const fatalities = data.protests.reduce((sum, p) => sum + (p.fatalities || 0), 0);
-    const highSeverity = data.protests.filter(p => p.severity === 'high').length;
+    const highSeverity = data.protests.filter((p) => p.severity === 'high').length;
 
     const isHighVolume = multiplier < 0.7;
     const adjustedCount = isHighVolume
@@ -402,9 +465,9 @@ function calcUnrestScore(data: CountryData, countryCode: string): number {
 
   let outageBoost = 0;
   if (data.outages.length > 0) {
-    const totalOutages = data.outages.filter(o => o.severity === 'total').length;
-    const majorOutages = data.outages.filter(o => o.severity === 'major').length;
-    const partialOutages = data.outages.filter(o => o.severity === 'partial').length;
+    const totalOutages = data.outages.filter((o) => o.severity === 'total').length;
+    const majorOutages = data.outages.filter((o) => o.severity === 'major').length;
+    const partialOutages = data.outages.filter((o) => o.severity === 'partial').length;
 
     outageBoost = Math.min(50, totalOutages * 30 + majorOutages * 15 + partialOutages * 5);
   }
@@ -418,12 +481,17 @@ function calcConflictScore(data: CountryData, countryCode: string): number {
 
   if (events.length === 0 && !data.hapiSummary) return 0;
 
-  const battleCount = events.filter(e => e.eventType === 'battle').length;
-  const explosionCount = events.filter(e => e.eventType === 'explosion' || e.eventType === 'remote_violence').length;
-  const civilianCount = events.filter(e => e.eventType === 'violence_against_civilians').length;
+  const battleCount = events.filter((e) => e.eventType === 'battle').length;
+  const explosionCount = events.filter(
+    (e) => e.eventType === 'explosion' || e.eventType === 'remote_violence',
+  ).length;
+  const civilianCount = events.filter((e) => e.eventType === 'violence_against_civilians').length;
   const totalFatalities = events.reduce((sum, e) => sum + e.fatalities, 0);
 
-  const eventScore = Math.min(50, (battleCount * 3 + explosionCount * 4 + civilianCount * 5) * multiplier);
+  const eventScore = Math.min(
+    50,
+    (battleCount * 3 + explosionCount * 4 + civilianCount * 5) * multiplier,
+  );
   const fatalityScore = Math.min(40, Math.sqrt(totalFatalities) * 5 * multiplier);
   const civilianBoost = civilianCount > 0 ? Math.min(10, civilianCount * 3) : 0;
 
@@ -440,9 +508,12 @@ function getUcdpFloor(data: CountryData): number {
   const status = data.ucdpStatus;
   if (!status) return 0;
   switch (status.intensity) {
-    case 'war': return 70;
-    case 'minor': return 50;
-    case 'none': return 0;
+    case 'war':
+      return 70;
+    case 'minor':
+      return 50;
+    case 'none':
+      return 0;
   }
 }
 
@@ -459,22 +530,24 @@ function calcInformationScore(data: CountryData, countryCode: string): number {
   if (count === 0) return 0;
 
   const multiplier = CURATED_COUNTRIES[countryCode]?.eventMultiplier ?? DEFAULT_EVENT_MULTIPLIER;
-  const velocitySum = data.newsEvents.reduce((sum, e) => sum + (e.velocity?.sourcesPerHour || 0), 0);
+  const velocitySum = data.newsEvents.reduce(
+    (sum, e) => sum + (e.velocity?.sourcesPerHour || 0),
+    0,
+  );
   const avgVelocity = velocitySum / count;
 
   const isHighVolume = multiplier < 0.7;
-  const adjustedCount = isHighVolume
-    ? Math.log2(count + 1) * multiplier * 3
-    : count * multiplier;
+  const adjustedCount = isHighVolume ? Math.log2(count + 1) * multiplier * 3 : count * multiplier;
 
   const baseScore = Math.min(40, adjustedCount * 5);
 
   const velocityThreshold = isHighVolume ? 5 : 2;
-  const velocityBoost = avgVelocity > velocityThreshold
-    ? Math.min(40, (avgVelocity - velocityThreshold) * 10 * multiplier)
-    : 0;
+  const velocityBoost =
+    avgVelocity > velocityThreshold
+      ? Math.min(40, (avgVelocity - velocityThreshold) * 10 * multiplier)
+      : 0;
 
-  const alertBoost = data.newsEvents.some(e => e.isAlert) ? 20 * multiplier : 0;
+  const alertBoost = data.newsEvents.some((e) => e.isAlert) ? 20 * multiplier : 0;
 
   return Math.min(100, baseScore + velocityBoost + alertBoost);
 }
@@ -517,23 +590,30 @@ export function calculateCII(): CountryScore[] {
       information: Math.round(calcInformationScore(data, code)),
     };
 
-    const eventScore = components.unrest * 0.25 + components.conflict * 0.30 + components.security * 0.20 + components.information * 0.25;
+    const eventScore =
+      components.unrest * 0.25 +
+      components.conflict * 0.3 +
+      components.security * 0.2 +
+      components.information * 0.25;
 
     const hotspotBoost = getHotspotBoost(code);
-    const newsUrgencyBoost = components.information >= 70 ? 5
-      : components.information >= 50 ? 3
-      : 0;
+    const newsUrgencyBoost =
+      components.information >= 70 ? 5 : components.information >= 50 ? 3 : 0;
     const focalUrgency = focalUrgencies.get(code);
-    const focalBoost = focalUrgency === 'critical' ? 8
-      : focalUrgency === 'elevated' ? 4
-      : 0;
+    const focalBoost = focalUrgency === 'critical' ? 8 : focalUrgency === 'elevated' ? 4 : 0;
 
-    const displacementBoost = data.displacementOutflow >= 1_000_000 ? 8
-      : data.displacementOutflow >= 100_000 ? 4
-      : 0;
+    const displacementBoost =
+      data.displacementOutflow >= 1_000_000 ? 8 : data.displacementOutflow >= 100_000 ? 4 : 0;
     const climateBoost = data.climateStress;
 
-    const blendedScore = baselineRisk * 0.4 + eventScore * 0.6 + hotspotBoost + newsUrgencyBoost + focalBoost + displacementBoost + climateBoost;
+    const blendedScore =
+      baselineRisk * 0.4 +
+      eventScore * 0.6 +
+      hotspotBoost +
+      newsUrgencyBoost +
+      focalBoost +
+      displacementBoost +
+      climateBoost;
 
     const floor = getUcdpFloor(data);
     const score = Math.round(Math.min(100, Math.max(floor, blendedScore)));
@@ -573,20 +653,26 @@ export function getCountryScore(code: string): number | null {
     information: calcInformationScore(data, code),
   };
 
-  const eventScore = components.unrest * 0.25 + components.conflict * 0.30 + components.security * 0.20 + components.information * 0.25;
+  const eventScore =
+    components.unrest * 0.25 +
+    components.conflict * 0.3 +
+    components.security * 0.2 +
+    components.information * 0.25;
   const hotspotBoost = getHotspotBoost(code);
-  const newsUrgencyBoost = components.information >= 70 ? 5
-    : components.information >= 50 ? 3
-    : 0;
+  const newsUrgencyBoost = components.information >= 70 ? 5 : components.information >= 50 ? 3 : 0;
   const focalUrgency = focalPointDetector.getCountryUrgency(code);
-  const focalBoost = focalUrgency === 'critical' ? 8
-    : focalUrgency === 'elevated' ? 4
-    : 0;
-  const displacementBoost = data.displacementOutflow >= 1_000_000 ? 8
-    : data.displacementOutflow >= 100_000 ? 4
-    : 0;
+  const focalBoost = focalUrgency === 'critical' ? 8 : focalUrgency === 'elevated' ? 4 : 0;
+  const displacementBoost =
+    data.displacementOutflow >= 1_000_000 ? 8 : data.displacementOutflow >= 100_000 ? 4 : 0;
   const climateBoost = data.climateStress;
-  const blendedScore = baselineRisk * 0.4 + eventScore * 0.6 + hotspotBoost + newsUrgencyBoost + focalBoost + displacementBoost + climateBoost;
+  const blendedScore =
+    baselineRisk * 0.4 +
+    eventScore * 0.6 +
+    hotspotBoost +
+    newsUrgencyBoost +
+    focalBoost +
+    displacementBoost +
+    climateBoost;
 
   const floor = getUcdpFloor(data);
   return Math.round(Math.min(100, Math.max(floor, blendedScore)));

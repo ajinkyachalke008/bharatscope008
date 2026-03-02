@@ -49,25 +49,22 @@ type RuntimeProbe = {
 
 export function detectDesktopRuntime(probe: RuntimeProbe): boolean {
   const tauriInUserAgent = probe.userAgent.includes('Tauri');
-  const secureLocalhostOrigin = (
-    probe.locationProtocol === 'https:' && (
-      probe.locationHost === 'localhost' ||
+  const secureLocalhostOrigin =
+    probe.locationProtocol === 'https:' &&
+    (probe.locationHost === 'localhost' ||
       probe.locationHost.startsWith('localhost:') ||
       probe.locationHost === '127.0.0.1' ||
-      probe.locationHost.startsWith('127.0.0.1:')
-    )
-  );
+      probe.locationHost.startsWith('127.0.0.1:'));
 
   // Tauri production windows can expose tauri-like hosts/schemes without
   // always exposing bridge globals at first paint.
-  const tauriLikeLocation = (
+  const tauriLikeLocation =
     probe.locationProtocol === 'tauri:' ||
     probe.locationProtocol === 'asset:' ||
     probe.locationHost === 'tauri.localhost' ||
     probe.locationHost.endsWith('.tauri.localhost') ||
     probe.locationOrigin.startsWith('tauri://') ||
-    secureLocalhostOrigin
-  );
+    secureLocalhostOrigin;
 
   return probe.hasTauriGlobals || tauriInUserAgent || tauriLikeLocation;
 }
@@ -209,9 +206,7 @@ async function fetchLocalWithStartupRetry(
     }
   }
 
-  throw lastError instanceof Error
-    ? lastError
-    : new Error('Local API unavailable');
+  throw lastError instanceof Error ? lastError : new Error('Local API unavailable');
 }
 
 // ── Security threat model for the fetch patch ──────────────────────────
@@ -236,7 +231,11 @@ async function fetchLocalWithStartupRetry(
 const TOKEN_TTL_MS = 5 * 60 * 1000;
 
 export function installRuntimeFetchPatch(): void {
-  if (!isDesktopRuntime() || typeof window === 'undefined' || (window as unknown as Record<string, unknown>).__wmFetchPatched) {
+  if (
+    !isDesktopRuntime() ||
+    typeof window === 'undefined' ||
+    (window as unknown as Record<string, unknown>).__wmFetchPatched
+  ) {
     return;
   }
 
@@ -250,7 +249,8 @@ export function installRuntimeFetchPatch(): void {
 
     if (!target?.startsWith('/api/')) {
       if (debug) {
-        const raw = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+        const raw =
+          typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
         console.log(`[fetch] passthrough → ${raw.slice(0, 120)}`);
       }
       return nativeFetch(input, init);
@@ -258,10 +258,14 @@ export function installRuntimeFetchPatch(): void {
 
     // Resolve dynamic sidecar port on first API call
     if (_resolvedPort === null) {
-      try { await resolveLocalApiPort(); } catch { /* use default */ }
+      try {
+        await resolveLocalApiPort();
+      } catch {
+        /* use default */
+      }
     }
 
-    const tokenExpired = localApiToken && (Date.now() - tokenFetchedAt > TOKEN_TTL_MS);
+    const tokenExpired = localApiToken && Date.now() - tokenFetchedAt > TOKEN_TTL_MS;
     if (!localApiToken || tokenExpired) {
       try {
         const { tryInvokeTauri } = await import('@/services/tauri-bridge');
@@ -286,7 +290,7 @@ export function installRuntimeFetchPatch(): void {
     if (allowCloudFallback && !isKeyFreeApiTarget(target)) {
       try {
         const { getSecretState, secretsReady } = await import('@/services/runtime-config');
-        await Promise.race([secretsReady, new Promise<void>(r => setTimeout(r, 2000))]);
+        await Promise.race([secretsReady, new Promise<void>((r) => setTimeout(r, 2000))]);
         const wmKeyState = getSecretState('WORLDMONITOR_API_KEY');
         if (!wmKeyState.present || !wmKeyState.valid) {
           allowCloudFallback = false;
@@ -316,7 +320,10 @@ export function installRuntimeFetchPatch(): void {
     try {
       const t0 = performance.now();
       let response = await fetchLocalWithStartupRetry(nativeFetch, localUrl, localInit);
-      if (debug) console.log(`[fetch] ${target} → ${response.status} (${Math.round(performance.now() - t0)}ms)`);
+      if (debug)
+        console.log(
+          `[fetch] ${target} → ${response.status} (${Math.round(performance.now() - t0)}ms)`,
+        );
 
       // Token may be stale after a sidecar restart — refresh and retry once.
       if (response.status === 401 && localApiToken) {
@@ -332,14 +339,20 @@ export function installRuntimeFetchPatch(): void {
         if (localApiToken) {
           const retryHeaders = new Headers(init?.headers);
           retryHeaders.set('Authorization', `Bearer ${localApiToken}`);
-          response = await fetchLocalWithStartupRetry(nativeFetch, localUrl, { ...init, headers: retryHeaders });
+          response = await fetchLocalWithStartupRetry(nativeFetch, localUrl, {
+            ...init,
+            headers: retryHeaders,
+          });
           if (debug) console.log(`[fetch] retry ${target} → ${response.status}`);
         }
       }
 
       if (!response.ok) {
         if (!allowCloudFallback) {
-          if (debug) console.log(`[fetch] local-only endpoint ${target} returned ${response.status}; skipping cloud fallback`);
+          if (debug)
+            console.log(
+              `[fetch] local-only endpoint ${target} returned ${response.status}; skipping cloud fallback`,
+            );
           return response;
         }
         if (debug) console.log(`[fetch] local ${response.status}, falling back to cloud`);

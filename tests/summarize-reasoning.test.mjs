@@ -28,13 +28,15 @@ describe('Fix 1: message.reasoning fallback', () => {
   const src = readSrc('server/worldmonitor/news/v1/summarize-article.ts');
 
   it('does NOT fall back to message.reasoning', () => {
-    assert.doesNotMatch(src, /message\?\.reasoning/,
-      'Should not reference message.reasoning — reasoning tokens must never be used as summary');
+    assert.doesNotMatch(
+      src,
+      /message\?\.reasoning/,
+      'Should not reference message.reasoning — reasoning tokens must never be used as summary',
+    );
   });
 
   it('only uses message.content', () => {
-    assert.match(src, /message\?\.content/,
-      'Should extract content from message.content');
+    assert.match(src, /message\?\.content/, 'Should extract content from message.content');
   });
 });
 
@@ -64,7 +66,7 @@ describe('Fix 2: thinking tag stripping formats', () => {
   it('handles unterminated <think> blocks', () => {
     // Second .replace block should have <think> without closing tag pattern
     const lines = src.split('\n');
-    const unterminatedSection = lines.findIndex(l => l.includes('Strip unterminated'));
+    const unterminatedSection = lines.findIndex((l) => l.includes('Strip unterminated'));
     assert.ok(unterminatedSection > -1, 'Should have unterminated block stripping section');
     const sectionSlice = lines.slice(unterminatedSection, unterminatedSection + 8).join('\n');
     assert.ok(sectionSlice.includes('<think>'), 'Should strip unterminated <think>');
@@ -72,21 +74,21 @@ describe('Fix 2: thinking tag stripping formats', () => {
 
   it('handles unterminated <|thinking|> blocks', () => {
     const lines = src.split('\n');
-    const unterminatedSection = lines.findIndex(l => l.includes('Strip unterminated'));
+    const unterminatedSection = lines.findIndex((l) => l.includes('Strip unterminated'));
     const sectionSlice = lines.slice(unterminatedSection, unterminatedSection + 8).join('\n');
     assert.ok(sectionSlice.includes('\\|thinking\\|'), 'Should strip unterminated <|thinking|>');
   });
 
   it('handles unterminated <reasoning> blocks', () => {
     const lines = src.split('\n');
-    const unterminatedSection = lines.findIndex(l => l.includes('Strip unterminated'));
+    const unterminatedSection = lines.findIndex((l) => l.includes('Strip unterminated'));
     const sectionSlice = lines.slice(unterminatedSection, unterminatedSection + 8).join('\n');
     assert.ok(sectionSlice.includes('<reasoning>'), 'Should strip unterminated <reasoning>');
   });
 
   it('handles unterminated <reflection> blocks', () => {
     const lines = src.split('\n');
-    const unterminatedSection = lines.findIndex(l => l.includes('Strip unterminated'));
+    const unterminatedSection = lines.findIndex((l) => l.includes('Strip unterminated'));
     const sectionSlice = lines.slice(unterminatedSection, unterminatedSection + 8).join('\n');
     assert.ok(sectionSlice.includes('<reflection>'), 'Should strip unterminated <reflection>');
   });
@@ -97,9 +99,12 @@ describe('Fix 2: thinking tag stripping formats', () => {
 
   it('strips <|begin_of_thought|> tags (unterminated)', () => {
     const lines = src.split('\n');
-    const unterminatedSection = lines.findIndex(l => l.includes('Strip unterminated'));
+    const unterminatedSection = lines.findIndex((l) => l.includes('Strip unterminated'));
     const sectionSlice = lines.slice(unterminatedSection, unterminatedSection + 10).join('\n');
-    assert.ok(sectionSlice.includes('begin_of_thought'), 'Should strip unterminated <|begin_of_thought|>');
+    assert.ok(
+      sectionSlice.includes('begin_of_thought'),
+      'Should strip unterminated <|begin_of_thought|>',
+    );
   });
 });
 
@@ -178,11 +183,15 @@ describe('Fix 3: hasReasoningPreamble', () => {
 
   // Valid summaries that must NOT be detected
   it('passes clean geopolitical summary', () => {
-    assert.ok(!hasReasoningPreamble("Iran's nuclear program faces increased international scrutiny."));
+    assert.ok(
+      !hasReasoningPreamble("Iran's nuclear program faces increased international scrutiny."),
+    );
   });
 
   it('passes clean event summary', () => {
-    assert.ok(!hasReasoningPreamble('The US Treasury announced new sanctions against Russian entities.'));
+    assert.ok(
+      !hasReasoningPreamble('The US Treasury announced new sanctions against Russian entities.'),
+    );
   });
 
   it('passes clean protest summary', () => {
@@ -229,19 +238,28 @@ describe('Fix 3: hasReasoningPreamble', () => {
 
   // Mode guard
   it('is gated to brief and analysis modes in source', () => {
-    assert.match(src, /\['brief',\s*'analysis'\]\.includes\(mode\)/,
-      'Reasoning preamble check must be gated to brief/analysis modes');
+    assert.match(
+      src,
+      /\['brief',\s*'analysis'\]\.includes\(mode\)/,
+      'Reasoning preamble check must be gated to brief/analysis modes',
+    );
   });
 
   it('does not apply to translate mode', () => {
-    assert.doesNotMatch(src, /mode\s*!==\s*'translate'.*hasReasoningPreamble/,
-      'Should NOT use negation-based mode guard');
+    assert.doesNotMatch(
+      src,
+      /mode\s*!==\s*'translate'.*hasReasoningPreamble/,
+      'Should NOT use negation-based mode guard',
+    );
   });
 
   // Min-length gate
   it('has mode-scoped min-length gate for brief/analysis', () => {
-    assert.match(src, /\['brief',\s*'analysis'\]\.includes\(mode\)\s*&&\s*rawContent\.length\s*<\s*20/,
-      'Should reject outputs shorter than 20 chars in brief/analysis modes');
+    assert.match(
+      src,
+      /\['brief',\s*'analysis'\]\.includes\(mode\)\s*&&\s*rawContent\.length\s*<\s*20/,
+      'Should reject outputs shorter than 20 chars in brief/analysis modes',
+    );
   });
 });
 
@@ -253,7 +271,10 @@ describe('Fix 4: cache version bump', () => {
   const src = readSrc('server/worldmonitor/news/v1/_shared.ts');
 
   it('CACHE_VERSION is v5', () => {
-    assert.match(src, /CACHE_VERSION\s*=\s*'v5'/,
-      'CACHE_VERSION must be v5 to invalidate entries from old conflating prompts');
+    assert.match(
+      src,
+      /CACHE_VERSION\s*=\s*'v5'/,
+      'CACHE_VERSION must be v5 to invalidate entries from old conflating prompts',
+    );
   });
 });

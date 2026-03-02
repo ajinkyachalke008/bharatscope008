@@ -38,18 +38,37 @@ export class DisplacementPanel extends Panel {
     const g = this.data.globalTotals;
 
     const stats = [
-      { label: t('components.displacement.refugees'), value: formatPopulation(g.refugees), cls: 'disp-stat-refugees' },
-      { label: t('components.displacement.asylumSeekers'), value: formatPopulation(g.asylumSeekers), cls: 'disp-stat-asylum' },
-      { label: t('components.displacement.idps'), value: formatPopulation(g.idps), cls: 'disp-stat-idps' },
-      { label: t('components.displacement.total'), value: formatPopulation(g.total), cls: 'disp-stat-total' },
+      {
+        label: t('components.displacement.refugees'),
+        value: formatPopulation(g.refugees),
+        cls: 'disp-stat-refugees',
+      },
+      {
+        label: t('components.displacement.asylumSeekers'),
+        value: formatPopulation(g.asylumSeekers),
+        cls: 'disp-stat-asylum',
+      },
+      {
+        label: t('components.displacement.idps'),
+        value: formatPopulation(g.idps),
+        cls: 'disp-stat-idps',
+      },
+      {
+        label: t('components.displacement.total'),
+        value: formatPopulation(g.total),
+        cls: 'disp-stat-total',
+      },
     ];
 
-    const statsHtml = stats.map(s =>
-      `<div class="disp-stat-box ${s.cls}">
+    const statsHtml = stats
+      .map(
+        (s) =>
+          `<div class="disp-stat-box ${s.cls}">
         <span class="disp-stat-value">${s.value}</span>
         <span class="disp-stat-label">${s.label}</span>
-      </div>`
-    ).join('');
+      </div>`,
+      )
+      .join('');
 
     const tabsHtml = `
       <div class="disp-tabs">
@@ -61,11 +80,11 @@ export class DisplacementPanel extends Panel {
     let countries: CountryDisplacement[];
     if (this.activeTab === 'origins') {
       countries = [...this.data.countries]
-        .filter(c => c.refugees + c.asylumSeekers > 0)
-        .sort((a, b) => (b.refugees + b.asylumSeekers) - (a.refugees + a.asylumSeekers));
+        .filter((c) => c.refugees + c.asylumSeekers > 0)
+        .sort((a, b) => b.refugees + b.asylumSeekers - (a.refugees + a.asylumSeekers));
     } else {
       countries = [...this.data.countries]
-        .filter(c => (c.hostTotal || 0) > 0)
+        .filter((c) => (c.hostTotal || 0) > 0)
         .sort((a, b) => (b.hostTotal || 0) - (a.hostTotal || 0));
     }
 
@@ -75,28 +94,38 @@ export class DisplacementPanel extends Panel {
     if (displayed.length === 0) {
       tableHtml = `<div class="panel-empty">${t('common.noDataShort')}</div>`;
     } else {
-      const rows = displayed.map(c => {
-        const hostTotal = c.hostTotal || 0;
-        const count = this.activeTab === 'origins' ? c.refugees + c.asylumSeekers : hostTotal;
-        const total = this.activeTab === 'origins' ? c.totalDisplaced : hostTotal;
-        const badgeCls = total >= 1_000_000 ? 'disp-crisis'
-          : total >= 500_000 ? 'disp-high'
-            : total >= 100_000 ? 'disp-elevated'
-              : '';
-        const badgeLabel = total >= 1_000_000 ? t('components.displacement.badges.crisis')
-          : total >= 500_000 ? t('components.displacement.badges.high')
-            : total >= 100_000 ? t('components.displacement.badges.elevated')
-              : '';
-        const badgeHtml = badgeLabel
-          ? `<span class="disp-badge ${badgeCls}">${badgeLabel}</span>`
-          : '';
+      const rows = displayed
+        .map((c) => {
+          const hostTotal = c.hostTotal || 0;
+          const count = this.activeTab === 'origins' ? c.refugees + c.asylumSeekers : hostTotal;
+          const total = this.activeTab === 'origins' ? c.totalDisplaced : hostTotal;
+          const badgeCls =
+            total >= 1_000_000
+              ? 'disp-crisis'
+              : total >= 500_000
+                ? 'disp-high'
+                : total >= 100_000
+                  ? 'disp-elevated'
+                  : '';
+          const badgeLabel =
+            total >= 1_000_000
+              ? t('components.displacement.badges.crisis')
+              : total >= 500_000
+                ? t('components.displacement.badges.high')
+                : total >= 100_000
+                  ? t('components.displacement.badges.elevated')
+                  : '';
+          const badgeHtml = badgeLabel
+            ? `<span class="disp-badge ${badgeCls}">${badgeLabel}</span>`
+            : '';
 
-        return `<tr class="disp-row" data-lat="${c.lat || ''}" data-lon="${c.lon || ''}">
+          return `<tr class="disp-row" data-lat="${c.lat || ''}" data-lon="${c.lon || ''}">
           <td class="disp-name">${escapeHtml(c.name)}</td>
           <td class="disp-status">${badgeHtml}</td>
           <td class="disp-count">${formatPopulation(count)}</td>
         </tr>`;
-      }).join('');
+        })
+        .join('');
 
       tableHtml = `
         <table class="disp-table">
@@ -119,14 +148,14 @@ export class DisplacementPanel extends Panel {
       </div>
     `);
 
-    this.content.querySelectorAll('.disp-tab').forEach(btn => {
+    this.content.querySelectorAll('.disp-tab').forEach((btn) => {
       btn.addEventListener('click', () => {
         this.activeTab = (btn as HTMLElement).dataset.tab as DisplacementTab;
         this.renderContent();
       });
     });
 
-    this.content.querySelectorAll('.disp-row').forEach(el => {
+    this.content.querySelectorAll('.disp-row').forEach((el) => {
       el.addEventListener('click', () => {
         const lat = Number((el as HTMLElement).dataset.lat);
         const lon = Number((el as HTMLElement).dataset.lon);

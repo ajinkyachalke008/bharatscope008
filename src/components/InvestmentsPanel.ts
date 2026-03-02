@@ -37,16 +37,16 @@ function getSectorLabel(sector: GulfInvestmentSector): string {
 }
 
 const STATUS_COLORS: Record<GulfInvestmentStatus, string> = {
-  'operational':         '#22c55e',
-  'under-construction':  '#f59e0b',
-  'announced':           '#60a5fa',
-  'rumoured':            '#a78bfa',
-  'cancelled':           '#ef4444',
-  'divested':            '#6b7280',
+  operational: '#22c55e',
+  'under-construction': '#f59e0b',
+  announced: '#60a5fa',
+  rumoured: '#a78bfa',
+  cancelled: '#ef4444',
+  divested: '#6b7280',
 };
 
 const FLAG: Record<string, string> = {
-  SA:  '🇸🇦',
+  SA: '🇸🇦',
   UAE: '🇦🇪',
 };
 
@@ -85,42 +85,45 @@ export class InvestmentsPanel extends Panel {
     const { investingCountry, sector, entity, status, search } = this.filters;
     const q = search.toLowerCase();
 
-    return GULF_INVESTMENTS
-      .filter(inv => {
-        if (investingCountry !== 'ALL' && inv.investingCountry !== investingCountry) return false;
-        if (sector !== 'ALL' && inv.sector !== sector) return false;
-        if (entity !== 'ALL' && inv.investingEntity !== entity) return false;
-        if (status !== 'ALL' && inv.status !== status) return false;
-        if (q && !inv.assetName.toLowerCase().includes(q)
-               && !inv.targetCountry.toLowerCase().includes(q)
-               && !inv.description.toLowerCase().includes(q)
-               && !inv.investingEntity.toLowerCase().includes(q)) return false;
-        return true;
-      })
-      .sort((a, b) => {
-        const key = this.sortKey;
-        const av = a[key] ?? '';
-        const bv = b[key] ?? '';
-        const cmp = av < bv ? -1 : av > bv ? 1 : 0;
-        return this.sortAsc ? cmp : -cmp;
-      });
+    return GULF_INVESTMENTS.filter((inv) => {
+      if (investingCountry !== 'ALL' && inv.investingCountry !== investingCountry) return false;
+      if (sector !== 'ALL' && inv.sector !== sector) return false;
+      if (entity !== 'ALL' && inv.investingEntity !== entity) return false;
+      if (status !== 'ALL' && inv.status !== status) return false;
+      if (
+        q &&
+        !inv.assetName.toLowerCase().includes(q) &&
+        !inv.targetCountry.toLowerCase().includes(q) &&
+        !inv.description.toLowerCase().includes(q) &&
+        !inv.investingEntity.toLowerCase().includes(q)
+      )
+        return false;
+      return true;
+    }).sort((a, b) => {
+      const key = this.sortKey;
+      const av = a[key] ?? '';
+      const bv = b[key] ?? '';
+      const cmp = av < bv ? -1 : av > bv ? 1 : 0;
+      return this.sortAsc ? cmp : -cmp;
+    });
   }
 
   private render(): void {
     const filtered = this.getFiltered();
 
     // Build unique entity list for dropdown
-    const entities = Array.from(new Set(GULF_INVESTMENTS.map(i => i.investingEntity))).sort();
-    const sectors = Array.from(new Set(GULF_INVESTMENTS.map(i => i.sector))).sort();
+    const entities = Array.from(new Set(GULF_INVESTMENTS.map((i) => i.investingEntity))).sort();
+    const sectors = Array.from(new Set(GULF_INVESTMENTS.map((i) => i.sector))).sort();
 
     const sortArrow = (key: keyof GulfInvestment) =>
       this.sortKey === key ? (this.sortAsc ? ' ↑' : ' ↓') : '';
 
-    const rows = filtered.map(inv => {
-      const statusColor = STATUS_COLORS[inv.status] || '#6b7280';
-      const flag = FLAG[inv.investingCountry] || '';
-      const sector = getSectorLabel(inv.sector);
-      return `
+    const rows = filtered
+      .map((inv) => {
+        const statusColor = STATUS_COLORS[inv.status] || '#6b7280';
+        const flag = FLAG[inv.investingCountry] || '';
+        const sector = getSectorLabel(inv.sector);
+        return `
         <tr class="fdi-row" data-id="${escapeHtml(inv.id)}" style="cursor:pointer">
           <td class="fdi-asset">
             <span class="fdi-flag">${flag}</span>
@@ -133,7 +136,8 @@ export class InvestmentsPanel extends Panel {
           <td class="fdi-usd">${escapeHtml(formatUSD(inv.investmentUSD))}</td>
           <td>${inv.yearAnnounced ?? inv.yearOperational ?? '—'}</td>
         </tr>`;
-    }).join('');
+      })
+      .join('');
 
     const html = `
       <div class="fdi-toolbar">
@@ -150,11 +154,11 @@ export class InvestmentsPanel extends Panel {
         </select>
         <select class="fdi-filter" data-filter="sector">
           <option value="ALL">${t('components.investments.allSectors')}</option>
-          ${sectors.map(s => `<option value="${s}" ${this.filters.sector === s ? 'selected' : ''}>${escapeHtml(getSectorLabel(s as GulfInvestmentSector))}</option>`).join('')}
+          ${sectors.map((s) => `<option value="${s}" ${this.filters.sector === s ? 'selected' : ''}>${escapeHtml(getSectorLabel(s as GulfInvestmentSector))}</option>`).join('')}
         </select>
         <select class="fdi-filter" data-filter="entity">
           <option value="ALL">${t('components.investments.allEntities')}</option>
-          ${entities.map(e => `<option value="${escapeHtml(e)}" ${this.filters.entity === e ? 'selected' : ''}>${escapeHtml(e)}</option>`).join('')}
+          ${entities.map((e) => `<option value="${escapeHtml(e)}" ${this.filters.entity === e ? 'selected' : ''}>${escapeHtml(e)}</option>`).join('')}
         </select>
         <select class="fdi-filter" data-filter="status">
           <option value="ALL">${t('components.investments.allStatuses')}</option>
@@ -219,7 +223,7 @@ export class InvestmentsPanel extends Panel {
       }
       const row = target.closest('.fdi-row') as HTMLElement | null;
       if (row) {
-        const inv = GULF_INVESTMENTS.find(i => i.id === row.dataset.id);
+        const inv = GULF_INVESTMENTS.find((i) => i.id === row.dataset.id);
         if (inv && this.onInvestmentClick) {
           this.onInvestmentClick(inv);
         }

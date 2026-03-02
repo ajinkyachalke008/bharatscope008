@@ -94,9 +94,7 @@ export class CountryTimeline {
       .attr('height', HEIGHT)
       .attr('style', 'display:block;');
 
-    const g = this.svg
-      .append('g')
-      .attr('transform', `translate(${MARGIN.left},${MARGIN.top})`);
+    const g = this.svg.append('g').attr('transform', `translate(${MARGIN.left},${MARGIN.top})`);
 
     const now = Date.now();
     const xScale = d3
@@ -104,11 +102,7 @@ export class CountryTimeline {
       .domain([new Date(now - SEVEN_DAYS_MS), new Date(now)])
       .range([0, innerW]);
 
-    const yScale = d3
-      .scaleBand<string>()
-      .domain(LANES)
-      .range([0, innerH])
-      .padding(0.2);
+    const yScale = d3.scaleBand<string>().domain(LANES).range([0, innerH]).padding(0.2);
 
     this.drawGrid(g, xScale, innerH);
     this.drawAxes(g, xScale, yScale, innerH);
@@ -145,10 +139,7 @@ export class CountryTimeline {
       .ticks(6)
       .tickFormat(d3.timeFormat('%b %d') as (d: Date | d3.NumberValue, i: number) => string);
 
-    const xAxisG = g
-      .append('g')
-      .attr('transform', `translate(0,${innerH})`)
-      .call(xAxis);
+    const xAxisG = g.append('g').attr('transform', `translate(0,${innerH})`).call(xAxis);
 
     xAxisG.selectAll('text').attr('fill', getCSSColor('--text-dim')).attr('font-size', '10px');
     xAxisG.selectAll('line').attr('stroke', getCSSColor('--border'));
@@ -244,7 +235,10 @@ export class CountryTimeline {
       .attr('stroke', getCSSColor('--shadow-color'))
       .attr('stroke-width', 0.5)
       .on('mouseenter', function (event: MouseEvent, d: TimelineEvent) {
-        d3.select(this).attr('opacity', 1).attr('stroke', getCSSColor('--text')).attr('stroke-width', 1.5);
+        d3.select(this)
+          .attr('opacity', 1)
+          .attr('stroke', getCSSColor('--text'))
+          .attr('stroke-width', 1.5);
         const dateStr = fmt(new Date(d.timestamp));
         tooltip.innerHTML = `<strong>${escapeHtml(d.label)}</strong><br/>${escapeHtml(dateStr)}`;
         tooltip.style.display = 'block';
@@ -262,7 +256,10 @@ export class CountryTimeline {
         tooltip.style.top = `${y}px`;
       })
       .on('mouseleave', function () {
-        d3.select(this).attr('opacity', 0.85).attr('stroke', getCSSColor('--shadow-color')).attr('stroke-width', 0.5);
+        d3.select(this)
+          .attr('opacity', 0.85)
+          .attr('stroke', getCSSColor('--shadow-color'))
+          .attr('stroke-width', 0.5);
         tooltip.style.display = 'none';
       });
   }

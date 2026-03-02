@@ -132,14 +132,27 @@ const emptyResult: GivingSummary = {
   estimatedDailyFlowUsd: 0,
   platforms: [],
   categories: [],
-  crypto: { dailyInflowUsd: 0, trackedWallets: 0, transactions24h: 0, topReceivers: [], pctOfTotal: 0 },
-  institutional: { oecdOdaAnnualUsdBn: 0, oecdDataYear: 0, cafWorldGivingIndex: 0, cafDataYear: 0, candidGrantsTracked: 0, dataLag: 'Unknown' },
+  crypto: {
+    dailyInflowUsd: 0,
+    trackedWallets: 0,
+    transactions24h: 0,
+    topReceivers: [],
+    pctOfTotal: 0,
+  },
+  institutional: {
+    oecdOdaAnnualUsdBn: 0,
+    oecdDataYear: 0,
+    cafWorldGivingIndex: 0,
+    cafDataYear: 0,
+    candidGrantsTracked: 0,
+    dataLag: 'Unknown',
+  },
 };
 
 const breaker = createCircuitBreaker<GivingSummary>({
   name: 'Global Giving',
   cacheTtlMs: 30 * 60 * 1000, // 30 min -- data is mostly static baselines
-  persistCache: true,          // survive page reloads
+  persistCache: true, // survive page reloads
 });
 
 // In-memory cache + request deduplication

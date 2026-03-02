@@ -21,17 +21,11 @@ describe('deploy/cache configuration guardrails', () => {
   });
 
   it('keeps immutable caching for hashed static assets', () => {
-    assert.equal(
-      getCacheHeaderValue('/assets/(.*)'),
-      'public, max-age=31536000, immutable'
-    );
+    assert.equal(getCacheHeaderValue('/assets/(.*)'), 'public, max-age=31536000, immutable');
   });
 
   it('keeps PWA precache glob free of HTML files', () => {
-    assert.match(
-      viteConfigSource,
-      /globPatterns:\s*\['\*\*\/\*\.\{js,css,ico,png,svg,woff2\}'\]/
-    );
+    assert.match(viteConfigSource, /globPatterns:\s*\['\*\*\/\*\.\{js,css,ico,png,svg,woff2\}'\]/);
     assert.doesNotMatch(viteConfigSource, /globPatterns:\s*\['\*\*\/\*\.\{js,css,html/);
   });
 
@@ -53,11 +47,11 @@ describe('deploy/cache configuration guardrails', () => {
     assert.match(viteConfigSource, /categories:\s*\[/);
     assert.match(
       viteConfigSource,
-      /\.replace\(\/<meta name="subject" content="\.\*\?" \\\/>\/,\s*`<meta name="subject"/
+      /\.replace\(\/<meta name="subject" content="\.\*\?" \\\/>\/,\s*`<meta name="subject"/,
     );
     assert.match(
       viteConfigSource,
-      /\.replace\(\/<meta name="classification" content="\.\*\?" \\\/>\/,\s*`<meta name="classification"/
+      /\.replace\(\/<meta name="classification" content="\.\*\?" \\\/>\/,\s*`<meta name="classification"/,
     );
   });
 });

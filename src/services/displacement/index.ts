@@ -13,8 +13,8 @@ export interface DisplacementFlow {
   originName: string;
   asylumCode: string;
   asylumName: string;
-  refugees: number;        // number, NOT string
-  originLat?: number;      // flat, NOT GeoCoordinates
+  refugees: number; // number, NOT string
+  originLat?: number; // flat, NOT GeoCoordinates
   originLon?: number;
   asylumLat?: number;
   asylumLon?: number;
@@ -126,9 +126,9 @@ const breaker = createCircuitBreaker<UnhcrSummary>({
 export async function fetchUnhcrPopulation(): Promise<UnhcrFetchResult> {
   const data = await breaker.execute(async () => {
     const response = await client.getDisplacementSummary({
-      year: 0,          // 0 = handler uses year fallback
-      countryLimit: 0,  // 0 = all countries
-      flowLimit: 50,    // top 50 flows (matching legacy)
+      year: 0, // 0 = handler uses year fallback
+      countryLimit: 0, // 0 = all countries
+      flowLimit: 50, // top 50 flows (matching legacy)
     });
     return toDisplaySummary(response);
   }, emptyResult);
@@ -149,9 +149,11 @@ export function getDisplacementColor(totalDisplaced: number): [number, number, n
 }
 
 export function getDisplacementBadge(totalDisplaced: number): { label: string; color: string } {
-  if (totalDisplaced >= 1_000_000) return { label: 'CRISIS', color: getCSSColor('--semantic-critical') };
+  if (totalDisplaced >= 1_000_000)
+    return { label: 'CRISIS', color: getCSSColor('--semantic-critical') };
   if (totalDisplaced >= 500_000) return { label: 'HIGH', color: getCSSColor('--semantic-high') };
-  if (totalDisplaced >= 100_000) return { label: 'ELEVATED', color: getCSSColor('--semantic-elevated') };
+  if (totalDisplaced >= 100_000)
+    return { label: 'ELEVATED', color: getCSSColor('--semantic-elevated') };
   return { label: '', color: '' };
 }
 
@@ -163,12 +165,12 @@ export function formatPopulation(n: number): string {
 
 export function getOriginCountries(data: UnhcrSummary): CountryDisplacement[] {
   return [...data.countries]
-    .filter(c => c.refugees + c.asylumSeekers > 0)
-    .sort((a, b) => (b.refugees + b.asylumSeekers) - (a.refugees + a.asylumSeekers));
+    .filter((c) => c.refugees + c.asylumSeekers > 0)
+    .sort((a, b) => b.refugees + b.asylumSeekers - (a.refugees + a.asylumSeekers));
 }
 
 export function getHostCountries(data: UnhcrSummary): CountryDisplacement[] {
   return [...data.countries]
-    .filter(c => (c.hostTotal || 0) > 0)
+    .filter((c) => (c.hostTotal || 0) > 0)
     .sort((a, b) => (b.hostTotal || 0) - (a.hostTotal || 0));
 }

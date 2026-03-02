@@ -30,7 +30,11 @@ export async function searchGdeltDocuments(
 ): Promise<SearchGdeltDocumentsResponse> {
   let query = req.query;
   if (!query || query.length < 2) {
-    return { articles: [], query: query || '', error: 'Query parameter required (min 2 characters)' };
+    return {
+      articles: [],
+      query: query || '',
+      error: 'Query parameter required (min 2 characters)',
+    };
   }
 
   // Append tone filter to query if provided (e.g., "tone>5" for positive articles)

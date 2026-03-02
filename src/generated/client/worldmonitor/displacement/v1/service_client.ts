@@ -91,8 +91,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -103,7 +103,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -125,23 +125,26 @@ export class DisplacementServiceClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string, options?: DisplacementServiceClientOptions) {
-    this.baseURL = baseURL.replace(/\/+$/, "");
+    this.baseURL = baseURL.replace(/\/+$/, '');
     this.fetchFn = options?.fetch ?? globalThis.fetch;
     this.defaultHeaders = { ...options?.defaultHeaders };
   }
 
-  async getDisplacementSummary(req: GetDisplacementSummaryRequest, options?: DisplacementServiceCallOptions): Promise<GetDisplacementSummaryResponse> {
-    let path = "/api/displacement/v1/get-displacement-summary";
+  async getDisplacementSummary(
+    req: GetDisplacementSummaryRequest,
+    options?: DisplacementServiceCallOptions,
+  ): Promise<GetDisplacementSummaryResponse> {
+    const path = '/api/displacement/v1/get-displacement-summary';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -151,21 +154,24 @@ export class DisplacementServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetDisplacementSummaryResponse;
+    return (await resp.json()) as GetDisplacementSummaryResponse;
   }
 
-  async getPopulationExposure(req: GetPopulationExposureRequest, options?: DisplacementServiceCallOptions): Promise<GetPopulationExposureResponse> {
-    let path = "/api/displacement/v1/get-population-exposure";
+  async getPopulationExposure(
+    req: GetPopulationExposureRequest,
+    options?: DisplacementServiceCallOptions,
+  ): Promise<GetPopulationExposureResponse> {
+    const path = '/api/displacement/v1/get-population-exposure';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -175,7 +181,7 @@ export class DisplacementServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetPopulationExposureResponse;
+    return (await resp.json()) as GetPopulationExposureResponse;
   }
 
   private async handleError(resp: Response): Promise<never> {
@@ -193,4 +199,3 @@ export class DisplacementServiceClient {
     throw new ApiError(resp.status, `Request failed with status ${resp.status}`, body);
   }
 }
-

@@ -15,7 +15,11 @@ import { createCircuitBreaker } from '@/utils';
 // ---- Client + Circuit Breaker ----
 
 const client = new CyberServiceClient('', { fetch: (...args) => globalThis.fetch(...args) });
-const breaker = createCircuitBreaker<ListCyberThreatsResponse>({ name: 'Cyber Threats', cacheTtlMs: 10 * 60 * 1000, persistCache: true });
+const breaker = createCircuitBreaker<ListCyberThreatsResponse>({
+  name: 'Cyber Threats',
+  cacheTtlMs: 10 * 60 * 1000,
+  persistCache: true,
+});
 
 const emptyFallback: ListCyberThreatsResponse = { threats: [], pagination: undefined };
 
@@ -76,12 +80,19 @@ const MAX_LIMIT = 1000;
 const DEFAULT_DAYS = 14;
 const MAX_DAYS = 90;
 
-function clampInt(rawValue: number | undefined, fallback: number, min: number, max: number): number {
+function clampInt(
+  rawValue: number | undefined,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
   if (!Number.isFinite(rawValue)) return fallback;
   return Math.max(min, Math.min(max, Math.floor(rawValue as number)));
 }
 
-export async function fetchCyberThreats(options: { limit?: number; days?: number } = {}): Promise<CyberThreat[]> {
+export async function fetchCyberThreats(
+  options: { limit?: number; days?: number } = {},
+): Promise<CyberThreat[]> {
   const limit = clampInt(options.limit, DEFAULT_LIMIT, 1, MAX_LIMIT);
   const days = clampInt(options.days, DEFAULT_DAYS, 1, MAX_DAYS);
   const now = Date.now();

@@ -65,8 +65,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -77,7 +77,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -101,7 +101,10 @@ export interface RouteDescriptor {
 }
 
 export interface GivingServiceHandler {
-  getGivingSummary(ctx: ServerContext, req: GetGivingSummaryRequest): Promise<GetGivingSummaryResponse>;
+  getGivingSummary(
+    ctx: ServerContext,
+    req: GetGivingSummaryRequest,
+  ): Promise<GetGivingSummaryResponse>;
 }
 
 export function createGivingServiceRoutes(
@@ -110,14 +113,14 @@ export function createGivingServiceRoutes(
 ): RouteDescriptor[] {
   return [
     {
-      method: "POST",
-      path: "/api/giving/v1/get-giving-summary",
+      method: 'POST',
+      path: '/api/giving/v1/get-giving-summary',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as GetGivingSummaryRequest;
+          const body = (await req.json()) as GetGivingSummaryRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("getGivingSummary", body);
+            const bodyViolations = options.validateRequest('getGivingSummary', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -132,13 +135,13 @@ export function createGivingServiceRoutes(
           const result = await handler.getGivingSummary(ctx, body);
           return new Response(JSON.stringify(result as GetGivingSummaryResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -147,7 +150,7 @@ export function createGivingServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },

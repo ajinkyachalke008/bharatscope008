@@ -70,9 +70,7 @@ async function computeMacroSignals(): Promise<GetMacroSignalsResponse> {
 
   // 1. Liquidity Signal (JPY 30d ROC)
   const jpyRoc30 = rateOfChange(jpyPrices, 30);
-  const liquidityStatus = jpyRoc30 !== null
-    ? (jpyRoc30 < -2 ? 'SQUEEZE' : 'NORMAL')
-    : 'UNKNOWN';
+  const liquidityStatus = jpyRoc30 !== null ? (jpyRoc30 < -2 ? 'SQUEEZE' : 'NORMAL') : 'UNKNOWN';
 
   // 2. Flow Structure (BTC vs QQQ 5d return)
   const btcReturn5 = rateOfChange(btcPrices, 5);
@@ -100,7 +98,8 @@ async function computeMacroSignals(): Promise<GetMacroSignalsResponse> {
   let btcVwap: number | null = null;
   if (btcAligned.length >= 30) {
     const last30 = btcAligned.slice(-30);
-    let sumPV = 0, sumV = 0;
+    let sumPV = 0,
+      sumV = 0;
     for (const { price, volume } of last30) {
       sumPV += price * volume;
       sumV += volume;
@@ -131,7 +130,7 @@ async function computeMacroSignals(): Promise<GetMacroSignalsResponse> {
       const recent = hr[hr.length - 1]?.avgHashrate || hr[hr.length - 1];
       const older = hr[0]?.avgHashrate || hr[0];
       if (recent && older && older > 0) {
-        hashChange = +((recent - older) / older * 100).toFixed(1);
+        hashChange = +(((recent - older) / older) * 100).toFixed(1);
         hashStatus = hashChange > 3 ? 'GROWING' : hashChange < -3 ? 'DECLINING' : 'STABLE';
       }
     }
@@ -152,10 +151,13 @@ async function computeMacroSignals(): Promise<GetMacroSignalsResponse> {
     const parsed = parseInt(data[0]?.value, 10);
     fgValue = Number.isFinite(parsed) ? parsed : undefined;
     fgLabel = data[0]?.value_classification || 'UNKNOWN';
-    fgHistory = data.slice(0, 30).map((d: any) => ({
-      value: parseInt(d.value, 10),
-      date: new Date(parseInt(d.timestamp, 10) * 1000).toISOString().slice(0, 10),
-    })).reverse();
+    fgHistory = data
+      .slice(0, 30)
+      .map((d: any) => ({
+        value: parseInt(d.value, 10),
+        date: new Date(parseInt(d.timestamp, 10) * 1000).toISOString().slice(0, 10),
+      }))
+      .reverse();
   }
 
   // Sparkline data
@@ -183,7 +185,7 @@ async function computeMacroSignals(): Promise<GetMacroSignalsResponse> {
     }
   }
 
-  const verdict = totalCount === 0 ? 'UNKNOWN' : (bullishCount / totalCount >= 0.57 ? 'BUY' : 'CASH');
+  const verdict = totalCount === 0 ? 'UNKNOWN' : bullishCount / totalCount >= 0.57 ? 'BUY' : 'CASH';
 
   // Stale-while-revalidate: if Yahoo rate-limited all calls, serve cached data
   if (totalCount === 0 && macroSignalsCached && !macroSignalsCached.unavailable) {
@@ -247,10 +249,14 @@ export async function getMacroSignals(
 
   try {
     // Redis shared cache (cross-instance) with in-flight dedup via cachedFetchJson
-    const result = await cachedFetchJson<GetMacroSignalsResponse>(REDIS_CACHE_KEY, REDIS_CACHE_TTL, async () => {
-      const computed = await computeMacroSignals();
-      return (!computed.unavailable && computed.totalCount > 0) ? computed : null;
-    });
+    const result = await cachedFetchJson<GetMacroSignalsResponse>(
+      REDIS_CACHE_KEY,
+      REDIS_CACHE_TTL,
+      async () => {
+        const computed = await computeMacroSignals();
+        return !computed.unavailable && computed.totalCount > 0 ? computed : null;
+      },
+    );
 
     if (result && !result.unavailable && result.totalCount > 0) {
       macroSignalsCached = result;

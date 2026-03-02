@@ -22,11 +22,11 @@ export interface ProgressDataPoint {
 
 export interface ProgressIndicator {
   id: string;
-  code: string;         // World Bank indicator code
+  code: string; // World Bank indicator code
   label: string;
-  unit: string;         // e.g., "years", "%", "per 1,000"
-  color: string;        // CSS color from happy theme
-  years: number;        // How many years of data to fetch
+  unit: string; // e.g., "years", "%", "per 1,000"
+  color: string; // CSS color from happy theme
+  years: number; // How many years of data to fetch
   invertTrend: boolean; // true for metrics where DOWN is good (mortality, poverty)
 }
 
@@ -55,7 +55,7 @@ export const PROGRESS_INDICATORS: ProgressIndicator[] = [
     code: 'SP.DYN.LE00.IN',
     label: 'Life Expectancy',
     unit: 'years',
-    color: '#6B8F5E',   // sage green
+    color: '#6B8F5E', // sage green
     years: 65,
     invertTrend: false,
   },
@@ -64,7 +64,7 @@ export const PROGRESS_INDICATORS: ProgressIndicator[] = [
     code: 'SE.ADT.LITR.ZS',
     label: 'Literacy Rate',
     unit: '%',
-    color: '#7BA5C4',   // soft blue
+    color: '#7BA5C4', // soft blue
     years: 55,
     invertTrend: false,
   },
@@ -73,7 +73,7 @@ export const PROGRESS_INDICATORS: ProgressIndicator[] = [
     code: 'SH.DYN.MORT',
     label: 'Child Mortality',
     unit: 'per 1,000',
-    color: '#C4A35A',   // warm gold
+    color: '#C4A35A', // warm gold
     years: 65,
     invertTrend: true,
   },
@@ -82,7 +82,7 @@ export const PROGRESS_INDICATORS: ProgressIndicator[] = [
     code: 'SI.POV.DDAY',
     label: 'Extreme Poverty',
     unit: '%',
-    color: '#C48B9F',   // muted rose
+    color: '#C48B9F', // muted rose
     years: 45,
     invertTrend: true,
   },
@@ -113,12 +113,12 @@ async function fetchProgressDataFresh(): Promise<ProgressDataSet[]> {
         }
 
         const data: ProgressDataPoint[] = countryData.values
-          .filter(v => v.value != null && Number.isFinite(v.value))
-          .map(v => ({
+          .filter((v) => v.value != null && Number.isFinite(v.value))
+          .map((v) => ({
             year: parseInt(v.year, 10),
             value: v.value,
           }))
-          .filter(d => !isNaN(d.year))
+          .filter((d) => !isNaN(d.year))
           .sort((a, b) => a.year - b.year);
 
         if (data.length === 0) {
@@ -128,12 +128,9 @@ async function fetchProgressDataFresh(): Promise<ProgressDataSet[]> {
         const oldestValue = data[0]!.value;
         const latestValue = data[data.length - 1]!.value;
 
-        const rawChangePercent = oldestValue !== 0
-          ? ((latestValue - oldestValue) / Math.abs(oldestValue)) * 100
-          : 0;
-        const changePercent = indicator.invertTrend
-          ? -rawChangePercent
-          : rawChangePercent;
+        const rawChangePercent =
+          oldestValue !== 0 ? ((latestValue - oldestValue) / Math.abs(oldestValue)) * 100 : 0;
+        const changePercent = indicator.invertTrend ? -rawChangePercent : rawChangePercent;
 
         return {
           indicator,
@@ -155,10 +152,7 @@ async function fetchProgressDataFresh(): Promise<ProgressDataSet[]> {
  * Returns instantly from IndexedDB cache on subsequent loads.
  */
 export async function fetchProgressData(): Promise<ProgressDataSet[]> {
-  return breaker.execute(
-    () => fetchProgressDataFresh(),
-    PROGRESS_INDICATORS.map(fallbackDataSet),
-  );
+  return breaker.execute(() => fetchProgressDataFresh(), PROGRESS_INDICATORS.map(fallbackDataSet));
 }
 
 function emptyDataSet(indicator: ProgressIndicator): ProgressDataSet {
@@ -176,27 +170,55 @@ function emptyDataSet(indicator: ProgressIndicator): ProgressDataSet {
 // Source: https://data.worldbank.org/ — last verified Feb 2026
 
 const FALLBACK_DATA: Record<string, ProgressDataPoint[]> = {
-  'SP.DYN.LE00.IN': [ // Life expectancy (years)
-    { year: 1960, value: 52.6 }, { year: 1970, value: 58.7 }, { year: 1980, value: 62.8 },
-    { year: 1990, value: 65.4 }, { year: 2000, value: 67.7 }, { year: 2005, value: 69.1 },
-    { year: 2010, value: 70.6 }, { year: 2015, value: 72.0 }, { year: 2020, value: 72.0 },
+  'SP.DYN.LE00.IN': [
+    // Life expectancy (years)
+    { year: 1960, value: 52.6 },
+    { year: 1970, value: 58.7 },
+    { year: 1980, value: 62.8 },
+    { year: 1990, value: 65.4 },
+    { year: 2000, value: 67.7 },
+    { year: 2005, value: 69.1 },
+    { year: 2010, value: 70.6 },
+    { year: 2015, value: 72.0 },
+    { year: 2020, value: 72.0 },
     { year: 2023, value: 73.3 },
   ],
-  'SE.ADT.LITR.ZS': [ // Literacy rate (%)
-    { year: 1975, value: 65.4 }, { year: 1985, value: 72.3 }, { year: 1995, value: 78.2 },
-    { year: 2000, value: 81.0 }, { year: 2005, value: 82.5 }, { year: 2010, value: 84.1 },
-    { year: 2015, value: 85.8 }, { year: 2020, value: 87.0 }, { year: 2023, value: 87.6 },
+  'SE.ADT.LITR.ZS': [
+    // Literacy rate (%)
+    { year: 1975, value: 65.4 },
+    { year: 1985, value: 72.3 },
+    { year: 1995, value: 78.2 },
+    { year: 2000, value: 81.0 },
+    { year: 2005, value: 82.5 },
+    { year: 2010, value: 84.1 },
+    { year: 2015, value: 85.8 },
+    { year: 2020, value: 87.0 },
+    { year: 2023, value: 87.6 },
   ],
-  'SH.DYN.MORT': [ // Child mortality (per 1,000)
-    { year: 1960, value: 226.8 }, { year: 1970, value: 175.2 }, { year: 1980, value: 131.5 },
-    { year: 1990, value: 93.4 }, { year: 2000, value: 76.6 }, { year: 2005, value: 63.7 },
-    { year: 2010, value: 52.2 }, { year: 2015, value: 43.1 }, { year: 2020, value: 38.8 },
+  'SH.DYN.MORT': [
+    // Child mortality (per 1,000)
+    { year: 1960, value: 226.8 },
+    { year: 1970, value: 175.2 },
+    { year: 1980, value: 131.5 },
+    { year: 1990, value: 93.4 },
+    { year: 2000, value: 76.6 },
+    { year: 2005, value: 63.7 },
+    { year: 2010, value: 52.2 },
+    { year: 2015, value: 43.1 },
+    { year: 2020, value: 38.8 },
     { year: 2023, value: 36.7 },
   ],
-  'SI.POV.DDAY': [ // Extreme poverty (%)
-    { year: 1981, value: 52.2 }, { year: 1990, value: 43.4 }, { year: 1999, value: 34.8 },
-    { year: 2005, value: 25.2 }, { year: 2010, value: 18.9 }, { year: 2013, value: 14.7 },
-    { year: 2015, value: 13.1 }, { year: 2019, value: 10.8 }, { year: 2023, value: 10.5 },
+  'SI.POV.DDAY': [
+    // Extreme poverty (%)
+    { year: 1981, value: 52.2 },
+    { year: 1990, value: 43.4 },
+    { year: 1999, value: 34.8 },
+    { year: 2005, value: 25.2 },
+    { year: 2010, value: 18.9 },
+    { year: 2013, value: 14.7 },
+    { year: 2015, value: 13.1 },
+    { year: 2019, value: 10.8 },
+    { year: 2023, value: 10.5 },
   ],
 };
 
@@ -205,9 +227,8 @@ function fallbackDataSet(indicator: ProgressIndicator): ProgressDataSet {
   if (!data || data.length === 0) return emptyDataSet(indicator);
   const oldestValue = data[0]!.value;
   const latestValue = data[data.length - 1]!.value;
-  const rawChangePercent = oldestValue !== 0
-    ? ((latestValue - oldestValue) / Math.abs(oldestValue)) * 100
-    : 0;
+  const rawChangePercent =
+    oldestValue !== 0 ? ((latestValue - oldestValue) / Math.abs(oldestValue)) * 100 : 0;
   const changePercent = indicator.invertTrend ? -rawChangePercent : rawChangePercent;
   return {
     indicator,

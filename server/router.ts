@@ -27,9 +27,10 @@ export function createRouter(allRoutes: RouteDescriptor[]): Router {
     match(req: Request) {
       const url = new URL(req.url);
       // Normalize trailing slashes: /api/foo/v1/bar/ -> /api/foo/v1/bar
-      const pathname = url.pathname.length > 1 && url.pathname.endsWith('/')
-        ? url.pathname.slice(0, -1)
-        : url.pathname;
+      const pathname =
+        url.pathname.length > 1 && url.pathname.endsWith('/')
+          ? url.pathname.slice(0, -1)
+          : url.pathname;
       const key = `${req.method} ${pathname}`;
       return table.get(key) ?? null;
     },

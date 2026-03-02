@@ -8,7 +8,7 @@ export interface KindnessPoint {
   lon: number;
   name: string;
   description: string;
-  intensity: number;      // 0-1, higher = more prominent on map
+  intensity: number; // 0-1, higher = more prominent on map
   type: 'baseline' | 'real';
   timestamp: number;
 }
@@ -20,9 +20,7 @@ export interface KindnessPoint {
 function extractKindnessEvents(
   newsItems: Array<{ title: string; happyCategory?: string }>,
 ): KindnessPoint[] {
-  const kindnessItems = newsItems.filter(
-    item => item.happyCategory === 'humanity-kindness',
-  );
+  const kindnessItems = newsItems.filter((item) => item.happyCategory === 'humanity-kindness');
 
   const events: KindnessPoint[] = [];
   for (const item of kindnessItems) {

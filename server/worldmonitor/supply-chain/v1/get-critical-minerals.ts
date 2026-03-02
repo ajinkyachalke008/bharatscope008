@@ -31,14 +31,16 @@ function buildMineralsData(): CriticalMineral[] {
     const producers: MineralProducer[] = entries
       .sort((a, b) => b.productionTonnes - a.productionTonnes)
       .slice(0, 5)
-      .map(e => ({
+      .map((e) => ({
         country: e.country,
         countryCode: e.countryCode,
         productionTonnes: e.productionTonnes,
         sharePct: globalProduction > 0 ? (e.productionTonnes / globalProduction) * 100 : 0,
       }));
 
-    const shares = entries.map(e => globalProduction > 0 ? (e.productionTonnes / globalProduction) * 100 : 0);
+    const shares = entries.map((e) =>
+      globalProduction > 0 ? (e.productionTonnes / globalProduction) * 100 : 0,
+    );
     const hhi = computeHHI(shares);
 
     minerals.push({
@@ -68,7 +70,9 @@ export async function getCriticalMinerals(
       },
     );
 
-    return result ?? { minerals: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true };
+    return (
+      result ?? { minerals: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true }
+    );
   } catch {
     return { minerals: [], fetchedAt: new Date().toISOString(), upstreamUnavailable: true };
   }

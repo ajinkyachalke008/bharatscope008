@@ -45,4 +45,3 @@ test('uses a known level when it is allowlisted', () => {
   assert.match(response.body, />CRITICAL<\/text>/);
   assert.match(response.body, /#ef4444/);
 });
-

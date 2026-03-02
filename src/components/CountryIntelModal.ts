@@ -62,7 +62,9 @@ export class CountryIntelModal {
     this.headerEl = this.overlay.querySelector('.country-intel-title')!;
     this.contentEl = this.overlay.querySelector('.country-intel-content')!;
 
-    this.overlay.querySelector('.country-intel-close')?.addEventListener('click', () => this.hide());
+    this.overlay
+      .querySelector('.country-intel-close')
+      ?.addEventListener('click', () => this.hide());
     this.overlay.addEventListener('click', (e) => {
       if ((e.target as HTMLElement).classList.contains('country-intel-overlay')) this.hide();
     });
@@ -97,7 +99,14 @@ export class CountryIntelModal {
 
   private scoreBar(score: number): string {
     const pct = Math.min(100, Math.max(0, score));
-    const color = pct >= 70 ? getCSSColor('--semantic-critical') : pct >= 50 ? getCSSColor('--semantic-high') : pct >= 30 ? getCSSColor('--semantic-elevated') : getCSSColor('--semantic-normal');
+    const color =
+      pct >= 70
+        ? getCSSColor('--semantic-critical')
+        : pct >= 50
+          ? getCSSColor('--semantic-high')
+          : pct >= 30
+            ? getCSSColor('--semantic-elevated')
+            : getCSSColor('--semantic-normal');
     return `
       <div class="cii-score-bar">
         <div class="cii-score-fill" style="width:${pct}%;background:${color}"></div>
@@ -124,7 +133,12 @@ export class CountryIntelModal {
     this.overlay.classList.add('active');
   }
 
-  public show(country: string, code: string, score: CountryScore | null, signals?: ActiveSignals): void {
+  public show(
+    country: string,
+    code: string,
+    score: CountryScore | null,
+    signals?: ActiveSignals,
+  ): void {
     this.currentCode = code;
     this.currentName = country;
     const flag = this.countryFlag(code);
@@ -155,13 +169,30 @@ export class CountryIntelModal {
 
     const chips: string[] = [];
     if (signals) {
-      if (signals.protests > 0) chips.push(`<span class="signal-chip protest">📢 ${signals.protests} ${t('modals.countryIntel.protests')}</span>`);
-      if (signals.militaryFlights > 0) chips.push(`<span class="signal-chip military">✈️ ${signals.militaryFlights} ${t('modals.countryIntel.militaryAircraft')}</span>`);
-      if (signals.militaryVessels > 0) chips.push(`<span class="signal-chip military">⚓ ${signals.militaryVessels} ${t('modals.countryIntel.militaryVessels')}</span>`);
-      if (signals.outages > 0) chips.push(`<span class="signal-chip outage">🌐 ${signals.outages} ${t('modals.countryIntel.outages')}</span>`);
-      if (signals.earthquakes > 0) chips.push(`<span class="signal-chip quake">🌍 ${signals.earthquakes} ${t('modals.countryIntel.earthquakes')}</span>`);
+      if (signals.protests > 0)
+        chips.push(
+          `<span class="signal-chip protest">📢 ${signals.protests} ${t('modals.countryIntel.protests')}</span>`,
+        );
+      if (signals.militaryFlights > 0)
+        chips.push(
+          `<span class="signal-chip military">✈️ ${signals.militaryFlights} ${t('modals.countryIntel.militaryAircraft')}</span>`,
+        );
+      if (signals.militaryVessels > 0)
+        chips.push(
+          `<span class="signal-chip military">⚓ ${signals.militaryVessels} ${t('modals.countryIntel.militaryVessels')}</span>`,
+        );
+      if (signals.outages > 0)
+        chips.push(
+          `<span class="signal-chip outage">🌐 ${signals.outages} ${t('modals.countryIntel.outages')}</span>`,
+        );
+      if (signals.earthquakes > 0)
+        chips.push(
+          `<span class="signal-chip quake">🌍 ${signals.earthquakes} ${t('modals.countryIntel.earthquakes')}</span>`,
+        );
     }
-    chips.push(`<span class="signal-chip stock-loading">📈 ${t('modals.countryIntel.loadingIndex')}</span>`);
+    chips.push(
+      `<span class="signal-chip stock-loading">📈 ${t('modals.countryIntel.loadingIndex')}</span>`,
+    );
     html += `<div class="active-signals">${chips.join('')}</div>`;
 
     html += `<div class="country-markets-section"><span class="intel-loading-text">${t('modals.countryIntel.loadingMarkets')}</span></div>`;
@@ -189,7 +220,9 @@ export class CountryIntelModal {
     });
   }
 
-  public updateBrief(data: CountryIntelData & { skipped?: boolean; reason?: string; fallback?: boolean }): void {
+  public updateBrief(
+    data: CountryIntelData & { skipped?: boolean; reason?: string; fallback?: boolean },
+  ): void {
     if (this.currentCode !== data.code && this.currentCode !== '__loading__') return;
 
     // If modal closed, don't update
@@ -226,9 +259,10 @@ export class CountryIntelModal {
       return;
     }
 
-    const items = markets.map(market => {
-      const href = sanitizeUrl(market.url || '#') || '#';
-      return `
+    const items = markets
+      .map((market) => {
+        const href = sanitizeUrl(market.url || '#') || '#';
+        return `
       <div class="market-item">
         <a href="${href}" target="_blank" rel="noopener noreferrer" class="prediction-market-card">
         <div class="market-provider">Polymarket</div>
@@ -236,7 +270,8 @@ export class CountryIntelModal {
         <div class="market-prob">${market.yesPrice.toFixed(1)}%</div>
       </a>
     `;
-    }).join('');
+      })
+      .join('');
 
     section.innerHTML = `<div class="markets-label">📊 ${t('modals.countryIntel.predictionMarkets')}</div>${items}`;
   }

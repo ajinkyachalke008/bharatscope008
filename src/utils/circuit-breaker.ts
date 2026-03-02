@@ -33,7 +33,6 @@ const DEFAULT_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
 const DEFAULT_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const PERSISTENT_STALE_CEILING_MS = 24 * 60 * 60 * 1000; // 24h — discard persistent entries older than this
 
-
 function isDesktopOfflineMode(): boolean {
   if (typeof window === 'undefined') return false;
   const hasTauri = Boolean((window as unknown as { __TAURI__?: unknown }).__TAURI__);
@@ -50,16 +49,18 @@ export class CircuitBreaker<T> {
   private persistEnabled: boolean;
   private persistentLoaded = false;
   private persistentLoadPromise: Promise<void> | null = null;
-  private lastDataState: BreakerDataState = { mode: 'unavailable', timestamp: null, offline: false };
+  private lastDataState: BreakerDataState = {
+    mode: 'unavailable',
+    timestamp: null,
+    offline: false,
+  };
 
   constructor(options: CircuitBreakerOptions) {
     this.name = options.name;
     this.maxFailures = options.maxFailures ?? DEFAULT_MAX_FAILURES;
     this.cooldownMs = options.cooldownMs ?? DEFAULT_COOLDOWN_MS;
     this.cacheTtlMs = options.cacheTtlMs ?? DEFAULT_CACHE_TTL_MS;
-    this.persistEnabled = this.cacheTtlMs === 0
-      ? false
-      : (options.persistCache ?? false);
+    this.persistEnabled = this.cacheTtlMs === 0 ? false : (options.persistCache ?? false);
   }
 
   private get persistKey(): string {
@@ -83,7 +84,7 @@ export class CircuitBreaker<T> {
         // Only hydrate if in-memory cache is empty (don't overwrite live data)
         if (this.cache === null) {
           this.cache = { data: entry.data, timestamp: entry.updatedAt };
-          const withinTtl = (Date.now() - entry.updatedAt) < this.cacheTtlMs;
+          const withinTtl = Date.now() - entry.updatedAt < this.cacheTtlMs;
           this.lastDataState = {
             mode: withinTtl ? 'cached' : 'unavailable',
             timestamp: entry.updatedAt,
@@ -103,16 +104,20 @@ export class CircuitBreaker<T> {
 
   /** Fire-and-forget write to persistent storage. */
   private writePersistentCache(data: T): void {
-    import('../services/persistent-cache').then(({ setPersistentCache }) => {
-      setPersistentCache(this.persistKey, data).catch(() => {});
-    }).catch(() => {});
+    import('../services/persistent-cache')
+      .then(({ setPersistentCache }) => {
+        setPersistentCache(this.persistKey, data).catch(() => {});
+      })
+      .catch(() => {});
   }
 
   /** Fire-and-forget delete from persistent storage. */
   private deletePersistentCache(): void {
-    import('../services/persistent-cache').then(({ deletePersistentCache }) => {
-      deletePersistentCache(this.persistKey).catch(() => {});
-    }).catch(() => {});
+    import('../services/persistent-cache')
+      .then(({ deletePersistentCache }) => {
+        deletePersistentCache(this.persistKey).catch(() => {});
+      })
+      .catch(() => {});
   }
 
   isOnCooldown(): boolean {
@@ -179,14 +184,13 @@ export class CircuitBreaker<T> {
     this.state.lastError = error;
     if (this.state.failures >= this.maxFailures) {
       this.state.cooldownUntil = Date.now() + this.cooldownMs;
-      console.warn(`[${this.name}] On cooldown for ${this.cooldownMs / 1000}s after ${this.state.failures} failures`);
+      console.warn(
+        `[${this.name}] On cooldown for ${this.cooldownMs / 1000}s after ${this.state.failures} failures`,
+      );
     }
   }
 
-  async execute<R extends T>(
-    fn: () => Promise<R>,
-    defaultValue: R
-  ): Promise<R> {
+  async execute<R extends T>(fn: () => Promise<R>, defaultValue: R): Promise<R> {
     const offline = isDesktopOfflineMode();
 
     // Hydrate from persistent storage on first call (~1-5ms IndexedDB read)
@@ -195,7 +199,9 @@ export class CircuitBreaker<T> {
     }
 
     if (this.isOnCooldown()) {
-      console.log(`[${this.name}] Currently unavailable, ${this.getCooldownRemaining()}s remaining`);
+      console.log(
+        `[${this.name}] Currently unavailable, ${this.getCooldownRemaining()}s remaining`,
+      );
       const cachedFallback = this.getCached();
       if (cachedFallback !== null) {
         this.lastDataState = { mode: 'cached', timestamp: this.cache?.timestamp ?? null, offline };
@@ -218,10 +224,12 @@ export class CircuitBreaker<T> {
     if (this.cache !== null) {
       this.lastDataState = { mode: 'cached', timestamp: this.cache.timestamp, offline };
       // Fire-and-forget background refresh
-      fn().then(result => this.recordSuccess(result)).catch(e => {
-        console.warn(`[${this.name}] Background refresh failed:`, e);
-        this.recordFailure(String(e));
-      });
+      fn()
+        .then((result) => this.recordSuccess(result))
+        .catch((e) => {
+          console.warn(`[${this.name}] Background refresh failed:`, e);
+          this.recordFailure(String(e));
+        });
       return this.cache.data as R;
     }
 
@@ -261,12 +269,15 @@ export function isCircuitBreakerOnCooldown(name: string): boolean {
   return breaker ? breaker.isOnCooldown() : false;
 }
 
-export function getCircuitBreakerCooldownInfo(name: string): { onCooldown: boolean; remainingSeconds: number } {
+export function getCircuitBreakerCooldownInfo(name: string): {
+  onCooldown: boolean;
+  remainingSeconds: number;
+} {
   const breaker = breakers.get(name);
   if (!breaker) return { onCooldown: false, remainingSeconds: 0 };
   return {
     onCooldown: breaker.isOnCooldown(),
-    remainingSeconds: breaker.getCooldownRemaining()
+    remainingSeconds: breaker.getCooldownRemaining(),
   };
 }
 

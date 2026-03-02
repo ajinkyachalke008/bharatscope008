@@ -47,13 +47,35 @@ export interface PaginationResponse {
   totalCount: number;
 }
 
-export type AirportRegion = "AIRPORT_REGION_UNSPECIFIED" | "AIRPORT_REGION_AMERICAS" | "AIRPORT_REGION_EUROPE" | "AIRPORT_REGION_APAC" | "AIRPORT_REGION_MENA" | "AIRPORT_REGION_AFRICA";
+export type AirportRegion =
+  | 'AIRPORT_REGION_UNSPECIFIED'
+  | 'AIRPORT_REGION_AMERICAS'
+  | 'AIRPORT_REGION_EUROPE'
+  | 'AIRPORT_REGION_APAC'
+  | 'AIRPORT_REGION_MENA'
+  | 'AIRPORT_REGION_AFRICA';
 
-export type FlightDelaySeverity = "FLIGHT_DELAY_SEVERITY_UNSPECIFIED" | "FLIGHT_DELAY_SEVERITY_NORMAL" | "FLIGHT_DELAY_SEVERITY_MINOR" | "FLIGHT_DELAY_SEVERITY_MODERATE" | "FLIGHT_DELAY_SEVERITY_MAJOR" | "FLIGHT_DELAY_SEVERITY_SEVERE";
+export type FlightDelaySeverity =
+  | 'FLIGHT_DELAY_SEVERITY_UNSPECIFIED'
+  | 'FLIGHT_DELAY_SEVERITY_NORMAL'
+  | 'FLIGHT_DELAY_SEVERITY_MINOR'
+  | 'FLIGHT_DELAY_SEVERITY_MODERATE'
+  | 'FLIGHT_DELAY_SEVERITY_MAJOR'
+  | 'FLIGHT_DELAY_SEVERITY_SEVERE';
 
-export type FlightDelaySource = "FLIGHT_DELAY_SOURCE_UNSPECIFIED" | "FLIGHT_DELAY_SOURCE_FAA" | "FLIGHT_DELAY_SOURCE_EUROCONTROL" | "FLIGHT_DELAY_SOURCE_COMPUTED";
+export type FlightDelaySource =
+  | 'FLIGHT_DELAY_SOURCE_UNSPECIFIED'
+  | 'FLIGHT_DELAY_SOURCE_FAA'
+  | 'FLIGHT_DELAY_SOURCE_EUROCONTROL'
+  | 'FLIGHT_DELAY_SOURCE_COMPUTED';
 
-export type FlightDelayType = "FLIGHT_DELAY_TYPE_UNSPECIFIED" | "FLIGHT_DELAY_TYPE_GROUND_STOP" | "FLIGHT_DELAY_TYPE_GROUND_DELAY" | "FLIGHT_DELAY_TYPE_DEPARTURE_DELAY" | "FLIGHT_DELAY_TYPE_ARRIVAL_DELAY" | "FLIGHT_DELAY_TYPE_GENERAL";
+export type FlightDelayType =
+  | 'FLIGHT_DELAY_TYPE_UNSPECIFIED'
+  | 'FLIGHT_DELAY_TYPE_GROUND_STOP'
+  | 'FLIGHT_DELAY_TYPE_GROUND_DELAY'
+  | 'FLIGHT_DELAY_TYPE_DEPARTURE_DELAY'
+  | 'FLIGHT_DELAY_TYPE_ARRIVAL_DELAY'
+  | 'FLIGHT_DELAY_TYPE_GENERAL';
 
 export interface FieldViolation {
   field: string;
@@ -64,8 +86,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -76,7 +98,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -100,7 +122,10 @@ export interface RouteDescriptor {
 }
 
 export interface AviationServiceHandler {
-  listAirportDelays(ctx: ServerContext, req: ListAirportDelaysRequest): Promise<ListAirportDelaysResponse>;
+  listAirportDelays(
+    ctx: ServerContext,
+    req: ListAirportDelaysRequest,
+  ): Promise<ListAirportDelaysResponse>;
 }
 
 export function createAviationServiceRoutes(
@@ -109,14 +134,14 @@ export function createAviationServiceRoutes(
 ): RouteDescriptor[] {
   return [
     {
-      method: "POST",
-      path: "/api/aviation/v1/list-airport-delays",
+      method: 'POST',
+      path: '/api/aviation/v1/list-airport-delays',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as ListAirportDelaysRequest;
+          const body = (await req.json()) as ListAirportDelaysRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("listAirportDelays", body);
+            const bodyViolations = options.validateRequest('listAirportDelays', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -131,13 +156,13 @@ export function createAviationServiceRoutes(
           const result = await handler.listAirportDelays(ctx, body);
           return new Response(JSON.stringify(result as ListAirportDelaysResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -146,11 +171,10 @@ export function createAviationServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
   ];
 }
-

@@ -73,7 +73,7 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
   switch (message.type) {
     case 'cluster': {
       // Deserialize dates (they come as strings over postMessage)
-      const items = message.items.map(item => ({
+      const items = message.items.map((item) => ({
         ...item,
         pubDate: new Date(item.pubDate),
       }));
@@ -92,11 +92,11 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
 
     case 'correlation': {
       // Deserialize dates in clusters
-      const clusters = message.clusters.map(cluster => ({
+      const clusters = message.clusters.map((cluster) => ({
         ...cluster,
         firstSeen: new Date(cluster.firstSeen),
         lastUpdated: new Date(cluster.lastUpdated),
-        allItems: cluster.allItems.map(item => ({
+        allItems: cluster.allItems.map((item) => ({
           ...item,
           pubDate: new Date(item.pubDate),
         })),
@@ -111,7 +111,7 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
         previousSnapshot,
         getSourceType,
         isRecentDuplicate,
-        markSignalSeen
+        markSignalSeen,
       );
 
       previousSnapshot = snapshot;

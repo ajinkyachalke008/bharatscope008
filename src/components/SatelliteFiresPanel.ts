@@ -38,22 +38,27 @@ export class SatelliteFiresPanel extends Panel {
       return;
     }
 
-    const rows = this.stats.map(s => {
-      const frpStr = s.totalFrp >= 1000
-        ? `${(s.totalFrp / 1000).toFixed(1)}k`
-        : Math.round(s.totalFrp).toLocaleString();
-      const highClass = s.highIntensityCount > 0 ? ' fires-high' : '';
-      return `<tr class="fire-row${highClass}">
+    const rows = this.stats
+      .map((s) => {
+        const frpStr =
+          s.totalFrp >= 1000
+            ? `${(s.totalFrp / 1000).toFixed(1)}k`
+            : Math.round(s.totalFrp).toLocaleString();
+        const highClass = s.highIntensityCount > 0 ? ' fires-high' : '';
+        return `<tr class="fire-row${highClass}">
         <td class="fire-region">${escapeHtml(s.region)}</td>
         <td class="fire-count">${s.fireCount}</td>
         <td class="fire-hi">${s.highIntensityCount}</td>
         <td class="fire-frp">${frpStr}</td>
       </tr>`;
-    }).join('');
+      })
+      .join('');
 
     const totalFrp = this.stats.reduce((sum, s) => sum + s.totalFrp, 0);
     const totalHigh = this.stats.reduce((sum, s) => sum + s.highIntensityCount, 0);
-    const ago = this.lastUpdated ? timeSince(this.lastUpdated) : t('components.satelliteFires.never');
+    const ago = this.lastUpdated
+      ? timeSince(this.lastUpdated)
+      : t('components.satelliteFires.never');
 
     this.setContent(`
       <div class="fires-panel-content">

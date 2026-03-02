@@ -120,8 +120,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -132,7 +132,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -156,9 +156,18 @@ export interface RouteDescriptor {
 }
 
 export interface ResearchServiceHandler {
-  listArxivPapers(ctx: ServerContext, req: ListArxivPapersRequest): Promise<ListArxivPapersResponse>;
-  listTrendingRepos(ctx: ServerContext, req: ListTrendingReposRequest): Promise<ListTrendingReposResponse>;
-  listHackernewsItems(ctx: ServerContext, req: ListHackernewsItemsRequest): Promise<ListHackernewsItemsResponse>;
+  listArxivPapers(
+    ctx: ServerContext,
+    req: ListArxivPapersRequest,
+  ): Promise<ListArxivPapersResponse>;
+  listTrendingRepos(
+    ctx: ServerContext,
+    req: ListTrendingReposRequest,
+  ): Promise<ListTrendingReposResponse>;
+  listHackernewsItems(
+    ctx: ServerContext,
+    req: ListHackernewsItemsRequest,
+  ): Promise<ListHackernewsItemsResponse>;
   listTechEvents(ctx: ServerContext, req: ListTechEventsRequest): Promise<ListTechEventsResponse>;
 }
 
@@ -168,14 +177,14 @@ export function createResearchServiceRoutes(
 ): RouteDescriptor[] {
   return [
     {
-      method: "POST",
-      path: "/api/research/v1/list-arxiv-papers",
+      method: 'POST',
+      path: '/api/research/v1/list-arxiv-papers',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as ListArxivPapersRequest;
+          const body = (await req.json()) as ListArxivPapersRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("listArxivPapers", body);
+            const bodyViolations = options.validateRequest('listArxivPapers', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -190,13 +199,13 @@ export function createResearchServiceRoutes(
           const result = await handler.listArxivPapers(ctx, body);
           return new Response(JSON.stringify(result as ListArxivPapersResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -205,20 +214,20 @@ export function createResearchServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/research/v1/list-trending-repos",
+      method: 'POST',
+      path: '/api/research/v1/list-trending-repos',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as ListTrendingReposRequest;
+          const body = (await req.json()) as ListTrendingReposRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("listTrendingRepos", body);
+            const bodyViolations = options.validateRequest('listTrendingRepos', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -233,13 +242,13 @@ export function createResearchServiceRoutes(
           const result = await handler.listTrendingRepos(ctx, body);
           return new Response(JSON.stringify(result as ListTrendingReposResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -248,20 +257,20 @@ export function createResearchServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/research/v1/list-hackernews-items",
+      method: 'POST',
+      path: '/api/research/v1/list-hackernews-items',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as ListHackernewsItemsRequest;
+          const body = (await req.json()) as ListHackernewsItemsRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("listHackernewsItems", body);
+            const bodyViolations = options.validateRequest('listHackernewsItems', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -276,13 +285,13 @@ export function createResearchServiceRoutes(
           const result = await handler.listHackernewsItems(ctx, body);
           return new Response(JSON.stringify(result as ListHackernewsItemsResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -291,20 +300,20 @@ export function createResearchServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
     {
-      method: "POST",
-      path: "/api/research/v1/list-tech-events",
+      method: 'POST',
+      path: '/api/research/v1/list-tech-events',
       handler: async (req: Request): Promise<Response> => {
         try {
           const pathParams: Record<string, string> = {};
-          const body = await req.json() as ListTechEventsRequest;
+          const body = (await req.json()) as ListTechEventsRequest;
           if (options?.validateRequest) {
-            const bodyViolations = options.validateRequest("listTechEvents", body);
+            const bodyViolations = options.validateRequest('listTechEvents', body);
             if (bodyViolations) {
               throw new ValidationError(bodyViolations);
             }
@@ -319,13 +328,13 @@ export function createResearchServiceRoutes(
           const result = await handler.listTechEvents(ctx, body);
           return new Response(JSON.stringify(result as ListTechEventsResponse), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         } catch (err: unknown) {
           if (err instanceof ValidationError) {
             return new Response(JSON.stringify({ violations: err.violations }), {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: { 'Content-Type': 'application/json' },
             });
           }
           if (options?.onError) {
@@ -334,11 +343,10 @@ export function createResearchServiceRoutes(
           const message = err instanceof Error ? err.message : String(err);
           return new Response(JSON.stringify({ message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' },
           });
         }
       },
     },
   ];
 }
-

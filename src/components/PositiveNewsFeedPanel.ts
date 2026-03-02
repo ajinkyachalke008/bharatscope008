@@ -90,9 +90,10 @@ export class PositiveNewsFeedPanel extends Panel {
    * Filter items by current active filter and render cards.
    */
   private applyFilter(): void {
-    const filtered = this.activeFilter === 'all'
-      ? this.allItems
-      : this.allItems.filter(item => item.happyCategory === this.activeFilter);
+    const filtered =
+      this.activeFilter === 'all'
+        ? this.allItems
+        : this.allItems.filter((item) => item.happyCategory === this.activeFilter);
 
     this.renderCards(filtered);
   }
@@ -105,7 +106,8 @@ export class PositiveNewsFeedPanel extends Panel {
     this.filteredItems = items;
 
     if (items.length === 0) {
-      this.content.innerHTML = '<div class="positive-feed-empty">No stories in this category yet</div>';
+      this.content.innerHTML =
+        '<div class="positive-feed-empty">No stories in this category yet</div>';
       return;
     }
 

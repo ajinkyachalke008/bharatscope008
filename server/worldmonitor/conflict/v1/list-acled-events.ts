@@ -22,7 +22,7 @@ const REDIS_CACHE_TTL = 900; // 15 min — ACLED rate-limited
 async function fetchAcledConflicts(req: ListAcledEventsRequest): Promise<AcledConflictEvent[]> {
   try {
     const now = Date.now();
-    const startMs = req.timeRange?.start ?? (now - 30 * 24 * 60 * 60 * 1000);
+    const startMs = req.timeRange?.start ?? now - 30 * 24 * 60 * 60 * 1000;
     const endMs = req.timeRange?.end ?? now;
     const startDate = new Date(startMs).toISOString().split('T')[0]!;
     const endDate = new Date(endMs).toISOString().split('T')[0]!;
@@ -38,22 +38,31 @@ async function fetchAcledConflicts(req: ListAcledEventsRequest): Promise<AcledCo
       .filter((e) => {
         const lat = parseFloat(e.latitude || '');
         const lon = parseFloat(e.longitude || '');
-        return Number.isFinite(lat) && Number.isFinite(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
+        return (
+          Number.isFinite(lat) &&
+          Number.isFinite(lon) &&
+          lat >= -90 &&
+          lat <= 90 &&
+          lon >= -180 &&
+          lon <= 180
+        );
       })
-      .map((e): AcledConflictEvent => ({
-        id: `acled-${e.event_id_cnty}`,
-        eventType: e.event_type || '',
-        country: e.country || '',
-        location: {
-          latitude: parseFloat(e.latitude || '0'),
-          longitude: parseFloat(e.longitude || '0'),
-        },
-        occurredAt: new Date(e.event_date || '').getTime(),
-        fatalities: parseInt(e.fatalities || '', 10) || 0,
-        actors: [e.actor1, e.actor2].filter(Boolean) as string[],
-        source: e.source || '',
-        admin1: e.admin1 || '',
-      }));
+      .map(
+        (e): AcledConflictEvent => ({
+          id: `acled-${e.event_id_cnty}`,
+          eventType: e.event_type || '',
+          country: e.country || '',
+          location: {
+            latitude: parseFloat(e.latitude || '0'),
+            longitude: parseFloat(e.longitude || '0'),
+          },
+          occurredAt: new Date(e.event_date || '').getTime(),
+          fatalities: parseInt(e.fatalities || '', 10) || 0,
+          actors: [e.actor1, e.actor2].filter(Boolean) as string[],
+          source: e.source || '',
+          admin1: e.admin1 || '',
+        }),
+      );
   } catch {
     return [];
   }

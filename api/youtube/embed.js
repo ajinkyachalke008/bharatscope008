@@ -33,8 +33,10 @@ function sanitizeAllowedOrigin(raw, fallback, allowList = ALLOWED_ORIGINS) {
       return fallback;
     }
     const origin = parsed.origin !== 'null' ? parsed.origin : raw;
-    if (allowList.some(p => p.test(origin))) return origin;
-  } catch { /* invalid URL */ }
+    if (allowList.some((p) => p.test(origin))) return origin;
+  } catch {
+    /* invalid URL */
+  }
   return fallback;
 }
 
@@ -59,7 +61,11 @@ export default async function handler(request) {
 
   const autoplay = parseFlag(url.searchParams.get('autoplay'), '1');
   const mute = parseFlag(url.searchParams.get('mute'), '1');
-  const vq = ['small', 'medium', 'large', 'hd720', 'hd1080'].includes(url.searchParams.get('vq') || '') ? url.searchParams.get('vq') : '';
+  const vq = ['small', 'medium', 'large', 'hd720', 'hd1080'].includes(
+    url.searchParams.get('vq') || '',
+  )
+    ? url.searchParams.get('vq')
+    : '';
 
   const origin = sanitizeOrigin(url.searchParams.get('origin'));
   const parentOrigin = sanitizeParentOrigin(url.searchParams.get('parentOrigin'), origin);

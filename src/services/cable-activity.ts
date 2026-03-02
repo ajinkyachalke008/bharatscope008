@@ -1,8 +1,13 @@
 import type { CableAdvisory, RepairShip, UnderseaCable } from '@/types';
 import { UNDERSEA_CABLES } from '@/config';
-import { MaritimeServiceClient, type NavigationalWarning } from '@/generated/client/worldmonitor/maritime/v1/service_client';
+import {
+  MaritimeServiceClient,
+  type NavigationalWarning,
+} from '@/generated/client/worldmonitor/maritime/v1/service_client';
 
-const maritimeClient = new MaritimeServiceClient('', { fetch: (...args) => globalThis.fetch(...args) });
+const maritimeClient = new MaritimeServiceClient('', {
+  fetch: (...args) => globalThis.fetch(...args),
+});
 
 interface CableActivity {
   advisories: CableAdvisory[];
@@ -42,14 +47,15 @@ const CABLESHIP_PATTERNS = [
 
 function isCableRelated(text: string): boolean {
   const upper = text.toUpperCase();
-  return CABLE_KEYWORDS.some(kw => upper.includes(kw));
+  return CABLE_KEYWORDS.some((kw) => upper.includes(kw));
 }
 
 function parseCoordinates(text: string): { lat: number; lon: number }[] {
   const coords: { lat: number; lon: number }[] = [];
 
   // Pattern: 26-32N 056-40E or 26-32.5N 056-40.5E
-  const dmsPattern = /(\d{1,3})-(\d{1,2}(?:\.\d+)?)\s*([NS])\s+(\d{1,3})-(\d{1,2}(?:\.\d+)?)\s*([EW])/gi;
+  const dmsPattern =
+    /(\d{1,3})-(\d{1,2}(?:\.\d+)?)\s*([NS])\s+(\d{1,3})-(\d{1,2}(?:\.\d+)?)\s*([EW])/gi;
   let match;
 
   while ((match = dmsPattern.exec(text)) !== null) {
@@ -114,7 +120,8 @@ function findNearestCable(lat: number, lon: number): UnderseaCable | null {
     for (const point of cable.points) {
       const [cableLon, cableLat] = point;
       const dist = Math.sqrt(Math.pow(lat - cableLat, 2) + Math.pow(lon - cableLon, 2));
-      if (dist < minDist && dist < 5) { // Within 5 degrees
+      if (dist < minDist && dist < 5) {
+        // Within 5 degrees
         minDist = dist;
         nearest = cable;
       }
@@ -134,8 +141,18 @@ function parseIssueDate(dateStr: string): Date {
     const year = parseInt(match[4], 10);
 
     const months: Record<string, number> = {
-      JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5,
-      JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11,
+      JAN: 0,
+      FEB: 1,
+      MAR: 2,
+      APR: 3,
+      MAY: 4,
+      JUN: 5,
+      JUL: 6,
+      AUG: 7,
+      SEP: 8,
+      OCT: 9,
+      NOV: 10,
+      DEC: 11,
     };
 
     const month = months[monthStr] ?? 0;
@@ -170,7 +187,7 @@ function processWarnings(warnings: NgaWarning[]): CableActivity {
   const repairShips: RepairShip[] = [];
   const seenIds = new Set<string>();
 
-  const cableWarnings = warnings.filter(w => isCableRelated(w.text));
+  const cableWarnings = warnings.filter((w) => isCableRelated(w.text));
 
   for (const warning of cableWarnings) {
     const coords = parseCoordinates(warning.text);
@@ -248,7 +265,7 @@ function processWarnings(warnings: NgaWarning[]): CableActivity {
 function protoToNgaWarning(w: NavigationalWarning): NgaWarning {
   // Parse id format: "navArea-msgYear-msgNumber" (e.g., "IV-2024-42")
   const idParts = w.id.split('-');
-  const navArea = idParts.length >= 3 ? idParts.slice(0, -2).join('-') : (idParts[0] || '');
+  const navArea = idParts.length >= 3 ? idParts.slice(0, -2).join('-') : idParts[0] || '';
   const msgYear = idParts.length >= 2 ? Number(idParts[idParts.length - 2]) || 0 : 0;
   const msgNumber = idParts.length >= 1 ? Number(idParts[idParts.length - 1]) || 0 : 0;
 
@@ -271,7 +288,20 @@ function protoToNgaWarning(w: NavigationalWarning): NgaWarning {
 function formatNgaDate(epochMs: number): string {
   if (!epochMs) return '';
   const d = new Date(epochMs);
-  const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const months = [
+    'JAN',
+    'FEB',
+    'MAR',
+    'APR',
+    'MAY',
+    'JUN',
+    'JUL',
+    'AUG',
+    'SEP',
+    'OCT',
+    'NOV',
+    'DEC',
+  ];
   const day = String(d.getUTCDate()).padStart(2, '0');
   const hours = String(d.getUTCHours()).padStart(2, '0');
   const minutes = String(d.getUTCMinutes()).padStart(2, '0');
@@ -287,7 +317,9 @@ export async function fetchCableActivity(): Promise<CableActivity> {
     console.log(`[CableActivity] Fetched ${warnings.length} NGA warnings`);
 
     const activity = processWarnings(warnings);
-    console.log(`[CableActivity] Found ${activity.advisories.length} advisories, ${activity.repairShips.length} repair ships`);
+    console.log(
+      `[CableActivity] Found ${activity.advisories.length} advisories, ${activity.repairShips.length} repair ships`,
+    );
 
     return activity;
   } catch (error) {

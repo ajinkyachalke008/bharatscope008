@@ -78,10 +78,7 @@ export function aggregateTechActivity(clusters: ClusteredEvent[]): TechHubActivi
 
     // Raw score formula
     const rawScore =
-      newsCount * 10 +
-      (acc.hasBreaking ? 20 : 0) +
-      acc.totalVelocity * 3 +
-      tierBonus;
+      newsCount * 10 + (acc.hasBreaking ? 20 : 0) + acc.totalVelocity * 3 + tierBonus;
 
     rawScores.push({ hubId, acc, rawScore });
     maxRawScore = Math.max(maxRawScore, rawScore);
@@ -94,9 +91,7 @@ export function aggregateTechActivity(clusters: ClusteredEvent[]): TechHubActivi
     const newsCount = acc.clusters.length;
 
     // Normalize to 0-100 scale relative to top hub
-    const score = maxRawScore > 0
-      ? Math.round((rawScore / maxRawScore) * 100)
-      : 0;
+    const score = maxRawScore > 0 ? Math.round((rawScore / maxRawScore) * 100) : 0;
 
     // Determine activity level based on relative position
     let activityLevel: 'high' | 'elevated' | 'low';
@@ -111,7 +106,7 @@ export function aggregateTechActivity(clusters: ClusteredEvent[]): TechHubActivi
     // Get top stories (up to 3)
     const topStories = acc.clusters
       .slice(0, 3)
-      .map(c => ({ title: c.primaryTitle, link: c.primaryLink }));
+      .map((c) => ({ title: c.primaryTitle, link: c.primaryLink }));
 
     // Determine trend based on velocity
     let trend: 'rising' | 'stable' | 'falling' = 'stable';
@@ -149,7 +144,10 @@ export function getTopActiveHubs(clusters: ClusteredEvent[], limit = 10): TechHu
   return aggregateTechActivity(clusters).slice(0, limit);
 }
 
-export function getHubActivity(hubId: string, clusters: ClusteredEvent[]): TechHubActivity | undefined {
+export function getHubActivity(
+  hubId: string,
+  clusters: ClusteredEvent[],
+): TechHubActivity | undefined {
   const activities = aggregateTechActivity(clusters);
-  return activities.find(a => a.hubId === hubId);
+  return activities.find((a) => a.hubId === hubId);
 }

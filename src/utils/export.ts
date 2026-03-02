@@ -23,25 +23,29 @@ export function exportToCSV(data: ExportData, filename = 'worldmonitor-export'):
   if (data.news && data.news.length > 0) {
     lines.push('=== NEWS ===');
     lines.push('Title,Source,Link,Published,IsAlert');
-    data.news.forEach(item => {
+    data.news.forEach((item) => {
       if ('primaryTitle' in item) {
         const cluster = item as ClusteredEvent;
-        lines.push(csvRow([
-          cluster.primaryTitle,
-          cluster.primarySource,
-          cluster.primaryLink,
-          cluster.lastUpdated.toISOString(),
-          String(cluster.isAlert),
-        ]));
+        lines.push(
+          csvRow([
+            cluster.primaryTitle,
+            cluster.primarySource,
+            cluster.primaryLink,
+            cluster.lastUpdated.toISOString(),
+            String(cluster.isAlert),
+          ]),
+        );
       } else {
         const news = item as NewsItem;
-        lines.push(csvRow([
-          news.title,
-          news.source,
-          news.link,
-          news.pubDate?.toISOString() || '',
-          String(news.isAlert),
-        ]));
+        lines.push(
+          csvRow([
+            news.title,
+            news.source,
+            news.link,
+            news.pubDate?.toISOString() || '',
+            String(news.isAlert),
+          ]),
+        );
       }
     });
     lines.push('');
@@ -50,7 +54,7 @@ export function exportToCSV(data: ExportData, filename = 'worldmonitor-export'):
   if (data.markets && data.markets.length > 0) {
     lines.push('=== MARKETS ===');
     lines.push('Symbol,Name,Price,Change');
-    data.markets.forEach(m => {
+    data.markets.forEach((m) => {
       lines.push(csvRow([m.symbol, m.name, String(m.price ?? ''), String(m.change ?? '')]));
     });
     lines.push('');
@@ -59,7 +63,7 @@ export function exportToCSV(data: ExportData, filename = 'worldmonitor-export'):
   if (data.predictions && data.predictions.length > 0) {
     lines.push('=== PREDICTIONS ===');
     lines.push('Title,Yes Price,Volume');
-    data.predictions.forEach(p => {
+    data.predictions.forEach((p) => {
       lines.push(csvRow([p.title, String(p.yesPrice), String(p.volume ?? '')]));
     });
     lines.push('');
@@ -83,7 +87,11 @@ export interface CountryBriefExport {
 
 export function exportCountryBriefJSON(data: CountryBriefExport): void {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  downloadFile(JSON.stringify(data, null, 2), `country-brief-${data.code}-${timestamp}.json`, 'application/json');
+  downloadFile(
+    JSON.stringify(data, null, 2),
+    `country-brief-${data.code}-${timestamp}.json`,
+    'application/json',
+  );
 }
 
 export function exportCountryBriefCSV(data: CountryBriefExport): void {
@@ -114,7 +122,7 @@ export function exportCountryBriefCSV(data: CountryBriefExport): void {
   if (data.headlines && data.headlines.length > 0) {
     lines.push('');
     lines.push('Title,Source,Link,Published');
-    data.headlines.forEach(h => lines.push(csvRow([h.title, h.source, h.link, h.pubDate || ''])));
+    data.headlines.forEach((h) => lines.push(csvRow([h.title, h.source, h.link, h.pubDate || ''])));
   }
   if (data.brief) {
     lines.push('');
@@ -126,7 +134,7 @@ export function exportCountryBriefCSV(data: CountryBriefExport): void {
 }
 
 function csvRow(values: string[]): string {
-  return values.map(v => `"${(v || '').replace(/"/g, '""')}"`).join(',');
+  return values.map((v) => `"${(v || '').replace(/"/g, '""')}"`).join(',');
 }
 
 function downloadFile(content: string, filename: string, mimeType: string): void {
@@ -177,7 +185,7 @@ export class ExportPanel {
       }
     });
 
-    this.element.querySelectorAll('.export-option').forEach(option => {
+    this.element.querySelectorAll('.export-option').forEach((option) => {
       option.addEventListener('click', () => {
         const format = (option as HTMLElement).dataset.format as ExportFormat;
         this.export(format);

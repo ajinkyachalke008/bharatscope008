@@ -32,8 +32,11 @@ describe('getHumanitarianSummary handler', () => {
 
   it('returns undefined when country has no ISO3 mapping (BLOCKING-1)', () => {
     // Must have early return when no ISO3 mapping (before HAPI fetch)
-    assert.match(src, /if\s*\(\s*!iso3\s*\)\s*return\s+undefined/,
-      'Should return undefined when no ISO3 mapping exists');
+    assert.match(
+      src,
+      /if\s*\(\s*!iso3\s*\)\s*return\s+undefined/,
+      'Should return undefined when no ISO3 mapping exists',
+    );
     // The countryCode branch must NOT fall back to Object.values(byCountry)[0]
     // Extract only the "if (countryCode)" block for picking entry and verify no fallback
     const pickSection = src.slice(
@@ -42,35 +45,45 @@ describe('getHumanitarianSummary handler', () => {
     );
     // Inside the countryCode branch, should NOT have Object.values(byCountry)[0] as fallback
     const countryCodeBranch = pickSection.slice(0, pickSection.indexOf('} else {'));
-    assert.doesNotMatch(countryCodeBranch, /Object\.values\(byCountry\)\[0\]/,
-      'countryCode branch should not fallback to first entry');
+    assert.doesNotMatch(
+      countryCodeBranch,
+      /Object\.values\(byCountry\)\[0\]/,
+      'countryCode branch should not fallback to first entry',
+    );
   });
 
   it('returns ISO-2 country_code per proto contract (BLOCKING-2)', () => {
     // Must NOT return ISO2_TO_ISO3[...] as countryCode
-    assert.doesNotMatch(src, /countryCode:\s*ISO2_TO_ISO3/,
-      'Should not return ISO-3 code in countryCode field');
+    assert.doesNotMatch(
+      src,
+      /countryCode:\s*ISO2_TO_ISO3/,
+      'Should not return ISO-3 code in countryCode field',
+    );
     // Should return the original countryCode (uppercased)
-    assert.match(src, /countryCode:\s*countryCode.*\.toUpperCase\(\)/,
-      'Should return original ISO-2 countryCode uppercased');
+    assert.match(
+      src,
+      /countryCode:\s*countryCode.*\.toUpperCase\(\)/,
+      'Should return original ISO-2 countryCode uppercased',
+    );
   });
 
   it('uses renamed conflict-event proto fields (MEDIUM-1)', () => {
-    assert.match(src, /conflictEventsTotal/,
-      'Should use conflictEventsTotal field');
-    assert.match(src, /conflictPoliticalViolenceEvents/,
-      'Should use conflictPoliticalViolenceEvents field');
-    assert.match(src, /conflictFatalities/,
-      'Should use conflictFatalities field');
-    assert.match(src, /referencePeriod/,
-      'Should use referencePeriod field');
-    assert.match(src, /conflictDemonstrations/,
-      'Should use conflictDemonstrations field');
+    assert.match(src, /conflictEventsTotal/, 'Should use conflictEventsTotal field');
+    assert.match(
+      src,
+      /conflictPoliticalViolenceEvents/,
+      'Should use conflictPoliticalViolenceEvents field',
+    );
+    assert.match(src, /conflictFatalities/, 'Should use conflictFatalities field');
+    assert.match(src, /referencePeriod/, 'Should use referencePeriod field');
+    assert.match(src, /conflictDemonstrations/, 'Should use conflictDemonstrations field');
     // Old field names must not appear
-    assert.doesNotMatch(src, /populationAffected/,
-      'Should not reference old populationAffected field');
-    assert.doesNotMatch(src, /peopleInNeed/,
-      'Should not reference old peopleInNeed field');
+    assert.doesNotMatch(
+      src,
+      /populationAffected/,
+      'Should not reference old populationAffected field',
+    );
+    assert.doesNotMatch(src, /peopleInNeed/, 'Should not reference old peopleInNeed field');
   });
 });
 
@@ -108,13 +121,15 @@ describe('LLM prompt political context (LOW-1)', () => {
   const src = readSrc('server/worldmonitor/news/v1/_shared.ts');
 
   it('does not contain hardcoded "Donald Trump" reference', () => {
-    assert.doesNotMatch(src, /Donald Trump/,
-      'Should not contain hardcoded political figure name');
+    assert.doesNotMatch(src, /Donald Trump/, 'Should not contain hardcoded political figure name');
   });
 
   it('uses date-based dynamic context instead', () => {
-    assert.match(src, /Provide geopolitical context appropriate for the current date/,
-      'Should instruct LLM to use current-date context');
+    assert.match(
+      src,
+      /Provide geopolitical context appropriate for the current date/,
+      'Should instruct LLM to use current-date context',
+    );
   });
 });
 
@@ -168,18 +183,18 @@ describe('getCacheKey determinism', () => {
   const src = readSrc('server/worldmonitor/news/v1/_shared.ts');
 
   it('getCacheKey function exists and builds versioned keys', () => {
-    assert.match(src, /export function getCacheKey\(/,
-      'getCacheKey should be exported');
-    assert.match(src, /CACHE_VERSION/,
-      'Should use CACHE_VERSION for cache key prefixing');
+    assert.match(src, /export function getCacheKey\(/, 'getCacheKey should be exported');
+    assert.match(src, /CACHE_VERSION/, 'Should use CACHE_VERSION for cache key prefixing');
     // Verify it includes mode in the key
-    assert.match(src, /`summary:\$\{CACHE_VERSION\}:\$\{mode\}/,
-      'Cache key should include mode');
+    assert.match(src, /`summary:\$\{CACHE_VERSION\}:\$\{mode\}/, 'Cache key should include mode');
   });
 
   it('handles translate mode separately', () => {
-    assert.match(src, /if\s*\(mode\s*===\s*'translate'\)/,
-      'Should have separate key format for translate mode');
+    assert.match(
+      src,
+      /if\s*\(mode\s*===\s*'translate'\)/,
+      'Should have separate key format for translate mode',
+    );
   });
 });
 
@@ -197,32 +212,42 @@ describe('getVesselSnapshot caching (HIGH-1)', () => {
   });
 
   it('has 10-second TTL cache', () => {
-    assert.match(src, /SNAPSHOT_CACHE_TTL_MS\s*=\s*10[_]?000/,
-      'TTL should be 10 seconds (10000ms)');
+    assert.match(
+      src,
+      /SNAPSHOT_CACHE_TTL_MS\s*=\s*10[_]?000/,
+      'TTL should be 10 seconds (10000ms)',
+    );
   });
 
   it('checks cache before calling relay', () => {
     // fetchVesselSnapshot should check cachedSnapshot before fetchVesselSnapshotFromRelay
-    const cacheCheckIdx = src.indexOf('cachedSnapshot && (now - cacheTimestamp)');
+    const cacheCheckIdx = src.indexOf('cachedSnapshot && now - cacheTimestamp');
     const relayCallIdx = src.indexOf('fetchVesselSnapshotFromRelay()');
     assert.ok(cacheCheckIdx > -1, 'Should check cache');
     assert.ok(relayCallIdx > -1, 'Should have relay fetch function');
-    assert.ok(cacheCheckIdx < relayCallIdx,
-      'Cache check should come before relay call');
+    assert.ok(cacheCheckIdx < relayCallIdx, 'Cache check should come before relay call');
   });
 
   it('has in-flight dedup via shared promise', () => {
-    assert.match(src, /if\s*\(inFlightRequest\)/,
-      'Should check for in-flight request');
-    assert.match(src, /inFlightRequest\s*=\s*fetchVesselSnapshotFromRelay/,
-      'Should assign in-flight promise');
-    assert.match(src, /inFlightRequest\s*=\s*null/,
-      'Should clear in-flight promise in finally block');
+    assert.match(src, /if\s*\(inFlightRequest\)/, 'Should check for in-flight request');
+    assert.match(
+      src,
+      /inFlightRequest\s*=\s*fetchVesselSnapshotFromRelay/,
+      'Should assign in-flight promise',
+    );
+    assert.match(
+      src,
+      /inFlightRequest\s*=\s*null/,
+      'Should clear in-flight promise in finally block',
+    );
   });
 
   it('serves stale snapshot when relay fetch fails', () => {
-    assert.match(src, /return\s+result\s*\?\?\s*cachedSnapshot/,
-      'Should return stale cached snapshot when fresh relay fetch fails');
+    assert.match(
+      src,
+      /return\s+result\s*\?\?\s*cachedSnapshot/,
+      'Should return stale cached snapshot when fresh relay fetch fails',
+    );
   });
 
   // NOTE: Full integration test (mocking fetch, verifying cache hits) requires

@@ -6,7 +6,10 @@ export const config = { runtime: 'edge' };
 export default async function handler(req) {
   const cors = getCorsHeaders(req);
   if (isDisallowedOrigin(req)) {
-    return new Response(JSON.stringify({ error: 'Origin not allowed' }), { status: 403, headers: cors });
+    return new Response(JSON.stringify({ error: 'Origin not allowed' }), {
+      status: 403,
+      headers: cors,
+    });
   }
 
   // Only allow GET and OPTIONS methods
@@ -14,10 +17,13 @@ export default async function handler(req) {
     return new Response(null, { status: 204, headers: cors });
   }
   if (req.method !== 'GET') {
-    return Response.json({ error: 'Method not allowed' }, {
-      status: 405,
-      headers: cors,
-    });
+    return Response.json(
+      { error: 'Method not allowed' },
+      {
+        status: 405,
+        headers: cors,
+      },
+    );
   }
 
   const url = new URL(req.url);
@@ -26,21 +32,27 @@ export default async function handler(req) {
   const apiKey = process.env.EIA_API_KEY;
 
   if (!apiKey) {
-    return Response.json({
-      configured: false,
-      skipped: true,
-      reason: 'EIA_API_KEY not configured',
-    }, {
-      status: 200,
-      headers: cors,
-    });
+    return Response.json(
+      {
+        configured: false,
+        skipped: true,
+        reason: 'EIA_API_KEY not configured',
+      },
+      {
+        status: 200,
+        headers: cors,
+      },
+    );
   }
 
   // Health check
   if (path === '/health' || path === '') {
-    return Response.json({ configured: true }, {
-      headers: cors,
-    });
+    return Response.json(
+      { configured: true },
+      {
+        headers: cors,
+      },
+    );
   }
 
   // Petroleum data endpoint
@@ -60,7 +72,7 @@ export default async function handler(req) {
         try {
           const response = await fetch(
             `https://api.eia.gov/v2/seriesid/${seriesId}?api_key=${apiKey}&num=2`,
-            { headers: { 'Accept': 'application/json' } }
+            { headers: { Accept: 'application/json' } },
           );
 
           if (!response.ok) return null;
@@ -76,7 +88,7 @@ export default async function handler(req) {
                 previous: values[1]?.value || values[0]?.value,
                 date: values[0]?.period,
                 unit: values[0]?.unit,
-              }
+              },
             };
           }
         } catch (e) {
@@ -101,17 +113,23 @@ export default async function handler(req) {
       });
     } catch (error) {
       console.error('[EIA] Fetch error:', error);
-      return Response.json({
-        error: 'Failed to fetch EIA data',
-      }, {
-        status: 500,
-        headers: cors,
-      });
+      return Response.json(
+        {
+          error: 'Failed to fetch EIA data',
+        },
+        {
+          status: 500,
+          headers: cors,
+        },
+      );
     }
   }
 
-  return Response.json({ error: 'Not found' }, {
-    status: 404,
-    headers: cors,
-  });
+  return Response.json(
+    { error: 'Not found' },
+    {
+      status: 404,
+      headers: cors,
+    },
+  );
 }

@@ -124,7 +124,7 @@ function getDefaultCategories(): CategoryBreakdown[] {
     { category: 'Medical & Health', share: 0.33, change24h: 0, activeCampaigns: 0, trending: true },
     { category: 'Disaster Relief', share: 0.15, change24h: 0, activeCampaigns: 0, trending: false },
     { category: 'Education', share: 0.12, change24h: 0, activeCampaigns: 0, trending: false },
-    { category: 'Community', share: 0.10, change24h: 0, activeCampaigns: 0, trending: false },
+    { category: 'Community', share: 0.1, change24h: 0, activeCampaigns: 0, trending: false },
     { category: 'Memorials', share: 0.08, change24h: 0, activeCampaigns: 0, trending: false },
     { category: 'Animals & Pets', share: 0.07, change24h: 0, activeCampaigns: 0, trending: false },
     { category: 'Environment', share: 0.05, change24h: 0, activeCampaigns: 0, trending: false },
@@ -140,7 +140,8 @@ function computeActivityIndex(platforms: PlatformGiving[], crypto: CryptoGivingS
   // Higher when: more platforms reporting, higher velocity, more new campaigns
   let score = 50; // baseline
 
-  const totalDailyVolume = platforms.reduce((s, p) => s + p.dailyVolumeUsd, 0) + crypto.dailyInflowUsd;
+  const totalDailyVolume =
+    platforms.reduce((s, p) => s + p.dailyVolumeUsd, 0) + crypto.dailyInflowUsd;
   // Expected baseline ~$50M/day across tracked platforms
   const volumeRatio = totalDailyVolume / 50_000_000;
   score += Math.min(20, Math.max(-20, (volumeRatio - 1) * 20));
@@ -156,7 +157,7 @@ function computeActivityIndex(platforms: PlatformGiving[], crypto: CryptoGivingS
   if (totalNew > 50) score += 5;
 
   // Data coverage bonus
-  const reporting = platforms.filter(p => p.dailyVolumeUsd > 0).length;
+  const reporting = platforms.filter((p) => p.dailyVolumeUsd > 0).length;
   score += reporting * 2;
 
   return Math.max(0, Math.min(100, Math.round(score)));
@@ -175,43 +176,48 @@ export async function getGivingSummary(
   _ctx: ServerContext,
   req: GetGivingSummaryRequest,
 ): Promise<GetGivingSummaryResponse> {
-  const result = await cachedFetchJson<GetGivingSummaryResponse>(REDIS_CACHE_KEY, REDIS_CACHE_TTL, async () => {
-    // Gather estimates from all sources
-    const cryptoEstimate = getCryptoGivingEstimate();
-    const gofundme = getGoFundMeEstimate();
-    const globalGiving = getGlobalGivingEstimate();
-    const justGiving = getJustGivingEstimate();
-    const institutional = getInstitutionalBaseline();
+  const result = await cachedFetchJson<GetGivingSummaryResponse>(
+    REDIS_CACHE_KEY,
+    REDIS_CACHE_TTL,
+    async () => {
+      // Gather estimates from all sources
+      const cryptoEstimate = getCryptoGivingEstimate();
+      const gofundme = getGoFundMeEstimate();
+      const globalGiving = getGlobalGivingEstimate();
+      const justGiving = getJustGivingEstimate();
+      const institutional = getInstitutionalBaseline();
 
-    let platforms = [gofundme, globalGiving, justGiving];
-    if (req.platformLimit > 0) {
-      platforms = platforms.slice(0, req.platformLimit);
-    }
+      let platforms = [gofundme, globalGiving, justGiving];
+      if (req.platformLimit > 0) {
+        platforms = platforms.slice(0, req.platformLimit);
+      }
 
-    // Use default category breakdown (from published reports)
-    let categories = getDefaultCategories();
-    if (req.categoryLimit > 0) {
-      categories = categories.slice(0, req.categoryLimit);
-    }
+      // Use default category breakdown (from published reports)
+      let categories = getDefaultCategories();
+      if (req.categoryLimit > 0) {
+        categories = categories.slice(0, req.categoryLimit);
+      }
 
-    // Composite index
-    const activityIndex = computeActivityIndex(platforms, cryptoEstimate);
-    const trend = computeTrend(activityIndex);
-    const estimatedDailyFlowUsd = platforms.reduce((s, p) => s + p.dailyVolumeUsd, 0) + cryptoEstimate.dailyInflowUsd;
+      // Composite index
+      const activityIndex = computeActivityIndex(platforms, cryptoEstimate);
+      const trend = computeTrend(activityIndex);
+      const estimatedDailyFlowUsd =
+        platforms.reduce((s, p) => s + p.dailyVolumeUsd, 0) + cryptoEstimate.dailyInflowUsd;
 
-    const summary: GivingSummary = {
-      generatedAt: new Date().toISOString(),
-      activityIndex,
-      trend,
-      estimatedDailyFlowUsd,
-      platforms,
-      categories,
-      crypto: cryptoEstimate,
-      institutional,
-    };
+      const summary: GivingSummary = {
+        generatedAt: new Date().toISOString(),
+        activityIndex,
+        trend,
+        estimatedDailyFlowUsd,
+        platforms,
+        categories,
+        crypto: cryptoEstimate,
+        institutional,
+      };
 
-    return { summary };
-  });
+      return { summary };
+    },
+  );
 
   return result || { summary: undefined as unknown as GivingSummary };
 }

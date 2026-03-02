@@ -34,9 +34,13 @@ export class MobileWarningModal {
 
     // Remove will-change after entrance animation to free GPU memory
     const modal = this.element.querySelector('.mobile-warning-modal') as HTMLElement | null;
-    modal?.addEventListener('animationend', () => {
-      modal.style.willChange = 'auto';
-    }, { once: true });
+    modal?.addEventListener(
+      'animationend',
+      () => {
+        modal.style.willChange = 'auto';
+      },
+      { once: true },
+    );
   }
 
   private setupEventListeners(): void {

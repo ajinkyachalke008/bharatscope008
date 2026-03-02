@@ -58,7 +58,7 @@ const SECRET_ANALYTICS_NAMES: Record<RuntimeSecretKey, string> = {
 
 // ── Typed event schemas (allowlisted properties per event) ──
 
-const HAS_KEYS = Object.values(SECRET_ANALYTICS_NAMES).map(n => `has_${n}`);
+const HAS_KEYS = Object.values(SECRET_ANALYTICS_NAMES).map((n) => `has_${n}`);
 
 const EVENT_SCHEMAS: Record<string, Set<string>> = {
   // Phase 1 — core events
@@ -67,8 +67,11 @@ const EVENT_SCHEMAS: Record<string, Set<string>> = {
   wm_summary_generated: new Set(['provider', 'model', 'cached']),
   wm_summary_failed: new Set(['last_provider']),
   wm_api_keys_configured: new Set([
-    'total_keys_configured', 'total_features_enabled', 'enabled_features',
-    'ollama_model', 'platform',
+    'total_keys_configured',
+    'total_features_enabled',
+    'enabled_features',
+    'ollama_model',
+    'platform',
     ...HAS_KEYS,
   ]),
   // Phase 2 — plan-specified events
@@ -128,7 +131,11 @@ function deepStripSecrets(props: Record<string, unknown>): Record<string, unknow
 type PostHogInstance = {
   init: (key: string, config: Record<string, unknown>) => void;
   register: (props: Record<string, unknown>) => void;
-  capture: (event: string, props?: Record<string, unknown>, options?: { transport?: 'XHR' | 'sendBeacon' }) => void;
+  capture: (
+    event: string,
+    props?: Record<string, unknown>,
+    options?: { transport?: 'XHR' | 'sendBeacon' },
+  ) => void;
 };
 
 let posthogInstance: PostHogInstance | null = null;
@@ -136,7 +143,7 @@ let initPromise: Promise<void> | null = null;
 
 const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY as string | undefined;
 const POSTHOG_HOST = isDesktopRuntime()
-  ? ((import.meta.env.VITE_POSTHOG_HOST as string | undefined) || 'https://us.i.posthog.com')
+  ? (import.meta.env.VITE_POSTHOG_HOST as string | undefined) || 'https://us.i.posthog.com'
   : '/ingest'; // Reverse proxy through own domain to bypass ad blockers
 
 // ── Public API ──
@@ -222,11 +229,15 @@ const OFFLINE_QUEUE_CAP = 200;
 function enqueueOffline(name: string, props: Record<string, unknown>): void {
   try {
     const raw = localStorage.getItem(OFFLINE_QUEUE_KEY);
-    const queue: Array<{ name: string; props: Record<string, unknown>; ts: number }> = raw ? JSON.parse(raw) : [];
+    const queue: Array<{ name: string; props: Record<string, unknown>; ts: number }> = raw
+      ? JSON.parse(raw)
+      : [];
     queue.push({ name, props, ts: Date.now() });
     if (queue.length > OFFLINE_QUEUE_CAP) queue.splice(0, queue.length - OFFLINE_QUEUE_CAP);
     localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
-  } catch { /* localStorage full or unavailable */ }
+  } catch {
+    /* localStorage full or unavailable */
+  }
 }
 
 function flushOfflineQueue(): void {
@@ -239,7 +250,9 @@ function flushOfflineQueue(): void {
     for (const { name, props } of queue) {
       posthogInstance.capture(name, props);
     }
-  } catch { /* corrupt queue, discard */ }
+  } catch {
+    /* corrupt queue, discard */
+  }
 }
 
 export function trackEvent(name: string, props?: Record<string, unknown>): void {
@@ -271,7 +284,8 @@ export function trackApiKeysSnapshot(): void {
   }
 
   const enabledFeatures = Object.entries(config.featureToggles)
-    .filter(([, v]) => v).map(([k]) => k);
+    .filter(([, v]) => v)
+    .map(([k]) => k);
 
   trackEvent('wm_api_keys_configured', {
     platform: isDesktopRuntime() ? 'desktop' : 'web',
@@ -301,7 +315,11 @@ export function trackVariantSwitch(from: string, to: string): void {
   trackEventBeforeUnload('wm_variant_switched', { from, to });
 }
 
-export function trackMapLayerToggle(layerId: string, enabled: boolean, source: 'user' | 'programmatic'): void {
+export function trackMapLayerToggle(
+  layerId: string,
+  enabled: boolean,
+  source: 'user' | 'programmatic',
+): void {
   trackEvent('wm_map_layer_toggled', { layer_id: layerId, enabled, source });
 }
 
@@ -343,8 +361,18 @@ export function trackPanelToggled(panelId: string, enabled: boolean): void {
   trackEvent('wm_panel_toggled', { panel_id: panelId, enabled });
 }
 
-export function trackFindingClicked(id: string, source: string, type: string, priority: string): void {
-  trackEvent('wm_finding_clicked', { finding_id: id, finding_source: source, finding_type: type, priority });
+export function trackFindingClicked(
+  id: string,
+  source: string,
+  type: string,
+  priority: string,
+): void {
+  trackEvent('wm_finding_clicked', {
+    finding_id: id,
+    finding_source: source,
+    finding_type: type,
+    priority,
+  });
 }
 
 export function trackUpdateShown(current: string, remote: string): void {

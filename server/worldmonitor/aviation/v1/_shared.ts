@@ -56,7 +56,9 @@ export function parseFaaXml(xml: string): Map<string, FAADelayInfo> {
   // Delay_type may be array or single object
   const delayTypes = Array.isArray(root.Delay_type)
     ? root.Delay_type
-    : root.Delay_type ? [root.Delay_type] : [];
+    : root.Delay_type
+      ? [root.Delay_type]
+      : [];
 
   for (const dt of delayTypes) {
     // Ground Delays
@@ -170,16 +172,34 @@ export function toProtoSource(s: string): FlightDelaySource {
 
 export function determineSeverity(avgDelayMinutes: number, delayedPct?: number): string {
   const t = DELAY_SEVERITY_THRESHOLDS;
-  if (avgDelayMinutes >= t.severe.avgDelayMinutes || (delayedPct && delayedPct >= t.severe.delayedPct)) return 'severe';
-  if (avgDelayMinutes >= t.major.avgDelayMinutes || (delayedPct && delayedPct >= t.major.delayedPct)) return 'major';
-  if (avgDelayMinutes >= t.moderate.avgDelayMinutes || (delayedPct && delayedPct >= t.moderate.delayedPct)) return 'moderate';
-  if (avgDelayMinutes >= t.minor.avgDelayMinutes || (delayedPct && delayedPct >= t.minor.delayedPct)) return 'minor';
+  if (
+    avgDelayMinutes >= t.severe.avgDelayMinutes ||
+    (delayedPct && delayedPct >= t.severe.delayedPct)
+  )
+    return 'severe';
+  if (
+    avgDelayMinutes >= t.major.avgDelayMinutes ||
+    (delayedPct && delayedPct >= t.major.delayedPct)
+  )
+    return 'major';
+  if (
+    avgDelayMinutes >= t.moderate.avgDelayMinutes ||
+    (delayedPct && delayedPct >= t.moderate.delayedPct)
+  )
+    return 'moderate';
+  if (
+    avgDelayMinutes >= t.minor.avgDelayMinutes ||
+    (delayedPct && delayedPct >= t.minor.delayedPct)
+  )
+    return 'minor';
   return 'normal';
 }
 
 // ---------- Simulated delay generation ----------
 
-export function generateSimulatedDelay(airport: typeof MONITORED_AIRPORTS[number]): AirportDelayAlert | null {
+export function generateSimulatedDelay(
+  airport: (typeof MONITORED_AIRPORTS)[number],
+): AirportDelayAlert | null {
   const hour = new Date().getUTCHours();
   const isRushHour = (hour >= 6 && hour <= 10) || (hour >= 16 && hour <= 20);
   const busyAirports = ['LHR', 'CDG', 'FRA', 'JFK', 'LAX', 'ORD', 'PEK', 'HND', 'DXB', 'SIN'];

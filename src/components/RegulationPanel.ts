@@ -37,7 +37,7 @@ export class RegulationPanel extends Panel {
     `;
 
     // Add event listeners for tabs
-    this.content.querySelectorAll('.tab').forEach(tab => {
+    this.content.querySelectorAll('.tab').forEach((tab) => {
       tab.addEventListener('click', (e) => {
         const target = e.target as HTMLElement;
         const view = target.dataset.view as typeof this.viewMode;
@@ -78,7 +78,7 @@ export class RegulationPanel extends Panel {
           <span class="count">${t('components.regulation.actionsCount', { count: String(recentActions.length) })}</span>
         </div>
         <div class="timeline-list">
-          ${recentActions.map(action => this.renderTimelineItem(action)).join('')}
+          ${recentActions.map((action) => this.renderTimelineItem(action)).join('')}
         </div>
       </div>
     `;
@@ -89,15 +89,15 @@ export class RegulationPanel extends Panel {
     const formattedDate = date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
 
     const typeIcons: Record<RegulatoryAction['type'], string> = {
       'law-passed': '📜',
       'executive-order': '🏛️',
-      'guideline': '📋',
-      'enforcement': '⚖️',
-      'consultation': '💬',
+      guideline: '📋',
+      enforcement: '⚖️',
+      consultation: '💬',
     };
 
     const impactColors: Record<RegulatoryAction['impact'], string> = {
@@ -140,7 +140,7 @@ export class RegulationPanel extends Panel {
           <span class="count">${t('components.regulation.deadlinesCount', { count: String(upcomingDeadlines.length) })}</span>
         </div>
         <div class="deadlines-list">
-          ${upcomingDeadlines.map(reg => this.renderDeadlineItem(reg)).join('')}
+          ${upcomingDeadlines.map((reg) => this.renderDeadlineItem(reg)).join('')}
         </div>
       </div>
     `;
@@ -174,7 +174,7 @@ export class RegulationPanel extends Panel {
           </div>
           ${regulation.penalties ? `<p class="deadline-penalties">⚠️ Penalties: ${escapeHtml(regulation.penalties)}</p>` : ''}
           <div class="deadline-scope">
-            ${regulation.scope.map(s => `<span class="scope-tag">${escapeHtml(s)}</span>`).join('')}
+            ${regulation.scope.map((s) => `<span class="scope-tag">${escapeHtml(s)}</span>`).join('')}
           </div>
         </div>
       </div>
@@ -182,21 +182,21 @@ export class RegulationPanel extends Panel {
   }
 
   private renderRegulations(): string {
-    const activeRegulations = AI_REGULATIONS.filter(r => r.status === 'active');
-    const proposedRegulations = AI_REGULATIONS.filter(r => r.status === 'proposed');
+    const activeRegulations = AI_REGULATIONS.filter((r) => r.status === 'active');
+    const proposedRegulations = AI_REGULATIONS.filter((r) => r.status === 'proposed');
 
     return `
       <div class="regulations-view">
         <div class="regulations-section">
           <h4>${t('components.regulation.activeCount', { count: String(activeRegulations.length) })}</h4>
           <div class="regulations-list">
-            ${activeRegulations.map(reg => this.renderRegulationCard(reg)).join('')}
+            ${activeRegulations.map((reg) => this.renderRegulationCard(reg)).join('')}
           </div>
         </div>
         <div class="regulations-section">
           <h4>${t('components.regulation.proposedCount', { count: String(proposedRegulations.length) })}</h4>
           <div class="regulations-list">
-            ${proposedRegulations.map(reg => this.renderRegulationCard(reg)).join('')}
+            ${proposedRegulations.map((reg) => this.renderRegulationCard(reg)).join('')}
           </div>
         </div>
       </div>
@@ -212,7 +212,10 @@ export class RegulationPanel extends Panel {
     };
 
     const effectiveDate = regulation.effectiveDate
-      ? new Date(regulation.effectiveDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
+      ? new Date(regulation.effectiveDate).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+        })
       : 'TBD';
     const regulationLink = regulation.link ? sanitizeUrl(regulation.link) : '';
 
@@ -232,12 +235,15 @@ export class RegulationPanel extends Panel {
         <div class="regulation-provisions">
           <strong>${t('components.regulation.keyProvisions')}:</strong>
           <ul>
-            ${regulation.keyProvisions.slice(0, 3).map(p => `<li>${escapeHtml(p)}</li>`).join('')}
+            ${regulation.keyProvisions
+              .slice(0, 3)
+              .map((p) => `<li>${escapeHtml(p)}</li>`)
+              .join('')}
             ${regulation.keyProvisions.length > 3 ? `<li class="more-provisions">${t('components.regulation.moreProvisions', { count: String(regulation.keyProvisions.length - 3) })}</li>` : ''}
           </ul>
         </div>
         <div class="regulation-scope">
-          ${regulation.scope.map(s => `<span class="scope-tag">${escapeHtml(s)}</span>`).join('')}
+          ${regulation.scope.map((s) => `<span class="scope-tag">${escapeHtml(s)}</span>`).join('')}
         </div>
         ${regulationLink ? `<a href="${regulationLink}" target="_blank" rel="noopener noreferrer" class="regulation-link">${t('components.regulation.learnMore')} →</a>` : ''}
       </div>
@@ -267,7 +273,7 @@ export class RegulationPanel extends Panel {
           </div>
         </div>
         <div class="countries-list">
-          ${profiles.map(profile => this.renderCountryCard(profile)).join('')}
+          ${profiles.map((profile) => this.renderCountryCard(profile)).join('')}
         </div>
       </div>
     `;

@@ -71,8 +71,7 @@ export interface EnergyPrice {
   priceAt: number;
 }
 
-export interface GetMacroSignalsRequest {
-}
+export interface GetMacroSignalsRequest {}
 
 export interface GetMacroSignalsResponse {
   timestamp: string;
@@ -181,22 +180,19 @@ export interface BisCreditToGdp {
   date: string;
 }
 
-export interface GetBisPolicyRatesRequest {
-}
+export interface GetBisPolicyRatesRequest {}
 
 export interface GetBisPolicyRatesResponse {
   rates: BisPolicyRate[];
 }
 
-export interface GetBisExchangeRatesRequest {
-}
+export interface GetBisExchangeRatesRequest {}
 
 export interface GetBisExchangeRatesResponse {
   rates: BisExchangeRate[];
 }
 
-export interface GetBisCreditRequest {
-}
+export interface GetBisCreditRequest {}
 
 export interface GetBisCreditResponse {
   entries: BisCreditToGdp[];
@@ -222,8 +218,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -234,7 +230,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -256,23 +252,26 @@ export class EconomicServiceClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string, options?: EconomicServiceClientOptions) {
-    this.baseURL = baseURL.replace(/\/+$/, "");
+    this.baseURL = baseURL.replace(/\/+$/, '');
     this.fetchFn = options?.fetch ?? globalThis.fetch;
     this.defaultHeaders = { ...options?.defaultHeaders };
   }
 
-  async getFredSeries(req: GetFredSeriesRequest, options?: EconomicServiceCallOptions): Promise<GetFredSeriesResponse> {
-    let path = "/api/economic/v1/get-fred-series";
+  async getFredSeries(
+    req: GetFredSeriesRequest,
+    options?: EconomicServiceCallOptions,
+  ): Promise<GetFredSeriesResponse> {
+    const path = '/api/economic/v1/get-fred-series';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -282,21 +281,24 @@ export class EconomicServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetFredSeriesResponse;
+    return (await resp.json()) as GetFredSeriesResponse;
   }
 
-  async listWorldBankIndicators(req: ListWorldBankIndicatorsRequest, options?: EconomicServiceCallOptions): Promise<ListWorldBankIndicatorsResponse> {
-    let path = "/api/economic/v1/list-world-bank-indicators";
+  async listWorldBankIndicators(
+    req: ListWorldBankIndicatorsRequest,
+    options?: EconomicServiceCallOptions,
+  ): Promise<ListWorldBankIndicatorsResponse> {
+    const path = '/api/economic/v1/list-world-bank-indicators';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -306,21 +308,24 @@ export class EconomicServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as ListWorldBankIndicatorsResponse;
+    return (await resp.json()) as ListWorldBankIndicatorsResponse;
   }
 
-  async getEnergyPrices(req: GetEnergyPricesRequest, options?: EconomicServiceCallOptions): Promise<GetEnergyPricesResponse> {
-    let path = "/api/economic/v1/get-energy-prices";
+  async getEnergyPrices(
+    req: GetEnergyPricesRequest,
+    options?: EconomicServiceCallOptions,
+  ): Promise<GetEnergyPricesResponse> {
+    const path = '/api/economic/v1/get-energy-prices';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -330,21 +335,24 @@ export class EconomicServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetEnergyPricesResponse;
+    return (await resp.json()) as GetEnergyPricesResponse;
   }
 
-  async getMacroSignals(req: GetMacroSignalsRequest, options?: EconomicServiceCallOptions): Promise<GetMacroSignalsResponse> {
-    let path = "/api/economic/v1/get-macro-signals";
+  async getMacroSignals(
+    req: GetMacroSignalsRequest,
+    options?: EconomicServiceCallOptions,
+  ): Promise<GetMacroSignalsResponse> {
+    const path = '/api/economic/v1/get-macro-signals';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -354,21 +362,24 @@ export class EconomicServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetMacroSignalsResponse;
+    return (await resp.json()) as GetMacroSignalsResponse;
   }
 
-  async getEnergyCapacity(req: GetEnergyCapacityRequest, options?: EconomicServiceCallOptions): Promise<GetEnergyCapacityResponse> {
-    let path = "/api/economic/v1/get-energy-capacity";
+  async getEnergyCapacity(
+    req: GetEnergyCapacityRequest,
+    options?: EconomicServiceCallOptions,
+  ): Promise<GetEnergyCapacityResponse> {
+    const path = '/api/economic/v1/get-energy-capacity';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -378,21 +389,24 @@ export class EconomicServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetEnergyCapacityResponse;
+    return (await resp.json()) as GetEnergyCapacityResponse;
   }
 
-  async getBisPolicyRates(req: GetBisPolicyRatesRequest, options?: EconomicServiceCallOptions): Promise<GetBisPolicyRatesResponse> {
-    let path = "/api/economic/v1/get-bis-policy-rates";
+  async getBisPolicyRates(
+    req: GetBisPolicyRatesRequest,
+    options?: EconomicServiceCallOptions,
+  ): Promise<GetBisPolicyRatesResponse> {
+    const path = '/api/economic/v1/get-bis-policy-rates';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -402,21 +416,24 @@ export class EconomicServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetBisPolicyRatesResponse;
+    return (await resp.json()) as GetBisPolicyRatesResponse;
   }
 
-  async getBisExchangeRates(req: GetBisExchangeRatesRequest, options?: EconomicServiceCallOptions): Promise<GetBisExchangeRatesResponse> {
-    let path = "/api/economic/v1/get-bis-exchange-rates";
+  async getBisExchangeRates(
+    req: GetBisExchangeRatesRequest,
+    options?: EconomicServiceCallOptions,
+  ): Promise<GetBisExchangeRatesResponse> {
+    const path = '/api/economic/v1/get-bis-exchange-rates';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -426,21 +443,24 @@ export class EconomicServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetBisExchangeRatesResponse;
+    return (await resp.json()) as GetBisExchangeRatesResponse;
   }
 
-  async getBisCredit(req: GetBisCreditRequest, options?: EconomicServiceCallOptions): Promise<GetBisCreditResponse> {
-    let path = "/api/economic/v1/get-bis-credit";
+  async getBisCredit(
+    req: GetBisCreditRequest,
+    options?: EconomicServiceCallOptions,
+  ): Promise<GetBisCreditResponse> {
+    const path = '/api/economic/v1/get-bis-credit';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -450,7 +470,7 @@ export class EconomicServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetBisCreditResponse;
+    return (await resp.json()) as GetBisCreditResponse;
   }
 
   private async handleError(resp: Response): Promise<never> {
@@ -468,4 +488,3 @@ export class EconomicServiceClient {
     throw new ApiError(resp.status, `Request failed with status ${resp.status}`, body);
   }
 }
-

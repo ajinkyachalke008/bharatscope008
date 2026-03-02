@@ -80,9 +80,16 @@ export interface PaginationResponse {
   totalCount: number;
 }
 
-export type AisDisruptionSeverity = "AIS_DISRUPTION_SEVERITY_UNSPECIFIED" | "AIS_DISRUPTION_SEVERITY_LOW" | "AIS_DISRUPTION_SEVERITY_ELEVATED" | "AIS_DISRUPTION_SEVERITY_HIGH";
+export type AisDisruptionSeverity =
+  | 'AIS_DISRUPTION_SEVERITY_UNSPECIFIED'
+  | 'AIS_DISRUPTION_SEVERITY_LOW'
+  | 'AIS_DISRUPTION_SEVERITY_ELEVATED'
+  | 'AIS_DISRUPTION_SEVERITY_HIGH';
 
-export type AisDisruptionType = "AIS_DISRUPTION_TYPE_UNSPECIFIED" | "AIS_DISRUPTION_TYPE_GAP_SPIKE" | "AIS_DISRUPTION_TYPE_CHOKEPOINT_CONGESTION";
+export type AisDisruptionType =
+  | 'AIS_DISRUPTION_TYPE_UNSPECIFIED'
+  | 'AIS_DISRUPTION_TYPE_GAP_SPIKE'
+  | 'AIS_DISRUPTION_TYPE_CHOKEPOINT_CONGESTION';
 
 export interface FieldViolation {
   field: string;
@@ -93,8 +100,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -105,7 +112,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -127,23 +134,26 @@ export class MaritimeServiceClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string, options?: MaritimeServiceClientOptions) {
-    this.baseURL = baseURL.replace(/\/+$/, "");
+    this.baseURL = baseURL.replace(/\/+$/, '');
     this.fetchFn = options?.fetch ?? globalThis.fetch;
     this.defaultHeaders = { ...options?.defaultHeaders };
   }
 
-  async getVesselSnapshot(req: GetVesselSnapshotRequest, options?: MaritimeServiceCallOptions): Promise<GetVesselSnapshotResponse> {
-    let path = "/api/maritime/v1/get-vessel-snapshot";
+  async getVesselSnapshot(
+    req: GetVesselSnapshotRequest,
+    options?: MaritimeServiceCallOptions,
+  ): Promise<GetVesselSnapshotResponse> {
+    const path = '/api/maritime/v1/get-vessel-snapshot';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -153,21 +163,24 @@ export class MaritimeServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as GetVesselSnapshotResponse;
+    return (await resp.json()) as GetVesselSnapshotResponse;
   }
 
-  async listNavigationalWarnings(req: ListNavigationalWarningsRequest, options?: MaritimeServiceCallOptions): Promise<ListNavigationalWarningsResponse> {
-    let path = "/api/maritime/v1/list-navigational-warnings";
+  async listNavigationalWarnings(
+    req: ListNavigationalWarningsRequest,
+    options?: MaritimeServiceCallOptions,
+  ): Promise<ListNavigationalWarningsResponse> {
+    const path = '/api/maritime/v1/list-navigational-warnings';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -177,7 +190,7 @@ export class MaritimeServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as ListNavigationalWarningsResponse;
+    return (await resp.json()) as ListNavigationalWarningsResponse;
   }
 
   private async handleError(resp: Response): Promise<never> {
@@ -195,4 +208,3 @@ export class MaritimeServiceClient {
     throw new ApiError(resp.status, `Request failed with status ${resp.status}`, body);
   }
 }
-

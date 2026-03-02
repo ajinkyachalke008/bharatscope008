@@ -35,12 +35,16 @@ interface NWSResponse {
 }
 
 const NWS_API = 'https://api.weather.gov/alerts/active';
-const breaker = createCircuitBreaker<WeatherAlert[]>({ name: 'NWS Weather', cacheTtlMs: 5 * 60 * 1000, persistCache: true });
+const breaker = createCircuitBreaker<WeatherAlert[]>({
+  name: 'NWS Weather',
+  cacheTtlMs: 5 * 60 * 1000,
+  persistCache: true,
+});
 
 export async function fetchWeatherAlerts(): Promise<WeatherAlert[]> {
   return breaker.execute(async () => {
     const response = await fetch(NWS_API, {
-      headers: { 'User-Agent': 'WorldMonitor/1.0' }
+      headers: { 'User-Agent': 'WorldMonitor/1.0' },
     });
 
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -48,9 +52,9 @@ export async function fetchWeatherAlerts(): Promise<WeatherAlert[]> {
     const data: NWSResponse = await response.json();
 
     return data.features
-      .filter(alert => alert.properties.severity !== 'Unknown')
+      .filter((alert) => alert.properties.severity !== 'Unknown')
       .slice(0, 50)
-      .map(alert => {
+      .map((alert) => {
         const coords = extractCoordinates(alert.geometry);
         return {
           id: alert.id,
@@ -78,11 +82,11 @@ function extractCoordinates(geometry?: NWSAlert['geometry']): [number, number][]
   try {
     if (geometry.type === 'Polygon') {
       const coords = geometry.coordinates as unknown as number[][][];
-      return coords[0]?.map(c => [c[0], c[1]] as [number, number]) || [];
+      return coords[0]?.map((c) => [c[0], c[1]] as [number, number]) || [];
     }
     if (geometry.type === 'MultiPolygon') {
       const coords = geometry.coordinates as unknown as number[][][][];
-      return coords[0]?.[0]?.map(c => [c[0], c[1]] as [number, number]) || [];
+      return coords[0]?.[0]?.map((c) => [c[0], c[1]] as [number, number]) || [];
     }
   } catch {
     return [];
@@ -93,20 +97,22 @@ function extractCoordinates(geometry?: NWSAlert['geometry']): [number, number][]
 function calculateCentroid(coords: [number, number][]): [number, number] | undefined {
   if (coords.length === 0) return undefined;
 
-  const sum = coords.reduce(
-    (acc, [lon, lat]) => [acc[0] + lon, acc[1] + lat],
-    [0, 0]
-  );
+  const sum = coords.reduce((acc, [lon, lat]) => [acc[0] + lon, acc[1] + lat], [0, 0]);
 
   return [sum[0] / coords.length, sum[1] / coords.length];
 }
 
 export function getSeverityColor(severity: WeatherAlert['severity']): string {
   switch (severity) {
-    case 'Extreme': return getCSSColor('--semantic-critical');
-    case 'Severe': return getCSSColor('--semantic-high');
-    case 'Moderate': return getCSSColor('--semantic-elevated');
-    case 'Minor': return getCSSColor('--semantic-elevated');
-    default: return getCSSColor('--text-dim');
+    case 'Extreme':
+      return getCSSColor('--semantic-critical');
+    case 'Severe':
+      return getCSSColor('--semantic-high');
+    case 'Moderate':
+      return getCSSColor('--semantic-elevated');
+    case 'Minor':
+      return getCSSColor('--semantic-elevated');
+    default:
+      return getCSSColor('--text-dim');
   }
 }

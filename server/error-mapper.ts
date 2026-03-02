@@ -16,12 +16,14 @@
 function isNetworkError(error: unknown): boolean {
   if (!(error instanceof TypeError)) return false;
   const msg = error.message.toLowerCase();
-  return msg.includes('fetch') ||
+  return (
+    msg.includes('fetch') ||
     msg.includes('network') ||
     msg.includes('connect') ||
     msg.includes('econnrefused') ||
     msg.includes('enotfound') ||
-    msg.includes('socket');
+    msg.includes('socket')
+  );
 }
 
 /**
@@ -35,9 +37,7 @@ export function mapErrorToResponse(error: unknown, _req: Request): Response {
     const statusCode = (error as Error & { statusCode: number }).statusCode;
     // Only expose error.message for 4xx (client errors). Use generic message for 5xx
     // to avoid leaking internal details like upstream URLs or API key fragments (H-3 fix).
-    const message = statusCode >= 400 && statusCode < 500
-      ? error.message
-      : 'Internal server error';
+    const message = statusCode >= 400 && statusCode < 500 ? error.message : 'Internal server error';
     const body: Record<string, unknown> = { message };
 
     // Rate limit: include retryAfter if present
@@ -48,7 +48,11 @@ export function mapErrorToResponse(error: unknown, _req: Request): Response {
     if (statusCode >= 500) {
       // Log upstream response body (truncated) for debugging (M-4 fix)
       const apiBody = 'body' in error ? String((error as any).body).slice(0, 500) : '';
-      console.error(`[error-mapper] ${statusCode}:`, error.message, apiBody ? `| body: ${apiBody}` : '');
+      console.error(
+        `[error-mapper] ${statusCode}:`,
+        error.message,
+        apiBody ? `| body: ${apiBody}` : '',
+      );
     }
 
     return new Response(JSON.stringify(body), {

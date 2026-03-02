@@ -10,9 +10,7 @@ function resolveInvokeBridge(): TauriInvoke | null {
     __TAURI_INTERNALS__?: { invoke?: TauriInvoke };
   };
 
-  const invoke =
-    tauriWindow.__TAURI__?.core?.invoke ??
-    tauriWindow.__TAURI_INTERNALS__?.invoke;
+  const invoke = tauriWindow.__TAURI__?.core?.invoke ?? tauriWindow.__TAURI_INTERNALS__?.invoke;
 
   return typeof invoke === 'function' ? invoke : null;
 }

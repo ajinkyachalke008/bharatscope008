@@ -24,40 +24,44 @@ export async function listCryptoQuotes(
   const cacheKey = `${REDIS_CACHE_KEY}:${[...ids].sort().join(',')}`;
 
   try {
-  const result = await cachedFetchJson<ListCryptoQuotesResponse>(cacheKey, REDIS_CACHE_TTL, async () => {
-    const items = await fetchCoinGeckoMarkets(ids);
+    const result = await cachedFetchJson<ListCryptoQuotesResponse>(
+      cacheKey,
+      REDIS_CACHE_TTL,
+      async () => {
+        const items = await fetchCoinGeckoMarkets(ids);
 
-    if (items.length === 0) {
-      throw new Error('CoinGecko returned no data');
-    }
+        if (items.length === 0) {
+          throw new Error('CoinGecko returned no data');
+        }
 
-    const byId = new Map(items.map((c) => [c.id, c]));
-    const quotes: CryptoQuote[] = [];
+        const byId = new Map(items.map((c) => [c.id, c]));
+        const quotes: CryptoQuote[] = [];
 
-    for (const id of ids) {
-      const coin = byId.get(id);
-      if (!coin) continue;
-      const meta = CRYPTO_META[id];
-      const prices = coin.sparkline_in_7d?.price;
-      const sparkline = prices && prices.length > 24 ? prices.slice(-48) : (prices || []);
+        for (const id of ids) {
+          const coin = byId.get(id);
+          if (!coin) continue;
+          const meta = CRYPTO_META[id];
+          const prices = coin.sparkline_in_7d?.price;
+          const sparkline = prices && prices.length > 24 ? prices.slice(-48) : prices || [];
 
-      quotes.push({
-        name: meta?.name || id,
-        symbol: meta?.symbol || id.toUpperCase(),
-        price: coin.current_price ?? 0,
-        change: coin.price_change_percentage_24h ?? 0,
-        sparkline,
-      });
-    }
+          quotes.push({
+            name: meta?.name || id,
+            symbol: meta?.symbol || id.toUpperCase(),
+            price: coin.current_price ?? 0,
+            change: coin.price_change_percentage_24h ?? 0,
+            sparkline,
+          });
+        }
 
-    if (quotes.every(q => q.price === 0)) {
-      throw new Error('CoinGecko returned all-zero prices');
-    }
+        if (quotes.every((q) => q.price === 0)) {
+          throw new Error('CoinGecko returned all-zero prices');
+        }
 
-    return quotes.length > 0 ? { quotes } : null;
-  });
+        return quotes.length > 0 ? { quotes } : null;
+      },
+    );
 
-  return result || { quotes: [] };
+    return result || { quotes: [] };
   } catch {
     return { quotes: [] };
   }

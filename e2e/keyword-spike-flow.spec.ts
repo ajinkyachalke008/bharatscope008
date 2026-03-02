@@ -32,13 +32,37 @@ test.describe('keyword spike modal/badge flow', () => {
       // Headlines must have the spike term ("Iran") mid-sentence (not only at index 0)
       // so that isLikelyProperNoun detects it as a capitalized proper noun.
       const headlines = [
-        { source: 'Reuters', title: 'Pressure rises as Iran sanctions debate grows', link: 'https://example.com/reuters/1' },
-        { source: 'AP', title: 'Washington intensifies Iran sanctions push', link: 'https://example.com/ap/1' },
-        { source: 'BBC', title: 'Fresh concerns over Iran sanctions impact', link: 'https://example.com/bbc/1' },
-        { source: 'Reuters', title: 'Regional response to Iran sanctions package', link: 'https://example.com/reuters/2' },
-        { source: 'AP', title: 'New momentum behind Iran sanctions proposal', link: 'https://example.com/ap/2' },
-        { source: 'BBC', title: 'Timeline shortens for Iran sanctions after warnings', link: 'https://example.com/bbc/2' },
-      ].map(item => ({
+        {
+          source: 'Reuters',
+          title: 'Pressure rises as Iran sanctions debate grows',
+          link: 'https://example.com/reuters/1',
+        },
+        {
+          source: 'AP',
+          title: 'Washington intensifies Iran sanctions push',
+          link: 'https://example.com/ap/1',
+        },
+        {
+          source: 'BBC',
+          title: 'Fresh concerns over Iran sanctions impact',
+          link: 'https://example.com/bbc/1',
+        },
+        {
+          source: 'Reuters',
+          title: 'Regional response to Iran sanctions package',
+          link: 'https://example.com/reuters/2',
+        },
+        {
+          source: 'AP',
+          title: 'New momentum behind Iran sanctions proposal',
+          link: 'https://example.com/ap/2',
+        },
+        {
+          source: 'BBC',
+          title: 'Timeline shortens for Iran sanctions after warnings',
+          link: 'https://example.com/bbc/2',
+        },
+      ].map((item) => ({
         ...item,
         pubDate: now,
       }));
@@ -48,7 +72,7 @@ test.describe('keyword spike modal/badge flow', () => {
       let spikes = trending.drainTrendingSignals();
       // handleSpike is async (calls isSignificantTerm) — allow enough time for it to resolve
       for (let i = 0; i < 60 && spikes.length === 0; i += 1) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
         spikes = trending.drainTrendingSignals();
       }
 
@@ -73,7 +97,8 @@ test.describe('keyword spike modal/badge flow', () => {
         ok: true,
         spikeType: spikes[0]?.type,
         title: spikes[0]?.title ?? '',
-        badgeCount: (document.querySelector('.findings-count') as HTMLElement | null)?.textContent ?? '0',
+        badgeCount:
+          (document.querySelector('.findings-count') as HTMLElement | null)?.textContent ?? '0',
       };
     });
 

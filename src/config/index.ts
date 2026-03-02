@@ -7,11 +7,7 @@
 export { SITE_VARIANT } from './variant';
 
 // Shared base configuration (always included)
-export {
-  REFRESH_INTERVALS,
-  MONITOR_COLORS,
-  STORAGE_KEYS,
-} from './variants/base';
+export { REFRESH_INTERVALS, MONITOR_COLORS, STORAGE_KEYS } from './variants/base';
 
 // Market data (shared)
 export { SECTORS, COMMODITIES, MARKET_SYMBOLS, CRYPTO_MAP } from './markets';
@@ -50,10 +46,7 @@ export {
 
 // Full variant (geopolitical) - only included in full builds
 // These are large data files that should be tree-shaken in tech builds
-export {
-  FEEDS,
-  INTEL_SOURCES,
-} from './feeds';
+export { FEEDS, INTEL_SOURCES } from './feeds';
 
 export {
   INTEL_HOTSPOTS,
@@ -72,12 +65,7 @@ export { GAMMA_IRRADIATORS } from './irradiators';
 export { PIPELINES, PIPELINE_COLORS } from './pipelines';
 export { PORTS } from './ports';
 export { MONITORED_AIRPORTS, FAA_AIRPORTS } from './airports';
-export {
-  ENTITY_REGISTRY,
-  getEntityById,
-  type EntityType,
-  type EntityEntry,
-} from './entities';
+export { ENTITY_REGISTRY, getEntityById, type EntityType, type EntityEntry } from './entities';
 
 // Tech variant - these are included in tech builds
 export { TECH_COMPANIES } from './tech-companies';
@@ -115,3 +103,22 @@ export {
 
 // Gulf FDI investment database
 export { GULF_INVESTMENTS } from './gulf-fdi';
+
+// Bharat Monitor — India Intelligence Hub
+export { INDIAN_REFINERIES, INDIAN_LNG_TERMINALS } from './india-energy';
+export type { IndianRefinery, LNGTerminal } from './india-energy';
+export { INDIA_DEFENSE_INSTALLATIONS } from './india-defense';
+export { INDIAN_SEZS, INDIAN_FDI_CITIES, INDIAN_STATE_CAPITALS } from './india-economic';
+export type { IndianSEZ, FDICity, IndianStateCapital } from './india-economic';
+export {
+  IMD_RADAR_STATIONS,
+  FLOOD_MONITORING_POINTS,
+  HIGHWAY_MONITORING_POINTS,
+  AQ_MONITORING_STATIONS,
+} from './india-weather';
+export type {
+  IMDRadarStation,
+  FloodMonitoringPoint,
+  HighwayMonitoringPoint,
+  AirQualityStation,
+} from './india-weather';

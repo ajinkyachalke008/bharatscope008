@@ -36,9 +36,19 @@ export interface PaginationResponse {
   totalCount: number;
 }
 
-export type AnomalySeverity = "ANOMALY_SEVERITY_UNSPECIFIED" | "ANOMALY_SEVERITY_NORMAL" | "ANOMALY_SEVERITY_MODERATE" | "ANOMALY_SEVERITY_EXTREME";
+export type AnomalySeverity =
+  | 'ANOMALY_SEVERITY_UNSPECIFIED'
+  | 'ANOMALY_SEVERITY_NORMAL'
+  | 'ANOMALY_SEVERITY_MODERATE'
+  | 'ANOMALY_SEVERITY_EXTREME';
 
-export type AnomalyType = "ANOMALY_TYPE_UNSPECIFIED" | "ANOMALY_TYPE_WARM" | "ANOMALY_TYPE_COLD" | "ANOMALY_TYPE_WET" | "ANOMALY_TYPE_DRY" | "ANOMALY_TYPE_MIXED";
+export type AnomalyType =
+  | 'ANOMALY_TYPE_UNSPECIFIED'
+  | 'ANOMALY_TYPE_WARM'
+  | 'ANOMALY_TYPE_COLD'
+  | 'ANOMALY_TYPE_WET'
+  | 'ANOMALY_TYPE_DRY'
+  | 'ANOMALY_TYPE_MIXED';
 
 export interface FieldViolation {
   field: string;
@@ -49,8 +59,8 @@ export class ValidationError extends Error {
   violations: FieldViolation[];
 
   constructor(violations: FieldViolation[]) {
-    super("Validation failed");
-    this.name = "ValidationError";
+    super('Validation failed');
+    this.name = 'ValidationError';
     this.violations = violations;
   }
 }
@@ -61,7 +71,7 @@ export class ApiError extends Error {
 
   constructor(statusCode: number, message: string, body: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.statusCode = statusCode;
     this.body = body;
   }
@@ -83,23 +93,26 @@ export class ClimateServiceClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(baseURL: string, options?: ClimateServiceClientOptions) {
-    this.baseURL = baseURL.replace(/\/+$/, "");
+    this.baseURL = baseURL.replace(/\/+$/, '');
     this.fetchFn = options?.fetch ?? globalThis.fetch;
     this.defaultHeaders = { ...options?.defaultHeaders };
   }
 
-  async listClimateAnomalies(req: ListClimateAnomaliesRequest, options?: ClimateServiceCallOptions): Promise<ListClimateAnomaliesResponse> {
-    let path = "/api/climate/v1/list-climate-anomalies";
+  async listClimateAnomalies(
+    req: ListClimateAnomaliesRequest,
+    options?: ClimateServiceCallOptions,
+  ): Promise<ListClimateAnomaliesResponse> {
+    const path = '/api/climate/v1/list-climate-anomalies';
     const url = this.baseURL + path;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...this.defaultHeaders,
       ...options?.headers,
     };
 
     const resp = await this.fetchFn(url, {
-      method: "POST",
+      method: 'POST',
       headers,
       body: JSON.stringify(req),
       signal: options?.signal,
@@ -109,7 +122,7 @@ export class ClimateServiceClient {
       return this.handleError(resp);
     }
 
-    return await resp.json() as ListClimateAnomaliesResponse;
+    return (await resp.json()) as ListClimateAnomaliesResponse;
   }
 
   private async handleError(resp: Response): Promise<never> {
@@ -127,4 +140,3 @@ export class ClimateServiceClient {
     throw new ApiError(resp.status, `Request failed with status ${resp.status}`, body);
   }
 }
-
