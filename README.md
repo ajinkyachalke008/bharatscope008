@@ -1,4 +1,4 @@
-# World Monitor
+# Bharat Scope — AI-powered situational awareness dashboard
 
 A production-ready global intelligence dashboard combining real-time event tracking, geospatial visualization, and multi-source feed aggregation.
 
@@ -49,5 +49,5 @@ This will build the Node.js server and an Nginx container serving the optimized 
 ## Author
 
 **Ajinkya**
-* **GitHub:** [@ajinkyachalke008](https://github.com/ajinkyachalke008)
-* **Email:** [ajinkyachalke008@gmail.com](mailto:ajinkyachalke008@gmail.com)
+* **GitHub:** [@koala73](https://github.com/koala73)
+* **Email:** [koala73@gmail.com](mailto:koala73@gmail.com)

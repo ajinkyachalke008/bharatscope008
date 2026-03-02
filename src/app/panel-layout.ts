@@ -101,6 +101,7 @@ export class PanelLayoutManager implements AppModule {
     this.ctx.container.innerHTML = `
       <div class="header">
         <div class="header-left">
+          <div class="logo">BHARAT<span style="opacity: 0.6; margin-left: 2px; font-weight: normal;">SCOPE</span></div>
           <div class="variant-switcher">${(() => {
         const local =
           this.ctx.isDesktopApp ||
