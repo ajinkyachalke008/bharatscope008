@@ -10,6 +10,7 @@ import { useMediaStore } from '@/store/mediaStore';
 interface FeedCardProps {
   item: FeedItem;
   compact?: boolean;
+  index?: number;
 }
 
 const TYPE_COLORS: Record<string, string> = {
@@ -21,7 +22,7 @@ const TYPE_COLORS: Record<string, string> = {
   intelligence: 'border-l-amber-500',
 };
 
-export const FeedCard: React.FC<FeedCardProps> = ({ item, compact = false }) => {
+export const FeedCard: React.FC<FeedCardProps> = ({ item, compact = false, index = 0 }) => {
   const playVideo = useMediaStore((s) => s.playVideo);
   const hasVideo = !!(item.videoUrl && item.thumbnailUrl);
 
@@ -40,7 +41,13 @@ export const FeedCard: React.FC<FeedCardProps> = ({ item, compact = false }) => 
   };
 
   return (
-    <div className={cn('feed-item animate-fade-in', TYPE_COLORS[item.type] || 'border-l-gray-500')}>
+    <div
+      className={cn(
+        'feed-item animate-slide-down opacity-0 [animation-fill-mode:forwards] transition-all duration-300 hover:-translate-y-1 hover:shadow-subtle hover:bg-monitor-surface2/80',
+        TYPE_COLORS[item.type] || 'border-l-gray-500'
+      )}
+      style={{ animationDelay: `${Math.min(index * 0.05, 1)}s` }}
+    >
       <div className="flex items-start justify-between gap-2">
         {/* Video thumbnail */}
         {hasVideo && !compact && (

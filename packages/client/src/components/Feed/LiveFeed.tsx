@@ -21,8 +21,8 @@ export const LiveFeed: React.FC<LiveFeedProps> = ({ compact = false }) => {
         <span className="text-xs text-gray-500 font-mono">{feeds.length} items</span>
       </div>
       <div className="flex-1 overflow-y-auto space-y-1.5 pr-1">
-        {displayFeeds.map((item) => (
-          <FeedCard key={item.id} item={item} compact={compact} />
+        {displayFeeds.map((item, index) => (
+          <FeedCard key={item.id} item={item} compact={compact} index={index} />
         ))}
         {displayFeeds.length === 0 && (
           <div className="flex items-center justify-center h-full text-gray-500 text-sm">

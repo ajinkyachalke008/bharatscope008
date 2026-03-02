@@ -23,8 +23,8 @@ export const EventTimeline: React.FC<EventTimelineProps> = ({ events, maxItems =
         <span className="text-xs text-gray-500 font-mono">{events.length} events</span>
       </div>
       <div className="flex-1 overflow-y-auto space-y-1.5 pr-1">
-        {displayEvents.map((event) => (
-          <TimelineItem key={event.id} event={event} onClick={() => selectEvent(event)} />
+        {displayEvents.map((event, index) => (
+          <TimelineItem key={event.id} event={event} onClick={() => selectEvent(event)} index={index} />
         ))}
         {displayEvents.length === 0 && (
           <div className="flex items-center justify-center h-full text-gray-500 text-sm">

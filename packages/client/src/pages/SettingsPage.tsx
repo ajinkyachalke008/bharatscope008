@@ -21,7 +21,7 @@ export const SettingsPage: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* General */}
-          <section className="glass-panel p-5 space-y-4">
+          <section className="glass-panel p-5 space-y-4 shadow-medium transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated hover:border-monitor-accent/30">
             <h2 className="text-sm font-semibold flex items-center gap-2 border-b border-monitor-border pb-2">
               <Globe className="w-4 h-4 text-gray-400" />
               General Preferences
@@ -47,7 +47,7 @@ export const SettingsPage: React.FC = () => {
           </section>
 
           {/* Notifications */}
-          <section className="glass-panel p-5 space-y-4">
+          <section className="glass-panel p-5 space-y-4 shadow-medium transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated hover:border-monitor-accent/30">
             <h2 className="text-sm font-semibold flex items-center gap-2 border-b border-monitor-border pb-2">
               <Bell className="w-4 h-4 text-gray-400" />
               Alert Subscriptions
@@ -61,7 +61,7 @@ export const SettingsPage: React.FC = () => {
                     Push notifications for mass casualty events
                   </div>
                 </div>
-                <Toggle checked={true} onChange={() => {}} />
+                <Toggle checked={true} onChange={() => { }} />
               </div>
 
               <div className="flex items-center justify-between">
@@ -69,13 +69,13 @@ export const SettingsPage: React.FC = () => {
                   <div className="text-sm font-medium text-gray-200">System Warnings</div>
                   <div className="text-xs text-gray-500">Alerts for data feed interruptions</div>
                 </div>
-                <Toggle checked={true} onChange={() => {}} />
+                <Toggle checked={true} onChange={() => { }} />
               </div>
             </div>
           </section>
 
           {/* Data Sources */}
-          <section className="glass-panel p-5 space-y-4 md:col-span-2">
+          <section className="glass-panel p-5 space-y-4 md:col-span-2 shadow-medium transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated hover:border-monitor-accent/30">
             <h2 className="text-sm font-semibold flex items-center gap-2 border-b border-monitor-border pb-2">
               <Database className="w-4 h-4 text-gray-400" />
               Data Intelligence Feeds
@@ -91,7 +91,7 @@ export const SettingsPage: React.FC = () => {
           </section>
 
           {/* Security */}
-          <section className="glass-panel p-5 space-y-4 md:col-span-2 border-red-500/20">
+          <section className="glass-panel p-5 space-y-4 md:col-span-2 border-red-500/20 shadow-medium transition-all duration-300 hover:-translate-y-1 hover:shadow-elevated hover:border-red-500/40">
             <h2 className="text-sm font-semibold flex items-center gap-2 border-b border-monitor-border pb-2 text-monitor-critical">
               <Shield className="w-4 h-4 text-monitor-critical" />
               Access & Security
@@ -106,11 +106,11 @@ export const SettingsPage: React.FC = () => {
                 <input
                   type="password"
                   value="•••••••••••••••••••••••••"
-                  className="w-full bg-monitor-surface2 border border-monitor-border rounded px-3 py-1.5 text-sm font-mono text-gray-400 cursor-not-allowed"
+                  className="w-full bg-monitor-surface2 border border-monitor-border rounded px-3 py-1.5 text-sm font-mono text-gray-400 cursor-not-allowed transition-colors hover:border-monitor-border/80"
                   disabled
                 />
               </div>
-              <button className="px-4 py-1.5 bg-monitor-surface2 border border-monitor-border rounded hover:bg-monitor-border transition-colors text-sm mt-4 sm:mt-0 whitespace-nowrap h-fit self-end">
+              <button className="px-5 py-2 bg-monitor-surface2 border border-monitor-border rounded-lg hover:bg-monitor-border transition-all duration-200 hover:scale-105 active:scale-95 hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] text-sm mt-4 sm:mt-0 whitespace-nowrap h-fit self-end font-medium">
                 Rotate Keys
               </button>
             </div>
@@ -160,7 +160,7 @@ const FeedToggle: React.FC<{ name: string; status: string; color: 'success' | 'g
 );
 
 const MockToggle: React.FC<{ name: string }> = ({ name }) => (
-  <div className="border border-monitor-accent/30 rounded p-3 flex justify-between items-center bg-monitor-accent/5">
+  <div className="border border-monitor-accent/30 rounded p-3 flex justify-between items-center bg-monitor-accent/5 transition-all duration-300 hover:bg-monitor-accent/10 hover:shadow-[0_0_15px_rgba(59,130,246,0.1)] hover:-translate-y-0.5">
     <span className="text-sm text-gray-300">{name}</span>
     <span className="text-xs px-2 py-0.5 rounded-full border border-monitor-accent/50 text-monitor-accent bg-monitor-accent/10 animate-pulse">
       Simulating

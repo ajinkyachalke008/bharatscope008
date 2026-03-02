@@ -22,15 +22,15 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClo
       onClick={onClose}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" />
 
       {/* Panel */}
       <div
-        className="relative z-10 w-full max-w-xl animate-fade-in"
+        className="relative z-10 w-full max-w-xl animate-fade-in-up transition-transform duration-300 hover:scale-[1.01]"
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="rounded-xl border border-white/10 overflow-hidden shadow-2xl"
+          className="rounded-xl border border-white/10 overflow-hidden shadow-elevated"
           style={{ background: 'rgba(10, 15, 30, 0.95)', backdropFilter: 'blur(24px)' }}
         >
           {/* Header stripe by severity */}
@@ -168,7 +168,7 @@ export const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, onClo
             <span>ID: {event.id}</span>
             <button
               onClick={onClose}
-              className="px-3 py-1 rounded bg-monitor-surface2 border border-monitor-border text-gray-400 hover:text-gray-200 hover:border-monitor-accent/40 transition-colors"
+              className="px-4 py-1.5 rounded-lg bg-monitor-surface2 border border-monitor-border text-gray-300 hover:text-white hover:border-monitor-accent/50 hover:bg-monitor-surface transition-all duration-200 hover:scale-105 active:scale-95 shadow-subtle hover:shadow-[0_0_15px_rgba(59,130,246,0.15)]"
             >
               Dismiss
             </button>

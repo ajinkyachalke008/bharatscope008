@@ -8,13 +8,17 @@ import { MapPin, CheckCircle } from 'lucide-react';
 interface TimelineItemProps {
   event: MonitorEvent;
   onClick?: () => void;
+  index?: number;
 }
 
-export const TimelineItem: React.FC<TimelineItemProps> = ({ event, onClick }) => {
+export const TimelineItem: React.FC<TimelineItemProps> = ({ event, onClick, index = 0 }) => {
   return (
     <div
-      className="feed-item animate-fade-in cursor-pointer"
-      style={{ borderLeftColor: SEVERITY_COLORS[event.severity] }}
+      className="feed-item animate-slide-down opacity-0 [animation-fill-mode:forwards] cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-subtle hover:bg-monitor-surface2/80"
+      style={{
+        borderLeftColor: SEVERITY_COLORS[event.severity],
+        animationDelay: `${Math.min(index * 0.05, 1)}s`
+      }}
       onClick={onClick}
     >
       <div className="flex items-start justify-between gap-2">

@@ -24,10 +24,10 @@ export const FeedFilter: React.FC<FeedFilterProps> = ({ activeType, onTypeChange
           key={type.id}
           onClick={() => onTypeChange(type.id)}
           className={cn(
-            'px-2.5 py-1 text-xs rounded-full border transition-all',
+            'px-3 py-1.5 text-xs rounded-full border transition-all duration-200 hover:scale-105 active:scale-95',
             activeType === type.id
-              ? 'border-monitor-accent/50 text-monitor-accent bg-monitor-accent/10'
-              : 'border-gray-700 text-gray-500 hover:text-gray-300',
+              ? 'border-monitor-accent/50 text-monitor-accent bg-monitor-accent/15 shadow-[0_0_10px_rgba(59,130,246,0.2)]'
+              : 'border-monitor-border text-gray-400 hover:border-gray-500 hover:text-gray-200 hover:bg-monitor-surface2',
           )}
         >
           {type.label}
