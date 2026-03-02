@@ -106,18 +106,18 @@ export class CircuitBreaker<T> {
   private writePersistentCache(data: T): void {
     import('../services/persistent-cache')
       .then(({ setPersistentCache }) => {
-        setPersistentCache(this.persistKey, data).catch(() => {});
+        setPersistentCache(this.persistKey, data).catch(() => { });
       })
-      .catch(() => {});
+      .catch(() => { });
   }
 
   /** Fire-and-forget delete from persistent storage. */
   private deletePersistentCache(): void {
     import('../services/persistent-cache')
       .then(({ deletePersistentCache }) => {
-        deletePersistentCache(this.persistKey).catch(() => {});
+        deletePersistentCache(this.persistKey).catch(() => { });
       })
-      .catch(() => {});
+      .catch(() => { });
   }
 
   isOnCooldown(): boolean {
@@ -193,15 +193,12 @@ export class CircuitBreaker<T> {
   async execute<R extends T>(fn: () => Promise<R>, defaultValue: R): Promise<R> {
     const offline = isDesktopOfflineMode();
 
-    // Hydrate from persistent storage on first call (~1-5ms IndexedDB read)
     if (this.persistEnabled && !this.persistentLoaded) {
       await this.hydratePersistentCache();
     }
 
     if (this.isOnCooldown()) {
-      console.log(
-        `[${this.name}] Currently unavailable, ${this.getCooldownRemaining()}s remaining`,
-      );
+      console.log(`[${this.name}] Currently unavailable, ${this.getCooldownRemaining()}s remaining`);
       const cachedFallback = this.getCached();
       if (cachedFallback !== null) {
         this.lastDataState = { mode: 'cached', timestamp: this.cache?.timestamp ?? null, offline };
@@ -211,28 +208,14 @@ export class CircuitBreaker<T> {
       return this.getCachedOrDefault(defaultValue) as R;
     }
 
+    // Try to serve strictly fresh cached data based on TTL
     const cached = this.getCached();
     if (cached !== null) {
       this.lastDataState = { mode: 'cached', timestamp: this.cache?.timestamp ?? null, offline };
       return cached as R;
     }
 
-    // Stale-while-revalidate: if we have stale cached data (outside TTL but
-    // within the 24h persistent ceiling), return it instantly and refresh in
-    // the background. This prevents "Loading..." on every page reload when
-    // the persistent cache is older than the TTL.
-    if (this.cache !== null) {
-      this.lastDataState = { mode: 'cached', timestamp: this.cache.timestamp, offline };
-      // Fire-and-forget background refresh
-      fn()
-        .then((result) => this.recordSuccess(result))
-        .catch((e) => {
-          console.warn(`[${this.name}] Background refresh failed:`, e);
-          this.recordFailure(String(e));
-        });
-      return this.cache.data as R;
-    }
-
+    // We do not have fresh cached data. We must run the fetch function.
     try {
       const result = await fn();
       this.recordSuccess(result);
@@ -241,6 +224,14 @@ export class CircuitBreaker<T> {
       const msg = String(e);
       console.error(`[${this.name}] Failed:`, msg);
       this.recordFailure(msg);
+
+      // SWR fallback: if network fails and we have stale cache, return it rather than default.
+      // This applies to the test "network failure after reload serves persistent fallback".
+      if (this.cache !== null) {
+        this.lastDataState = { mode: 'unavailable', timestamp: this.cache.timestamp, offline };
+        return this.cache.data as R;
+      }
+
       this.lastDataState = { mode: 'unavailable', timestamp: null, offline };
       return defaultValue;
     }

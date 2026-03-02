@@ -8,6 +8,12 @@ import { expect, test } from '@playwright/test';
  */
 
 test.describe('theme toggle (happy variant)', () => {
+  // Theme toggle is hidden in tech and finance variants
+  const envViteVariant = (globalThis as unknown as { process?: { env: { VITE_VARIANT?: string } } })?.process?.env?.VITE_VARIANT;
+  test.skip(
+    envViteVariant === 'tech' || envViteVariant === 'finance',
+    'Theme toggle is only available in full/happy variants',
+  );
   test.beforeEach(async ({ page }) => {
     // Set variant to happy, clear theme preference ONLY on first load
     // (addInitScript runs on every navigation, so we use a flag)

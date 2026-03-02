@@ -392,7 +392,9 @@ test.describe('desktop runtime routing guardrails', () => {
     expect(result.windowsX64).toBe(
       'https://worldmonitor.app/api/download?platform=windows-exe&variant=full',
     );
-    expect(result.linuxFallback).toBe('https://github.com/koala73/worldmonitor/releases/latest');
+    expect(result.linuxFallback).toBe(
+      'https://worldmonitor.app/api/download?platform=linux-appimage&variant=full',
+    );
   });
 
   test('MapContainer falls back to SVG when WebGL2 is unavailable', async ({ page }) => {
@@ -643,11 +645,11 @@ test.describe('desktop runtime routing guardrails', () => {
             commodities: {
               renderCommodities: (data: Array<unknown>) => commoditiesRenders.push(data.length),
               showConfigError: (message: string) => commoditiesConfigErrors.push(message),
-              showRetrying: () => {},
+              showRetrying: () => { },
             },
             crypto: {
               renderCrypto: (data: Array<unknown>) => cryptoRenders.push(data.length),
-              showRetrying: () => {},
+              showRetrying: () => { },
             },
           },
           statusPanel: {
