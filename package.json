@@ -4,6 +4,7 @@
   "version": "2.5.19",
   "license": "AGPL-3.0-only",
   "type": "module",
+  "packageManager": "pnpm@9.15.4",
   "scripts": {
     "lint:md": "markdownlint-cli2 '**/*.md' '!.agent/**' '!.agents/**' '!.claude/**' '!.factory/**' '!.windsurf/**' '!skills/**' '!docs/internal/**' '!docs/Docs_To_Review/**'",
     "lint:code": "eslint . --ext .ts,.tsx",
