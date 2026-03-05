@@ -1,4 +1,7 @@
 # Bharat Scope — AI-powered situational awareness dashboard
+## Author
+**Ajinkya chalke**
+* **Email:** ajinkyachalke008@gmail.com
 
 A production-ready global intelligence dashboard combining real-time event tracking, geospatial visualization, and multi-source feed aggregation.
 
@@ -49,5 +52,5 @@ This will build the Node.js server and an Nginx container serving the optimized 
 ## Author
 
 **Ajinkya**
-* **GitHub:** [@koala73](https://github.com/koala73)
-* **Email:** [koala73@gmail.com](mailto:koala73@gmail.com)
+* **Email:** ajinkyachalke008@gmail.com
+
