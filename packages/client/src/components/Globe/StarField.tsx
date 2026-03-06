@@ -7,8 +7,26 @@ interface Props {
   radius?: number;
 }
 
+const createStarTexture = () => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 16;
+  canvas.height = 16;
+  const context = canvas.getContext('2d');
+  if (context) {
+    const gradient = context.createRadialGradient(8, 8, 0, 8, 8, 8);
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.8)');
+    gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.2)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, 16, 16);
+  }
+  return new THREE.CanvasTexture(canvas);
+};
+
 export function StarField({ count = 6000, radius = 50 }: Props) {
   const pointsRef = useRef<THREE.Points>(null!);
+  const starTexture = useMemo(() => createStarTexture(), []);
 
   const [positions, sizes] = useMemo(() => {
     const pos = new Float32Array(count * 3);
@@ -60,6 +78,7 @@ export function StarField({ count = 6000, radius = 50 }: Props) {
         transparent
         opacity={0.9}
         color="#ffffff"
+        map={starTexture}
         depthWrite={false}
         blending={THREE.AdditiveBlending}
       />
