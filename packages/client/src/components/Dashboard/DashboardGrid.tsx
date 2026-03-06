@@ -23,6 +23,10 @@ export const DashboardGrid: React.FC = () => {
   const selectedEvent = useEventStore((s) => s.selectedEvent);
   const selectEvent = useEventStore((s) => s.selectEvent);
 
+  const { isVisible: isStatsVisible, domRef: statsRef } = useIntersectionObserver();
+  const { isVisible: isChartsVisible, domRef: chartsRef } = useIntersectionObserver();
+  const { isVisible: isWidgetsVisible, domRef: widgetsRef } = useIntersectionObserver();
+
   if (eventsLoading && !stats) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -43,10 +47,6 @@ export const DashboardGrid: React.FC = () => {
       ),
     )
     : 0;
-
-  const { isVisible: isStatsVisible, domRef: statsRef } = useIntersectionObserver();
-  const { isVisible: isChartsVisible, domRef: chartsRef } = useIntersectionObserver();
-  const { isVisible: isWidgetsVisible, domRef: widgetsRef } = useIntersectionObserver();
 
   return (
     <div className="p-4 space-y-4 h-full overflow-y-auto">
