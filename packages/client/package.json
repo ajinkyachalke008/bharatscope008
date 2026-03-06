@@ -13,7 +13,7 @@
         "@react-three/drei": "9.117.0",
         "@react-three/fiber": "8.17.10",
         "@react-three/postprocessing": "2.16.3",
-        "@worldmonitor/shared": "workspace:*",
+        "@worldmonitor/shared": "file:../shared",
         "clsx": "^2.1.1",
         "lucide-react": "^0.400.0",
         "postprocessing": "^6.36.4",
