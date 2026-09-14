@@ -6,6 +6,7 @@ import enTranslation from '../locales/en.json';
 
 const SUPPORTED_LANGUAGES = [
   'en',
+  'hi',
   'fr',
   'de',
   'el',
@@ -124,6 +125,11 @@ export function t(key: string, options?: Record<string, unknown>): string {
 // Helper to change language
 export async function changeLanguage(lng: string): Promise<void> {
   const normalized = await ensureLanguageLoaded(lng);
+  try {
+    localStorage.setItem('i18nextLng', normalized);
+  } catch {
+    // ignore
+  }
   await i18next.changeLanguage(normalized);
   applyDocumentDirection(normalized);
   window.location.reload(); // Simple reload to update all components for now
@@ -131,6 +137,12 @@ export async function changeLanguage(lng: string): Promise<void> {
 
 // Helper to get current language (normalized to short code)
 export function getCurrentLanguage(): string {
+  try {
+    const stored = localStorage.getItem('i18nextLng');
+    if (stored) return stored.split('-')[0]!;
+  } catch {
+    // ignore
+  }
   const lang = i18next.language || 'en';
   return lang.split('-')[0]!;
 }
@@ -143,6 +155,7 @@ export function getLocale(): string {
   const lang = getCurrentLanguage();
   const map: Record<string, string> = {
     en: 'en-US',
+    hi: 'hi-IN',
     el: 'el-GR',
     zh: 'zh-CN',
     pt: 'pt-BR',
@@ -156,6 +169,7 @@ export function getLocale(): string {
 
 export const LANGUAGES = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
+  { code: 'hi', label: 'हिन्दी', flag: '🇮🇳' },
   { code: 'ar', label: 'العربية', flag: '🇸🇦' },
   { code: 'zh', label: '中文', flag: '🇨🇳' },
   { code: 'fr', label: 'Français', flag: '🇫🇷' },

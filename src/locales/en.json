@@ -140,6 +140,13 @@
     "panelCatGulfMena": "Gulf & MENA",
     "panelCatTradePolicy": "Trade Policy"
   },
+  "mobileNav": {
+    "map": "Map",
+    "liveNews": "Live TV",
+    "webcams": "Webcams",
+    "india": "India",
+    "markets": "Markets"
+  },
   "panels": {
     "liveNews": "Live News",
     "markets": "Markets",

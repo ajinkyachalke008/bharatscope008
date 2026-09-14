@@ -145,6 +145,9 @@ export class App {
 
     // Phase 1: Layout (creates map + panels)
     this.panelLayout.init();
+    if (this.state.activeRegion === 'india') {
+      this.handleRegionChange('india');
+    }
 
     // Happy variant: pre-populate panels from persistent cache for instant render
     if (SITE_VARIANT === 'happy') {

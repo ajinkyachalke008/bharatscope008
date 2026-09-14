@@ -85,16 +85,28 @@ function convertGDACSToNaturalEvent(gdacs: GDACSEvent): NaturalEvent {
   };
 }
 
+import { fetchIndiaAqiAndWeatherEvents } from './india-weather-aqi';
+
 export async function fetchNaturalEvents(days = 30): Promise<NaturalEvent[]> {
-  const [eonetEvents, gdacsEvents] = await Promise.all([
+  const [eonetEvents, gdacsEvents, indiaEvents] = await Promise.all([
     fetchEonetEvents(days),
     fetchGDACSEvents(),
+    fetchIndiaAqiAndWeatherEvents(),
   ]);
 
-  console.log(`[NaturalEvents] EONET: ${eonetEvents.length}, GDACS: ${gdacsEvents.length}`);
+  console.log(
+    `[NaturalEvents] EONET: ${eonetEvents.length}, GDACS: ${gdacsEvents.length}, India AQI/Weather: ${indiaEvents.length}`,
+  );
   const gdacsConverted = gdacsEvents.map(convertGDACSToNaturalEvent);
   const seenLocations = new Set<string>();
   const merged: NaturalEvent[] = [];
+
+  // Prioritize India AQI and weather alerts
+  for (const event of indiaEvents) {
+    const key = `${event.lat.toFixed(1)}-${event.lon.toFixed(1)}-${event.category}`;
+    seenLocations.add(key);
+    merged.push(event);
+  }
 
   for (const event of gdacsConverted) {
     const key = `${event.lat.toFixed(1)}-${event.lon.toFixed(1)}-${event.category}`;

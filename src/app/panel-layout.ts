@@ -49,7 +49,8 @@ import { debounce, saveToStorage } from '@/utils';
 import { escapeHtml } from '@/utils/sanitize';
 import { FEEDS, INTEL_SOURCES, DEFAULT_PANELS, STORAGE_KEYS, SITE_VARIANT } from '@/config';
 import { BETA_MODE } from '@/config/beta';
-import { t } from '@/services/i18n';
+import { t, getCurrentLanguage } from '@/services/i18n';
+import { MobileNavBar } from '@/components/MobileNavBar';
 import { getCurrentTheme } from '@/utils';
 import { trackCriticalBannerAction } from '@/services/analytics';
 
@@ -64,6 +65,7 @@ export class PanelLayoutManager implements AppModule {
   private callbacks: PanelLayoutCallbacks;
   private panelDragCleanupHandlers: Array<() => void> = [];
   private criticalBannerEl: HTMLElement | null = null;
+  private mobileNavBar: MobileNavBar | null = null;
   private readonly applyTimeRangeFilterDebounced: () => void;
 
   constructor(ctx: AppContext, callbacks: PanelLayoutCallbacks) {
@@ -85,6 +87,8 @@ export class PanelLayoutManager implements AppModule {
       this.criticalBannerEl.remove();
       this.criticalBannerEl = null;
     }
+    this.mobileNavBar?.destroy();
+    this.mobileNavBar = null;
     // Clean up happy variant panels
     this.ctx.tvMode?.destroy();
     this.ctx.tvMode = null;
@@ -170,12 +174,12 @@ export class PanelLayoutManager implements AppModule {
           </div>
           <div class="region-selector">
             <select id="regionSelect" class="region-select">
+              <option value="india">🇮🇳 India (Bharat)</option>
               <option value="global">${t('components.deckgl.views.global')}</option>
               <option value="america">${t('components.deckgl.views.americas')}</option>
               <option value="mena">${t('components.deckgl.views.mena')}</option>
               <option value="eu">${t('components.deckgl.views.europe')}</option>
               <option value="asia">${t('components.deckgl.views.asia')}</option>
-              <option value="india">India</option>
               <option value="latam">${t('components.deckgl.views.latam')}</option>
               <option value="africa">${t('components.deckgl.views.africa')}</option>
               <option value="oceania">${t('components.deckgl.views.oceania')}</option>
@@ -183,6 +187,11 @@ export class PanelLayoutManager implements AppModule {
           </div>
         </div>
         <div class="header-right">
+          <button class="lang-toggle-btn" id="langToggleBtn" title="भाषा बदलें / Toggle English & Hindi" aria-label="Language Toggle">
+            <span class="lang-pill ${getCurrentLanguage() !== 'hi' ? 'active' : ''}">EN</span>
+            <span class="lang-sep">|</span>
+            <span class="lang-pill ${getCurrentLanguage() === 'hi' ? 'active' : ''}">हिन्दी</span>
+          </button>
           <button class="search-btn" id="searchBtn"><kbd>⌘K</kbd> ${t('header.search')}</button>
           ${this.ctx.isDesktopApp ? '' : `<button class="copy-link-btn" id="copyLinkBtn">${t('header.copyLink')}</button>`}
           <button class="theme-toggle-btn" id="headerThemeToggle" title="${t('header.toggleTheme')}">
@@ -226,6 +235,10 @@ export class PanelLayoutManager implements AppModule {
 
     this.createPanels();
     this.setupGodsEyeTab();
+
+    // Mobile bottom navigation bar (visible on mobile viewports)
+    this.mobileNavBar = new MobileNavBar();
+    this.ctx.container.appendChild(this.mobileNavBar.getElement());
   }
 
   /** Wire the God's Eye View tab to toggle between the main dashboard and the 3D globe iframe. */
@@ -462,10 +475,11 @@ export class PanelLayoutManager implements AppModule {
     const panelsGrid = document.getElementById('panelsGrid')!;
 
     const mapContainer = document.getElementById('mapContainer') as HTMLElement;
+    const defaultRegion = this.ctx.activeRegion || 'india';
     this.ctx.map = new MapContainer(mapContainer, {
-      zoom: this.ctx.isMobile ? 2.5 : 1.0,
+      zoom: defaultRegion === 'india' ? 4.5 : (this.ctx.isMobile ? 2.5 : 1.0),
       pan: { x: 0, y: 0 },
-      view: this.ctx.isMobile ? 'mena' : 'global',
+      view: defaultRegion,
       layers: this.ctx.mapLayers,
       timeRange: '7d',
     });
@@ -808,6 +822,13 @@ export class PanelLayoutManager implements AppModule {
         panelOrder.splice(webcamsIdx, 1);
         const afterNews = panelOrder.indexOf('live-news') + 1;
         panelOrder.splice(afterNews, 0, 'live-webcams');
+      }
+
+      const indiaIdx = panelOrder.indexOf('india');
+      if (indiaIdx !== -1 && indiaIdx !== panelOrder.indexOf('live-webcams') + 1) {
+        panelOrder.splice(indiaIdx, 1);
+        const afterWebcams = panelOrder.indexOf('live-webcams') + 1;
+        panelOrder.splice(afterWebcams, 0, 'india');
       }
     }
 

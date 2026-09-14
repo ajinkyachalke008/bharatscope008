@@ -40,7 +40,7 @@ import { invokeTauri } from '@/services/tauri-bridge';
 import { dataFreshness } from '@/services/data-freshness';
 import { mlWorker } from '@/services/ml-worker';
 import { UnifiedSettings } from '@/components/UnifiedSettings';
-import { t } from '@/services/i18n';
+import { t, getCurrentLanguage, changeLanguage } from '@/services/i18n';
 import { TvModeController } from '@/services/tv-mode';
 
 export interface EventHandlerCallbacks {
@@ -209,6 +209,12 @@ export class EventHandlerManager implements AppModule {
       setTheme(next);
       this.updateHeaderThemeIcon();
       trackThemeChanged(next);
+    });
+
+    document.getElementById('langToggleBtn')?.addEventListener('click', () => {
+      const current = getCurrentLanguage();
+      const next = current === 'hi' ? 'en' : 'hi';
+      void changeLanguage(next);
     });
 
     const isLocalDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
@@ -427,12 +433,28 @@ export class EventHandlerManager implements AppModule {
   startHeaderClock(): void {
     const el = document.getElementById('headerClock');
     if (!el) return;
+    const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+    let forceUtc = false;
+    el.style.cursor = 'pointer';
+    el.title = 'Click to toggle IST / UTC';
+    el.onclick = () => {
+      forceUtc = !forceUtc;
+      tick();
+    };
+
     const tick = () => {
       const now = new Date();
-      if (this.ctx.activeRegion === 'india') {
+      if (this.ctx.activeRegion === 'india' && !forceUtc) {
         // India Standard Time (IST) is UTC +5:30
-        const istTime = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
-        el.textContent = `${istTime.getUTCHours().toString().padStart(2, '0')}:${istTime.getUTCMinutes().toString().padStart(2, '0')}:${istTime.getUTCSeconds().toString().padStart(2, '0')} IST`;
+        const istTime = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
+        const dayName = days[istTime.getUTCDay()];
+        const date = istTime.getUTCDate().toString().padStart(2, '0');
+        const monthName = months[istTime.getUTCMonth()];
+        const year = istTime.getUTCFullYear();
+        const timeStr = `${istTime.getUTCHours().toString().padStart(2, '0')}:${istTime.getUTCMinutes().toString().padStart(2, '0')}:${istTime.getUTCSeconds().toString().padStart(2, '0')}`;
+        el.textContent = `${dayName}, ${date} ${monthName} ${year} ${timeStr} IST`;
       } else {
         el.textContent = now.toUTCString().replace('GMT', 'UTC');
       }

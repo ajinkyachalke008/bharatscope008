@@ -41,7 +41,7 @@ export class MarketPanel extends Panel {
         </div>
         <div class="market-data">
           ${miniSparkline(stock.sparkline, stock.change)}
-          <span class="market-price">${formatPrice(stock.price!)}</span>
+          <span class="market-price">${formatPrice(stock.price!, stock.symbol || stock.display)}</span>
           <span class="market-change ${getChangeClass(stock.change!)}">${formatChange(stock.change!)}</span>
         </div>
       </div>

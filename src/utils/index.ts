@@ -19,14 +19,23 @@ export function formatTime(date: Date): string {
   }
 }
 
-export function formatPrice(price: number): string {
+export function formatPrice(price: number, symbol?: string): string {
+  const isIndian =
+    symbol &&
+    (symbol.endsWith('.NS') ||
+      symbol.includes('NSE') ||
+      symbol.includes('BSE') ||
+      symbol.includes('NIFTY') ||
+      symbol.includes('SENSEX') ||
+      symbol.includes('INR'));
+  const prefix = isIndian ? '₹' : '$';
   if (price >= 1000) {
-    return `$${price.toLocaleString(undefined, {
+    return `${prefix}${price.toLocaleString(undefined, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     })}`;
   }
-  return `$${price.toLocaleString(undefined, {
+  return `${prefix}${price.toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
