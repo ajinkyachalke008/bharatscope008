@@ -26,7 +26,7 @@ const WEBCAM_FEEDS: WebcamFeed[] = [
     country: 'Israel',
     region: 'middle-east',
     channelHandle: '@TheWesternWall',
-    fallbackVideoId: 'UyduhBUpO7Q',
+    fallbackVideoId: 'W8Xqepd4DvE',
   },
   {
     id: 'tehran',
@@ -132,8 +132,8 @@ const WEBCAM_FEEDS: WebcamFeed[] = [
     city: 'Taipei',
     country: 'Taiwan',
     region: 'asia',
-    channelHandle: '@JackyWuTaipei',
-    fallbackVideoId: 'z_fY1pj1VBw',
+    channelHandle: '@TaoyuanTravel',
+    fallbackVideoId: '91PfFoqvuUk',
   },
   {
     id: 'shanghai',
@@ -148,8 +148,8 @@ const WEBCAM_FEEDS: WebcamFeed[] = [
     city: 'Tokyo',
     country: 'Japan',
     region: 'asia',
-    channelHandle: '@TokyoLiveCam4K',
-    fallbackVideoId: '4pu9sF5Qssw',
+    channelHandle: '@KabukichoLive',
+    fallbackVideoId: 'DjdUEyjx8GM',
   },
   {
     id: 'seoul',
@@ -203,7 +203,7 @@ export class LiveWebcamsPanel extends Panel {
     return WEBCAM_FEEDS.filter((f) => f.region === this.regionFilter);
   }
 
-  private static readonly ALL_GRID_IDS = ['jerusalem', 'tehran', 'kyiv', 'washington'];
+  private static readonly ALL_GRID_IDS = ['jerusalem', 'kyiv', 'tokyo', 'taipei'];
 
   private get gridFeeds(): WebcamFeed[] {
     if (this.regionFilter === 'all') {
@@ -300,8 +300,12 @@ export class LiveWebcamsPanel extends Panel {
       if (quality !== 'auto') params.set('vq', quality);
       return `${getApiBaseUrl()}/api/youtube-embed?${params.toString()}`;
     }
+    const origin =
+      typeof window !== 'undefined' && window.location.origin && window.location.origin !== 'null'
+        ? `&origin=${encodeURIComponent(window.location.origin)}`
+        : '';
     const vq = quality !== 'auto' ? `&vq=${quality}` : '';
-    return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&playsinline=1&rel=0${vq}`;
+    return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&playsinline=1&rel=0&enablejsapi=1${origin}${vq}`;
   }
 
   private createIframe(feed: WebcamFeed): HTMLIFrameElement {
@@ -309,13 +313,10 @@ export class LiveWebcamsPanel extends Panel {
     iframe.className = 'webcam-iframe';
     iframe.src = this.buildEmbedUrl(feed.fallbackVideoId);
     iframe.title = `${feed.city} live webcam`;
-    iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
+    iframe.allow =
+      'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
     iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-    if (!isDesktopRuntime()) {
-      iframe.allowFullscreen = true;
-      iframe.setAttribute('loading', 'lazy');
-      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation');
-    }
+    iframe.allowFullscreen = true;
     return iframe;
   }
 

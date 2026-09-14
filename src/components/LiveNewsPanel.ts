@@ -57,12 +57,12 @@ export interface LiveChannel {
 
 // Full variant: World news channels (24/7 live streams)
 const FULL_LIVE_CHANNELS: LiveChannel[] = [
-  { id: 'bloomberg', name: 'Bloomberg', handle: '@Bloomberg', fallbackVideoId: 'iEpJwprxDdk' },
-  { id: 'sky', name: 'SkyNews', handle: '@SkyNews', fallbackVideoId: 'YDvsBbKfLPA' },
+  { id: 'bloomberg', name: 'Bloomberg', handle: '@markets', fallbackVideoId: 'QB5BNdBFujE' },
+  { id: 'sky', name: 'SkyNews', handle: '@SkyNews', fallbackVideoId: 'xDWQ3LkccY8' },
   { id: 'euronews', name: 'Euronews', handle: '@euronews', fallbackVideoId: 'pykpO5kQJ98' },
   { id: 'dw', name: 'DW', handle: '@DWNews', fallbackVideoId: 'LuKwFajn37U' },
   { id: 'cnbc', name: 'CNBC', handle: '@CNBC', fallbackVideoId: '9NyxcX3rhQs' },
-  { id: 'france24', name: 'France24', handle: '@FRANCE24English', fallbackVideoId: 'Ap-UM1O9RBU' },
+  { id: 'france24', name: 'France24', handle: '@France24_en', fallbackVideoId: 'HvZt-nh9sGg' },
   {
     id: 'alarabiya',
     name: 'AlArabiya',
@@ -81,7 +81,7 @@ const FULL_LIVE_CHANNELS: LiveChannel[] = [
 
 // Tech variant: Tech & business channels
 const TECH_LIVE_CHANNELS: LiveChannel[] = [
-  { id: 'bloomberg', name: 'Bloomberg', handle: '@Bloomberg', fallbackVideoId: 'iEpJwprxDdk' },
+  { id: 'bloomberg', name: 'Bloomberg', handle: '@markets', fallbackVideoId: 'QB5BNdBFujE' },
   { id: 'yahoo', name: 'Yahoo Finance', handle: '@YahooFinance', fallbackVideoId: 'KQp-e_XQnDE' },
   { id: 'cnbc', name: 'CNBC', handle: '@CNBC', fallbackVideoId: '9NyxcX3rhQs' },
   {
@@ -200,7 +200,7 @@ export const OPTIONAL_LIVE_CHANNELS: LiveChannel[] = [
     fallbackVideoId: 'wUPPkSANpyo',
     useFallbackOnly: true,
   },
-  { id: 'wion', name: 'WION', handle: '@WIONews', fallbackVideoId: '-4xqFBx8Pt8' },
+  { id: 'wion', name: 'WION', handle: '@WIONews', fallbackVideoId: 'N53Zb6I6GY4' },
   { id: 'vtc-now', name: 'VTC NOW', handle: '@VTCNOW', fallbackVideoId: 'MJy2hxl_FmA' },
   {
     id: 'cna-asia',
@@ -214,13 +214,13 @@ export const OPTIONAL_LIVE_CHANNELS: LiveChannel[] = [
     handle: '@NHKWORLDJAPAN',
     fallbackVideoId: 'f0lYkdA-Jto',
   },
-  { id: 'ndtv', name: 'NDTV', handle: '@NDTV', fallbackVideoId: 'WB0gMxSYLOE' },
-  { id: 'india-today', name: 'India Today', handle: '@IndiaToday', fallbackVideoId: 'Nqb0_-mcuZ8' },
+  { id: 'ndtv', name: 'NDTV', handle: '@NDTV', fallbackVideoId: 'pjE9ld6MX6I' },
+  { id: 'india-today', name: 'India Today', handle: '@IndiaToday', fallbackVideoId: 'chfyONPIxUY' },
   {
     id: 'republic-world',
     name: 'Republic World',
     handle: '@RepublicWorld',
-    fallbackVideoId: 'xQ0fN2j6jYg',
+    fallbackVideoId: 'pm3_onlHnkw',
   },
   { id: 'kbs-news', name: 'KBS News', handle: '@newskbs', fallbackVideoId: 'JB4FHwxWNuA' },
   { id: 'ytn', name: 'YTN', handle: '@YTN', fallbackVideoId: 'snAxpDBRRiE' },
@@ -283,11 +283,11 @@ export const OPTIONAL_LIVE_CHANNELS: LiveChannel[] = [
     fallbackVideoId: 'OFfBLCpxBf4',
   },
   // ─── India — English 24/7 Live ───
-  { id: 'cnbc-tv18', name: 'CNBC-TV18', handle: '@ABORNCNBCTV18', fallbackVideoId: 'YkOBcfquEVQ' },
+  { id: 'cnbc-tv18', name: 'CNBC-TV18', handle: '@CNBCTV18', fallbackVideoId: 'YkOBcfquEVQ' },
   { id: 'cnn-news18', name: 'CNN-News18', handle: '@CNNnews18', fallbackVideoId: 'u_1TGerE-Lw' },
   { id: 'times-now', name: 'Times Now', handle: '@TimesNow', fallbackVideoId: 'eYMQ0fy9uNA' },
   { id: 'mirror-now', name: 'Mirror Now', handle: '@MirrorNow', fallbackVideoId: 'j7JJoMGXJqg' },
-  { id: 'firstpost', name: 'Firstpost', handle: '@firstaborpost', fallbackVideoId: 'JH3YgSPSqjk' },
+  { id: 'firstpost', name: 'Firstpost', handle: '@firstpost', fallbackVideoId: 'JH3YgSPSqjk' },
   { id: 'dd-news', name: 'DD News', handle: '@DDNewsOfficial', fallbackVideoId: '4eVD2p87nE8' },
   { id: 'sansad-tv', name: 'Sansad TV', handle: '@SansadTV', fallbackVideoId: 'bRbv3xbGhQ0' },
   { id: 'et-now', name: 'ET Now', handle: '@ETNow', fallbackVideoId: 'gxUb6NMp-WY' },
@@ -296,10 +296,10 @@ export const OPTIONAL_LIVE_CHANNELS: LiveChannel[] = [
   { id: 'dd-kisan', name: 'DD Kisan', handle: '@DDKisan', fallbackVideoId: '5a0vL8TqPPk' },
   { id: 'ani-news', name: 'ANI News', handle: '@ANI', fallbackVideoId: 'GCxCD17u--8' },
   // ─── India — Hindi 24/7 Live ───
-  { id: 'aaj-tak', name: 'Aaj Tak', handle: '@aaborajtak', fallbackVideoId: 'QCsMPSl5kMM' },
-  { id: 'abp-news', name: 'ABP News', handle: '@ABPNews', fallbackVideoId: 'jBU2iQ32Tis' },
+  { id: 'aaj-tak', name: 'Aaj Tak', handle: '@aajtak', fallbackVideoId: 'zQ7I-C5Ofvk' },
+  { id: 'abp-news', name: 'ABP News', handle: '@ABPNews', fallbackVideoId: 'jYn7B_oMnfk' },
   { id: 'ndtv-india-hindi', name: 'NDTV India Hindi', handle: '@NDTVIndia', fallbackVideoId: 'sBgz9Bwt3Uo' },
-  { id: 'zee-news', name: 'Zee News', handle: '@zeaborenews', fallbackVideoId: '9Ujh-a4fJzs' },
+  { id: 'zee-news', name: 'Zee News', handle: '@zeenews', fallbackVideoId: '9Ujh-a4fJzs' },
   { id: 'india-tv', name: 'India TV', handle: '@IndiaTV', fallbackVideoId: '-T0CRyVwueE' },
   { id: 'news18-india', name: 'News18 India', handle: '@News18India', fallbackVideoId: '85_4mJkrFBk' },
   { id: 'tv9-bharatvarsh', name: 'TV9 Bharatvarsh', handle: '@TV9Bharatvarsh', fallbackVideoId: 'ZhE2tKBq2fw' },
@@ -320,9 +320,9 @@ export const OPTIONAL_LIVE_CHANNELS: LiveChannel[] = [
   { id: 'public-tv', name: 'Public TV Karnataka', handle: '@PublicTVKannada', fallbackVideoId: 'DCeNjHNHBqA' },
   // Malayalam
   { id: 'manorama-news', name: 'Manorama News', handle: '@ManoramaNews', fallbackVideoId: 'NcdRw3gx6Pg' },
-  { id: 'mathrubhumi-news', name: 'Mathrubhumi News', handle: '@ABORMathrubhumiNews', fallbackVideoId: 'F2G9Tq0Z2pM' },
+  { id: 'mathrubhumi-news', name: 'Mathrubhumi News', handle: '@MathrubhumiNews', fallbackVideoId: 'F2G9Tq0Z2pM' },
   { id: 'asianet-news', name: 'Asianet News', handle: '@AsianetNewsML', fallbackVideoId: 'b5MoVB1FaZQ' },
-  { id: '24-news-ml', name: '24 News', handle: '@24aborNewsMalayalam', fallbackVideoId: 'B2je8GGJ2RQ' },
+  { id: '24-news-ml', name: '24 News', handle: '@24NewsMalayalam', fallbackVideoId: 'B2je8GGJ2RQ' },
   // Bengali
   { id: 'abp-ananda', name: 'ABP Ananda', handle: '@ABPAnanda', fallbackVideoId: 'qpOfhqrM1CE' },
   { id: 'zee-24-ghanta', name: 'Zee 24 Ghanta', handle: '@Zee24Ghanta', fallbackVideoId: 'k-3uQ8gkEOQ' },
@@ -608,7 +608,6 @@ export function saveChannelsToStorage(channels: LiveChannel[]): void {
 }
 
 export class LiveNewsPanel extends Panel {
-  private static apiPromise: Promise<void> | null = null;
   private channels: LiveChannel[] = [];
   private activeChannel!: LiveChannel;
   private previousChannelId: string | null = null;
@@ -632,6 +631,7 @@ export class LiveNewsPanel extends Panel {
   private currentVideoId: string | null = null;
   private readonly youtubeOrigin: string | null;
   private forceFallbackVideoForNextInit = false;
+  private directIframe: HTMLIFrameElement | null = null;
 
   // Desktop: always use sidecar embed for YouTube (tauri:// origin gets 153).
   // DIRECT_HLS_MAP channels use native <video> instead.
@@ -640,8 +640,6 @@ export class LiveNewsPanel extends Panel {
   private desktopEmbedRenderToken = 0;
   private suppressChannelClick = false;
   private boundMessageHandler!: (e: MessageEvent) => void;
-  private muteSyncInterval: ReturnType<typeof setInterval> | null = null;
-  private static readonly MUTE_SYNC_POLL_MS = 500;
 
   // Bot-check detection: if player doesn't become ready within this timeout,
   // YouTube is likely showing "Sign in to confirm you're not a bot".
@@ -705,20 +703,7 @@ export class LiveNewsPanel extends Panel {
         if (entries.some((e) => e.isIntersecting)) {
           this.lazyObserver?.disconnect();
           this.lazyObserver = null;
-          if ('requestIdleCallback' in window) {
-            this.idleCallbackId = (window as any).requestIdleCallback(
-              () => {
-                this.idleCallbackId = null;
-                this.triggerInit();
-              },
-              { timeout: 1000 },
-            );
-          } else {
-            this.idleCallbackId = setTimeout(() => {
-              this.idleCallbackId = null;
-              this.triggerInit();
-            }, 1000);
-          }
+          this.triggerInit();
         }
       },
       { threshold: 0.1 },
@@ -857,34 +842,8 @@ export class LiveNewsPanel extends Panel {
     this.destroyPlayer();
   }
 
-  private stopMuteSyncPolling(): void {
-    if (this.muteSyncInterval !== null) {
-      clearInterval(this.muteSyncInterval);
-      this.muteSyncInterval = null;
-    }
-  }
-
-  private startMuteSyncPolling(): void {
-    this.stopMuteSyncPolling();
-    this.muteSyncInterval = setInterval(
-      () => this.syncMuteStateFromPlayer(),
-      LiveNewsPanel.MUTE_SYNC_POLL_MS,
-    );
-  }
-
-  private syncMuteStateFromPlayer(): void {
-    if (this.useDesktopEmbedProxy || !this.player || !this.isPlayerReady) return;
-    const p = this.player as { getVolume?(): number; isMuted?(): boolean };
-    const muted = typeof p.isMuted === 'function' ? p.isMuted() : p.getVolume?.() === 0;
-    if (typeof muted === 'boolean' && muted !== this.isMuted) {
-      this.isMuted = muted;
-      this.updateMuteIcon();
-    }
-  }
-
   private destroyPlayer(): void {
     this.clearBotCheckTimeout();
-    this.stopMuteSyncPolling();
     if (this.player) {
       if (typeof this.player.destroy === 'function') this.player.destroy();
       this.player = null;
@@ -897,6 +856,11 @@ export class LiveNewsPanel extends Panel {
       this.nativeVideoElement = null;
     }
 
+    if (this.directIframe) {
+      this.directIframe.src = 'about:blank';
+      this.directIframe.remove();
+      this.directIframe = null;
+    }
     this.desktopEmbedIframe = null;
     this.desktopEmbedRenderToken += 1;
     this.isPlayerReady = false;
@@ -951,7 +915,13 @@ export class LiveNewsPanel extends Panel {
     this.isPlaying = !this.isPlaying;
     this.wasPlayingBeforeIdle = this.isPlaying;
     this.updateLiveIndicator();
-    if (this.isPlaying && !this.player && !this.desktopEmbedIframe && !this.nativeVideoElement) {
+    if (
+      this.isPlaying &&
+      !this.player &&
+      !this.directIframe &&
+      !this.desktopEmbedIframe &&
+      !this.nativeVideoElement
+    ) {
       this.ensurePlayerContainer();
       void this.initializePlayer();
     } else {
@@ -1204,6 +1174,11 @@ export class LiveNewsPanel extends Panel {
       return;
     }
 
+    if (this.directIframe && channel.videoId) {
+      this.renderDirectIframeEmbed(channel.videoId);
+      return;
+    }
+
     if (!this.player) {
       this.ensurePlayerContainer();
       void this.initializePlayer();
@@ -1335,6 +1310,60 @@ export class LiveNewsPanel extends Panel {
   private syncDesktopEmbedState(): void {
     this.postToEmbed({ type: this.isPlaying ? 'play' : 'pause' });
     this.postToEmbed({ type: this.isMuted ? 'mute' : 'unmute' });
+  }
+
+  private sendIframeCommand(func: string, args: unknown[] = []): void {
+    if (this.directIframe?.contentWindow) {
+      this.directIframe.contentWindow.postMessage(
+        JSON.stringify({ event: 'command', func, args }),
+        '*',
+      );
+    }
+  }
+
+  private renderDirectIframeEmbed(videoId: string): void {
+    this.clearBotCheckTimeout();
+    if (this.player) {
+      if (typeof this.player.destroy === 'function') this.player.destroy();
+      this.player = null;
+    }
+    if (this.nativeVideoElement) {
+      this.nativeVideoElement.pause();
+      this.nativeVideoElement.removeAttribute('src');
+      this.nativeVideoElement.load();
+      this.nativeVideoElement = null;
+    }
+
+    if (!this.playerContainer || !this.playerContainer.parentElement) {
+      this.ensurePlayerContainer();
+    }
+    if (!this.playerContainer) return;
+
+    this.playerContainer.innerHTML = '';
+    const iframe = document.createElement('iframe');
+    iframe.className = 'live-news-embed-frame';
+    iframe.id = `${this.playerElementId}-direct`;
+
+    const origin = this.youtubeOrigin
+      ? `&origin=${encodeURIComponent(this.youtubeOrigin)}`
+      : '';
+    const quality = getStreamQuality();
+    const vq = quality !== 'auto' ? `&vq=${quality}` : '';
+
+    iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=${this.isPlaying ? 1 : 0}&mute=${this.isMuted ? 1 : 0}&enablejsapi=1&playsinline=1&rel=0&modestbranding=1${origin}${vq}`;
+    iframe.title = `${this.activeChannel.name} live feed`;
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = '0';
+    iframe.allow =
+      'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+    iframe.allowFullscreen = true;
+    iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+
+    this.playerContainer.appendChild(iframe);
+    this.directIframe = iframe;
+    this.currentVideoId = videoId;
+    this.isPlayerReady = true;
   }
 
   private renderDesktopEmbed(force = false): void {
@@ -1499,56 +1528,13 @@ export class LiveNewsPanel extends Panel {
     }
   }
 
-  private static loadYouTubeApi(): Promise<void> {
-    if (LiveNewsPanel.apiPromise) return LiveNewsPanel.apiPromise;
-
-    LiveNewsPanel.apiPromise = new Promise((resolve) => {
-      if (window.YT?.Player) {
-        resolve();
-        return;
-      }
-
-      const existingScript = document.querySelector<HTMLScriptElement>(
-        'script[data-youtube-iframe-api="true"]',
-      );
-
-      if (existingScript) {
-        if (window.YT?.Player) {
-          resolve();
-          return;
-        }
-        const previousReady = window.onYouTubeIframeAPIReady;
-        window.onYouTubeIframeAPIReady = () => {
-          previousReady?.();
-          resolve();
-        };
-        return;
-      }
-
-      const previousReady = window.onYouTubeIframeAPIReady;
-      window.onYouTubeIframeAPIReady = () => {
-        previousReady?.();
-        resolve();
-      };
-
-      const script = document.createElement('script');
-      script.src = 'https://www.youtube.com/iframe_api';
-      script.async = true;
-      script.dataset.youtubeIframeApi = 'true';
-      script.onerror = () => {
-        console.warn('[LiveNews] YouTube IFrame API failed to load (ad blocker or network issue)');
-        LiveNewsPanel.apiPromise = null;
-        script.remove();
-        resolve();
-      };
-      document.head.appendChild(script);
-    });
-
-    return LiveNewsPanel.apiPromise;
-  }
-
   private async initializePlayer(): Promise<void> {
-    if (!this.useDesktopEmbedProxy && !this.nativeVideoElement && this.player) return;
+    if (
+      !this.useDesktopEmbedProxy &&
+      !this.nativeVideoElement &&
+      (this.player || this.directIframe)
+    )
+      return;
 
     const useFallbackVideo =
       this.activeChannel.useFallbackOnly || this.forceFallbackVideoForNextInit;
@@ -1570,70 +1556,9 @@ export class LiveNewsPanel extends Panel {
       return;
     }
 
-    await LiveNewsPanel.loadYouTubeApi();
-    if (this.player || !this.playerElement || !window.YT?.Player) return;
-
-    this.player = new window.YT!.Player(this.playerElement, {
-      host: 'https://www.youtube.com',
-      videoId: this.activeChannel.videoId,
-      playerVars: {
-        autoplay: this.isPlaying ? 1 : 0,
-        mute: this.isMuted ? 1 : 0,
-        rel: 0,
-        playsinline: 1,
-        enablejsapi: 1,
-        ...(this.youtubeOrigin
-          ? {
-            origin: this.youtubeOrigin,
-            widget_referrer: this.youtubeOrigin,
-          }
-          : {}),
-      },
-      events: {
-        onReady: () => {
-          this.clearBotCheckTimeout();
-          this.isPlayerReady = true;
-          this.currentVideoId = this.activeChannel.videoId || null;
-          const iframe = this.player?.getIframe?.();
-          if (iframe) iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-          const quality = getStreamQuality();
-          if (quality !== 'auto') this.player?.setPlaybackQuality?.(quality);
-          this.syncPlayerState();
-          this.startMuteSyncPolling();
-        },
-        onError: (event) => {
-          this.clearBotCheckTimeout();
-          const errorCode = Number(event?.data ?? 0);
-
-          // Retry once with known fallback stream.
-          if (
-            errorCode === 153 &&
-            this.activeChannel.fallbackVideoId &&
-            this.activeChannel.videoId !== this.activeChannel.fallbackVideoId
-          ) {
-            this.destroyPlayer();
-            this.forceFallbackVideoForNextInit = true;
-            this.ensurePlayerContainer();
-            void this.initializePlayer();
-            return;
-          }
-
-          // Desktop-specific last resort: switch to cloud bridge embed.
-          if (errorCode === 153 && isDesktopRuntime()) {
-            this.useDesktopEmbedProxy = true;
-            this.destroyPlayer();
-            this.ensurePlayerContainer();
-            this.renderDesktopEmbed(true);
-            return;
-          }
-
-          this.destroyPlayer();
-          this.showEmbedError(this.activeChannel, errorCode);
-        },
-      },
-    });
-
-    this.startBotCheckTimeout();
+    // Direct YouTube iframe embed: instant loading, zero external script dependencies,
+    // avoids CSP/WAF blocking and origin handshake stalls.
+    this.renderDirectIframeEmbed(this.activeChannel.videoId);
   }
 
   private startBotCheckTimeout(): void {
@@ -1641,6 +1566,10 @@ export class LiveNewsPanel extends Panel {
     this.botCheckTimeout = setTimeout(() => {
       this.botCheckTimeout = null;
       if (!this.isPlayerReady) {
+        if (!this.directIframe && this.activeChannel.videoId) {
+          this.renderDirectIframeEmbed(this.activeChannel.videoId);
+          return;
+        }
         this.showBotCheckPrompt();
       }
     }, LiveNewsPanel.BOT_CHECK_TIMEOUT_MS);
@@ -1741,6 +1670,47 @@ export class LiveNewsPanel extends Panel {
         this.renderDesktopEmbed(true);
       } else {
         this.syncDesktopEmbedState();
+      }
+      return;
+    }
+
+    if (this.directIframe) {
+      const videoId = this.activeChannel.videoId;
+      if (videoId && this.currentVideoId !== videoId) {
+        this.renderDirectIframeEmbed(videoId);
+      } else {
+        try {
+          const target = this.directIframe.contentWindow;
+          if (target) {
+            target.postMessage(
+              JSON.stringify({
+                event: 'command',
+                func: this.isPlaying ? 'playVideo' : 'pauseVideo',
+                args: [],
+              }),
+              '*',
+            );
+            target.postMessage(
+              JSON.stringify({
+                event: 'command',
+                func: this.isMuted ? 'mute' : 'unMute',
+                args: [],
+              }),
+              '*',
+            );
+          }
+        } catch {}
+      }
+      return;
+    }
+
+    if (this.directIframe) {
+      const videoId = this.activeChannel.videoId;
+      if (videoId && this.currentVideoId !== videoId) {
+        this.renderDirectIframeEmbed(videoId);
+      } else {
+        this.sendIframeCommand(this.isMuted ? 'mute' : 'unMute');
+        this.sendIframeCommand(this.isPlaying ? 'playVideo' : 'pauseVideo');
       }
       return;
     }
