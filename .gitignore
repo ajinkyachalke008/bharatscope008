@@ -30,3 +30,4 @@ src-tauri/sidecar/node/*
 # Compiled sebuf gateway bundle (built by scripts/build-sidecar-sebuf.mjs)
 api/[[][[].*.js
 .claudedocs/
+.env*

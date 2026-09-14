@@ -366,6 +366,86 @@ canvas,
   opacity: 1;
 }
 
+/* God's Eye View variant tab */
+.variant-option[data-variant="gods-eye"].active {
+  color: #c084fc;
+  background: rgba(192, 132, 252, 0.12);
+  pointer-events: auto;
+}
+
+.variant-option[data-variant="gods-eye"].active .variant-icon {
+  filter: grayscale(0%) drop-shadow(0 0 4px #c084fc);
+}
+
+.variant-option[data-variant="gods-eye"]:hover {
+  color: #c084fc;
+}
+
+/* God's Eye View iframe container */
+.gods-eye-container {
+  display: none;
+  position: relative;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  height: calc(100vh - 42px);
+  overflow: hidden;
+  background: #000;
+}
+
+.gods-eye-container iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  flex: 1;
+}
+
+.gods-eye-loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: radial-gradient(circle at center, #071018 0%, #020508 100%);
+  z-index: 10;
+  color: #38bdf8;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 13px;
+  letter-spacing: 2px;
+  pointer-events: none;
+}
+
+.gods-eye-spinner {
+  width: 52px;
+  height: 52px;
+  border: 3px solid rgba(56, 189, 248, 0.15);
+  border-top-color: #38bdf8;
+  border-right-color: #38bdf8;
+  border-radius: 50%;
+  animation: gods-eye-spin 1s linear infinite;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+}
+
+@keyframes gods-eye-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.gods-eye-loader-text {
+  text-transform: uppercase;
+  font-weight: 600;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+  animation: gods-eye-pulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes gods-eye-pulse {
+  from { opacity: 0.6; }
+  to { opacity: 1; }
+}
+
 .logo {
   font-weight: bold;
   font-size: 14px;

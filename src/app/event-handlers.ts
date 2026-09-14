@@ -216,6 +216,8 @@ export class EventHandlerManager implements AppModule {
       this.ctx.container.querySelectorAll<HTMLAnchorElement>('.variant-option').forEach((link) => {
         link.addEventListener('click', (e) => {
           const variant = link.dataset.variant;
+          // Skip God's Eye variant — it has its own handler in panel-layout.ts
+          if (variant === 'gods-eye') return;
           if (variant && variant !== SITE_VARIANT) {
             e.preventDefault();
             trackVariantSwitch(SITE_VARIANT, variant);

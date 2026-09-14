@@ -148,7 +148,16 @@ export class PanelLayoutManager implements AppModule {
               <span class="variant-label">Good News</span>
             </a>`
             : ''
-          }`;
+          }
+            <span class="variant-divider"></span>
+            <a href="#"
+               class="variant-option"
+               data-variant="gods-eye"
+               id="godsEyeTab"
+               title="God's Eye View — 3D Globe">
+              <span class="variant-icon">🛰️</span>
+              <span class="variant-label">God's Eye</span>
+            </a>`;
       })()}</div>
           ${BETA_MODE ? '<span class="beta-badge">BETA</span>' : ''}
           <a href="https://github.com/ajinkyachalke008/Bharatscope" target="_blank" rel="noopener" class="github-link" title="${t('header.viewOnGitHub')}">
@@ -206,9 +215,117 @@ export class PanelLayoutManager implements AppModule {
         </div>
         <div class="panels-grid" id="panelsGrid"></div>
       </div>
+      <div class="gods-eye-container" id="godsEyeContainer" style="display:none;">
+        <div class="gods-eye-loader" id="godsEyeLoader">
+          <div class="gods-eye-spinner"></div>
+          <div class="gods-eye-loader-text">CONNECTING TO GOD'S EYE SATELLITE NETWORK...</div>
+        </div>
+        <iframe id="godsEyeIframe" src="about:blank" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" allowfullscreen></iframe>
+      </div>
     `;
 
     this.createPanels();
+    this.setupGodsEyeTab();
+  }
+
+  /** Wire the God's Eye View tab to toggle between the main dashboard and the 3D globe iframe. */
+  private setupGodsEyeTab(): void {
+    const godsEyeTab = this.ctx.container.querySelector('#godsEyeTab') as HTMLAnchorElement | null;
+    const godsEyeContainer = this.ctx.container.querySelector('#godsEyeContainer') as HTMLElement | null;
+    const mainContent = this.ctx.container.querySelector('.main-content') as HTMLElement | null;
+    const iframe = this.ctx.container.querySelector('#godsEyeIframe') as HTMLIFrameElement | null;
+    const loader = this.ctx.container.querySelector('#godsEyeLoader') as HTMLElement | null;
+
+    if (!godsEyeTab || !godsEyeContainer || !mainContent || !iframe) return;
+
+    const GODS_EYE_URL = '/gods-eye/index.html';
+    let isGodsEyeActive = false;
+    let iframeLoaded = false;
+
+    // Load iframe and hide the HUD spinner once ready
+    const loadGodsEye = (): void => {
+      if (iframeLoaded) return;
+      iframeLoaded = true;
+      iframe.src = GODS_EYE_URL;
+      iframe.addEventListener('load', () => {
+        if (loader) {
+          loader.style.opacity = '0';
+          loader.style.transition = 'opacity 0.4s ease';
+          setTimeout(() => {
+            if (loader) loader.style.display = 'none';
+          }, 400);
+        }
+      }, { once: true });
+    };
+
+    // Preload God's Eye during browser idle time so it opens instantly when clicked
+    if ('requestIdleCallback' in window) {
+      (window as Window & { requestIdleCallback: (cb: () => void, opts?: { timeout: number }) => void }).requestIdleCallback(() => loadGodsEye(), { timeout: 2000 });
+    } else {
+      setTimeout(loadGodsEye, 1200);
+    }
+
+    // Remember which tab was originally active so we can restore it
+    const originalActiveTab = this.ctx.container.querySelector('.variant-option.active') as HTMLElement | null;
+
+    const deactivateGodsEye = (): void => {
+      if (!isGodsEyeActive) return;
+      isGodsEyeActive = false;
+
+      mainContent.style.display = '';
+      godsEyeContainer.style.display = 'none';
+
+      godsEyeTab.classList.remove('active');
+
+      if (originalActiveTab) {
+        originalActiveTab.classList.add('active');
+      }
+    };
+
+    godsEyeTab.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // If already active, clicking again toggles back to dashboard
+      if (isGodsEyeActive) {
+        deactivateGodsEye();
+        return;
+      }
+
+      isGodsEyeActive = true;
+
+      // Ensure iframe is loaded
+      loadGodsEye();
+
+      // Hide dashboard, show God's Eye
+      mainContent.style.display = 'none';
+      godsEyeContainer.style.display = 'flex';
+
+      // Update active tab styles
+      const allTabs = this.ctx.container.querySelectorAll('.variant-option');
+      allTabs.forEach((tab) => tab.classList.remove('active'));
+      godsEyeTab.classList.add('active');
+    });
+
+    // Clicking any other tab switches back to dashboard or switches variant
+    const otherTabs = this.ctx.container.querySelectorAll('.variant-option:not(#godsEyeTab)');
+    otherTabs.forEach((tab) => {
+      tab.addEventListener('click', (e) => {
+        if (!isGodsEyeActive) return;
+
+        const variant = (tab as HTMLElement).dataset.variant;
+        if (variant === SITE_VARIANT) {
+          // Returning to current dashboard variant (e.g. World)
+          e.preventDefault();
+          e.stopPropagation();
+          deactivateGodsEye();
+        } else {
+          // Switching to another variant (e.g. Tech, Finance)
+          deactivateGodsEye();
+          // Do not stopPropagation so event-handlers.ts can handle the variant switch
+        }
+      });
+    });
   }
 
   setBharatMonitorBranding(active: boolean): void {
