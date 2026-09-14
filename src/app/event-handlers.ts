@@ -354,6 +354,11 @@ export class EventHandlerManager implements AppModule {
         if (regionSelect.value !== state.view) {
           regionSelect.value = state.view;
         }
+        if (this.ctx.activeRegion !== state.view) {
+          this.ctx.activeRegion = state.view;
+          saveToStorage(STORAGE_KEYS.activeRegion, state.view);
+          this.callbacks.onRegionChange(state.view);
+        }
       }
     });
     update();
