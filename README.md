@@ -71,6 +71,7 @@
 </p>
 
 <p align="center">
+  <a href="#ℹ️-about-the-project">About</a> •
   <a href="#-quick-links--live-endpoints">Quick Links</a> •
   <a href="#-interface-showcase--gallery">Visual Showcase</a> •
   <a href="#-whats-new-the-gods-eye-integration">God's Eye 3D</a> •
@@ -85,6 +86,18 @@
 ---
 
 </div>
+
+## ℹ️ About The Project
+
+> [!TIP]
+> 🌐 **Live Preview Deployment**: **[https://bharatscope008.vercel.app](https://bharatscope008.vercel.app)**  
+> 🛰️ **3D Satellite Reconnaissance (God's Eye)**: **[https://bharatscope008.vercel.app/gods-eye/index.html](https://bharatscope008.vercel.app/gods-eye/index.html)**
+
+**BharatScope** is an enterprise-grade multi-domain situational awareness and defense intelligence platform. It bridges macro-geopolitical intelligence and micro-tactical reconnaissance into a single unified browser experience:
+- **Macro Situational Awareness**: Global 2D tactical maps powered by MapLibre GL and Deck.gl, streaming live ADS-B military flights, AIS maritime transponders, ACLED/UCDP conflict events, undersea fiber-optic cables, energy pipelines, and real-time news feeds.
+- **Orbital Reconnaissance**: Photorealistic 3D satellite globe powered by CesiumJS with live tactical HUD telemetry, MGRS precision coordinate lock, sun angles, and multi-spectrum reconnaissance scopes.
+
+---
 
 ## 🌐 Quick Links & Live Endpoints
 
