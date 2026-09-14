@@ -679,10 +679,10 @@ export class DataLoaderManager implements AppModule {
         const location = (item.locationName || '').toLowerCase();
         return indiaKeywords.some((k) => title.includes(k) || location.includes(k));
       });
-      // Prioritize India news but keep global context
+      // Prioritize India news but keep full global context intact
       const otherNews = collectedNews.filter((item) => !indiaNews.includes(item));
       collectedNews.length = 0;
-      collectedNews.push(...indiaNews.slice(0, 100), ...otherNews.slice(0, 50));
+      collectedNews.push(...indiaNews, ...otherNews);
     }
 
     this.ctx.allNews = collectedNews;
@@ -981,10 +981,7 @@ export class DataLoaderManager implements AppModule {
     tasks.push(
       (async () => {
         try {
-          let outages = await fetchInternetOutages();
-          if (this.ctx.activeRegion === 'india') {
-            outages = outages.filter(o => o.country === 'India' || (o.lon >= 68 && o.lon <= 97 && o.lat >= 6 && o.lat <= 36));
-          }
+          const outages = await fetchInternetOutages();
           this.ctx.intelligenceCache.outages = outages;
           ingestOutagesForCII(outages);
           signalAggregator.ingestOutages(outages);
@@ -1007,9 +1004,6 @@ export class DataLoaderManager implements AppModule {
     const protestsTask = (async (): Promise<SocialUnrestEvent[]> => {
       try {
         const protestData = await fetchProtestEvents();
-        if (this.ctx.activeRegion === 'india') {
-          protestData.events = protestData.events.filter(e => e.country === 'India' || (e.lon >= 68 && e.lon <= 97 && e.lat >= 6 && e.lat <= 36));
-        }
         this.ctx.intelligenceCache.protests = protestData;
         ingestProtests(protestData.events);
         ingestProtestsForCII(protestData.events);
@@ -1092,10 +1086,6 @@ export class DataLoaderManager implements AppModule {
             fetchMilitaryFlights(),
             fetchMilitaryVessels(),
           ]);
-          if (this.ctx.activeRegion === 'india') {
-            flightData.flights = flightData.flights.filter(f => f.lon >= 68 && f.lon <= 97 && f.lat >= 6 && f.lat <= 36);
-            vesselData.vessels = vesselData.vessels.filter(v => v.lon >= 68 && v.lon <= 97 && v.lat >= 6 && v.lat <= 36);
-          }
           this.ctx.intelligenceCache.military = {
             flights: flightData.flights,
             flightClusters: flightData.clusters,

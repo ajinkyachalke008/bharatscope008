@@ -5,7 +5,7 @@ import {
     DEFAULT_MAP_LAYERS,
     MOBILE_DEFAULT_MAP_LAYERS
 } from '@/config';
-import { loadFromStorage, saveToStorage, isMobileDevice, parseMapUrlState } from '@/utils';
+import { loadFromStorage, isMobileDevice, parseMapUrlState } from '@/utils';
 import type { MapLayers, PanelConfig, Monitor } from '@/types';
 import type { MapView } from '@/components/MapContainer';
 import type { AppContext } from './app-context';
@@ -44,11 +44,7 @@ export class AppStateInitializer {
         const disabledSources = new Set(loadFromStorage<string[]>(STORAGE_KEYS.disabledFeeds, []));
 
         let activeRegion = loadFromStorage<MapView>(STORAGE_KEYS.activeRegion, 'india');
-        if (activeRegion === 'global') {
-            activeRegion = 'india';
-            saveToStorage(STORAGE_KEYS.activeRegion, 'india');
-        }
-        if (initialUrlState.view && initialUrlState.view !== 'global') {
+        if (initialUrlState.view) {
             activeRegion = initialUrlState.view;
         }
 

@@ -421,6 +421,7 @@ export class DeckGLMap {
   constructor(container: HTMLElement, initialState: DeckMapState) {
     this.container = container;
     this.state = initialState;
+    this.state.activeRegion = initialState.view;
     this.hotspots = [...INTEL_HOTSPOTS];
 
     this.debouncedRebuildLayers = debounce(() => {
@@ -455,6 +456,17 @@ export class DeckGLMap {
     this.initMapLibre();
 
     this.maplibreMap?.on('load', () => {
+      if (this.state.view === 'india') {
+        const indiaBounds: [[number, number], [number, number]] = [
+          [68.1, 6.5],
+          [97.4, 35.5],
+        ];
+        this.maplibreMap?.setMaxBounds(indiaBounds);
+        this.maplibreMap?.setMinZoom(3.5);
+      } else {
+        this.maplibreMap?.setMaxBounds(null);
+        this.maplibreMap?.setMinZoom(1);
+      }
       this.rebuildTechHQSupercluster();
       this.rebuildDatacenterSupercluster();
       this.initDeck();
@@ -583,15 +595,10 @@ export class DeckGLMap {
 
   public fitToRegion(view: DeckMapView): void {
     if (!this.maplibreMap) return;
+    this.state.view = view;
+    this.state.activeRegion = view;
     const preset = VIEW_PRESETS[view];
     if (!preset) return;
-
-    this.maplibreMap.flyTo({
-      center: [preset.longitude, preset.latitude],
-      zoom: preset.zoom,
-      essential: true,
-      duration: 3000,
-    });
 
     if (view === 'india') {
       // Lock bounds to India [West, South, East, North]
@@ -605,6 +612,19 @@ export class DeckGLMap {
       this.maplibreMap.setMaxBounds(null);
       this.maplibreMap.setMinZoom(1);
     }
+
+    this.maplibreMap.flyTo({
+      center: [preset.longitude, preset.latitude],
+      zoom: preset.zoom,
+      essential: true,
+      duration: 2000,
+    });
+
+    const viewSelect = this.container.querySelector('.view-select') as HTMLSelectElement;
+    if (viewSelect) viewSelect.value = view;
+
+    this.render();
+    this.onStateChange?.(this.state);
   }
 
   private setupResizeObserver(): void {
@@ -4327,19 +4347,32 @@ export class DeckGLMap {
 
   public setView(view: DeckMapView): void {
     this.state.view = view;
+    this.state.activeRegion = view;
     const preset = VIEW_PRESETS[view];
 
-    if (this.maplibreMap) {
+    if (this.maplibreMap && preset) {
+      if (view === 'india') {
+        const indiaBounds: [[number, number], [number, number]] = [
+          [68.1, 6.5],
+          [97.4, 35.5],
+        ];
+        this.maplibreMap.setMaxBounds(indiaBounds);
+        this.maplibreMap.setMinZoom(3.5);
+      } else {
+        this.maplibreMap.setMaxBounds(null);
+        this.maplibreMap.setMinZoom(1);
+      }
       this.maplibreMap.flyTo({
         center: [preset.longitude, preset.latitude],
         zoom: preset.zoom,
-        duration: 1000,
+        duration: 1200,
       });
     }
 
     const viewSelect = this.container.querySelector('.view-select') as HTMLSelectElement;
     if (viewSelect) viewSelect.value = view;
 
+    this.render();
     this.onStateChange?.(this.state);
   }
 
