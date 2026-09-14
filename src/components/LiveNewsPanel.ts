@@ -55,28 +55,24 @@ export interface LiveChannel {
   useFallbackOnly?: boolean; // Skip auto-detection, always use fallback
 }
 
-// Full variant: World news channels (24/7 live streams)
+// Full variant: Indian news channels (24/7 live streams) — Hindi + English mix
+// Fallback IDs verified live on 2026-09-14
 const FULL_LIVE_CHANNELS: LiveChannel[] = [
-  { id: 'bloomberg', name: 'Bloomberg', handle: '@markets', fallbackVideoId: 'QB5BNdBFujE' },
-  { id: 'sky', name: 'SkyNews', handle: '@SkyNews', fallbackVideoId: 'xDWQ3LkccY8' },
-  { id: 'euronews', name: 'Euronews', handle: '@euronews', fallbackVideoId: 'pykpO5kQJ98' },
-  { id: 'dw', name: 'DW', handle: '@DWNews', fallbackVideoId: 'LuKwFajn37U' },
-  { id: 'cnbc', name: 'CNBC', handle: '@CNBC', fallbackVideoId: '9NyxcX3rhQs' },
-  { id: 'france24', name: 'France24', handle: '@France24_en', fallbackVideoId: 'HvZt-nh9sGg' },
-  {
-    id: 'alarabiya',
-    name: 'AlArabiya',
-    handle: '@AlArabiya',
-    fallbackVideoId: 'n7eQejkXbnM',
-    useFallbackOnly: true,
-  },
-  {
-    id: 'aljazeera',
-    name: 'AlJazeera',
-    handle: '@AlJazeeraEnglish',
-    fallbackVideoId: 'gCNeDWCI0vo',
-    useFallbackOnly: true,
-  },
+  { id: 'aaj-tak', name: 'Aaj Tak', handle: '@aajtak', fallbackVideoId: '8LXzghudyLA' },
+  { id: 'abp-news', name: 'ABP News', handle: '@ABPNews', fallbackVideoId: 'ubOIfNDeimA' },
+  { id: 'ndtv-india', name: 'NDTV India', handle: '@NDTVIndia', fallbackVideoId: '5xy3gHT66WE' },
+  { id: 'zee-news', name: 'Zee News', handle: '@zeenews', fallbackVideoId: 'g4EyETzyy40' },
+  { id: 'india-tv', name: 'India TV', handle: '@IndiaTV', fallbackVideoId: 'pIoTwiXgLdU' },
+  { id: 'news18-india', name: 'News18 India', handle: '@News18India', fallbackVideoId: 'HV-Lp-RTVl8' },
+  { id: 'republic-bharat', name: 'Republic Bharat', handle: '@RepublicBharat', fallbackVideoId: '7pdcIUKJJHQ' },
+  { id: 'ndtv', name: 'NDTV 24x7', handle: '@NDTV', fallbackVideoId: 'qPEoNHbCPQo' },
+  { id: 'india-today', name: 'India Today', handle: '@IndiaToday', fallbackVideoId: 'zXYHVg6NuH0' },
+  { id: 'republic-world', name: 'Republic TV', handle: '@RepublicWorld', fallbackVideoId: 'RCB6c2nWhC8' },
+  { id: 'wion', name: 'WION', handle: '@WION', fallbackVideoId: 'U7XCACq3HFg' },
+  { id: 'times-now', name: 'Times Now', handle: '@TimesNow', fallbackVideoId: 'DaWgCv-gbCQ' },
+  { id: 'tv9-bharatvarsh', name: 'TV9 Bharatvarsh', handle: '@TV9Bharatvarsh', fallbackVideoId: 'f7PxeU-PLN8' },
+  { id: 'sansad-tv', name: 'Sansad TV', handle: '@SansadTV', fallbackVideoId: 'MbEP8mEKpRc' },
+  { id: 'cnn-news18', name: 'CNN-News18', handle: '@CNNnews18', fallbackVideoId: 'iORM0QvcWVU' },
 ];
 
 // Tech variant: Tech & business channels
@@ -214,13 +210,13 @@ export const OPTIONAL_LIVE_CHANNELS: LiveChannel[] = [
     handle: '@NHKWORLDJAPAN',
     fallbackVideoId: 'f0lYkdA-Jto',
   },
-  { id: 'ndtv', name: 'NDTV', handle: '@NDTV', fallbackVideoId: 'pjE9ld6MX6I' },
-  { id: 'india-today', name: 'India Today', handle: '@IndiaToday', fallbackVideoId: 'chfyONPIxUY' },
+  { id: 'ndtv', name: 'NDTV', handle: '@NDTV', fallbackVideoId: 'qPEoNHbCPQo' },
+  { id: 'india-today', name: 'India Today', handle: '@IndiaToday', fallbackVideoId: 'zXYHVg6NuH0' },
   {
     id: 'republic-world',
     name: 'Republic World',
     handle: '@RepublicWorld',
-    fallbackVideoId: 'pm3_onlHnkw',
+    fallbackVideoId: 'RCB6c2nWhC8',
   },
   { id: 'kbs-news', name: 'KBS News', handle: '@newskbs', fallbackVideoId: 'JB4FHwxWNuA' },
   { id: 'ytn', name: 'YTN', handle: '@YTN', fallbackVideoId: 'snAxpDBRRiE' },
@@ -284,27 +280,27 @@ export const OPTIONAL_LIVE_CHANNELS: LiveChannel[] = [
   },
   // ─── India — English 24/7 Live ───
   { id: 'cnbc-tv18', name: 'CNBC-TV18', handle: '@CNBCTV18', fallbackVideoId: 'YkOBcfquEVQ' },
-  { id: 'cnn-news18', name: 'CNN-News18', handle: '@CNNnews18', fallbackVideoId: 'u_1TGerE-Lw' },
-  { id: 'times-now', name: 'Times Now', handle: '@TimesNow', fallbackVideoId: 'eYMQ0fy9uNA' },
+  { id: 'cnn-news18', name: 'CNN-News18', handle: '@CNNnews18', fallbackVideoId: 'iORM0QvcWVU' },
+  { id: 'times-now', name: 'Times Now', handle: '@TimesNow', fallbackVideoId: 'DaWgCv-gbCQ' },
   { id: 'mirror-now', name: 'Mirror Now', handle: '@MirrorNow', fallbackVideoId: 'j7JJoMGXJqg' },
   { id: 'firstpost', name: 'Firstpost', handle: '@firstpost', fallbackVideoId: 'JH3YgSPSqjk' },
   { id: 'dd-news', name: 'DD News', handle: '@DDNewsOfficial', fallbackVideoId: '4eVD2p87nE8' },
-  { id: 'sansad-tv', name: 'Sansad TV', handle: '@SansadTV', fallbackVideoId: 'bRbv3xbGhQ0' },
+  { id: 'sansad-tv', name: 'Sansad TV', handle: '@SansadTV', fallbackVideoId: 'MbEP8mEKpRc' },
   { id: 'et-now', name: 'ET Now', handle: '@ETNow', fallbackVideoId: 'gxUb6NMp-WY' },
   { id: 'theprint', name: 'ThePrint', handle: '@ThePrintIndia', fallbackVideoId: 'X1C8v1GQMWE' },
   { id: 'the-quint', name: 'The Quint', handle: '@TheQuint', fallbackVideoId: 'LnJJLIftJh4' },
   { id: 'dd-kisan', name: 'DD Kisan', handle: '@DDKisan', fallbackVideoId: '5a0vL8TqPPk' },
   { id: 'ani-news', name: 'ANI News', handle: '@ANI', fallbackVideoId: 'GCxCD17u--8' },
   // ─── India — Hindi 24/7 Live ───
-  { id: 'aaj-tak', name: 'Aaj Tak', handle: '@aajtak', fallbackVideoId: 'zQ7I-C5Ofvk' },
-  { id: 'abp-news', name: 'ABP News', handle: '@ABPNews', fallbackVideoId: 'jYn7B_oMnfk' },
-  { id: 'ndtv-india-hindi', name: 'NDTV India Hindi', handle: '@NDTVIndia', fallbackVideoId: 'sBgz9Bwt3Uo' },
-  { id: 'zee-news', name: 'Zee News', handle: '@zeenews', fallbackVideoId: '9Ujh-a4fJzs' },
-  { id: 'india-tv', name: 'India TV', handle: '@IndiaTV', fallbackVideoId: '-T0CRyVwueE' },
-  { id: 'news18-india', name: 'News18 India', handle: '@News18India', fallbackVideoId: '85_4mJkrFBk' },
-  { id: 'tv9-bharatvarsh', name: 'TV9 Bharatvarsh', handle: '@TV9Bharatvarsh', fallbackVideoId: 'ZhE2tKBq2fw' },
-  { id: 'news24-hindi', name: 'News24', handle: '@News24', fallbackVideoId: 'Ov_u0DWAOEY' },
-  { id: 'r-bharat', name: 'R Bharat', handle: '@RepublicBharat', fallbackVideoId: 'fEtc3W_LgWM' },
+  { id: 'aaj-tak', name: 'Aaj Tak', handle: '@aajtak', fallbackVideoId: '8LXzghudyLA' },
+  { id: 'abp-news', name: 'ABP News', handle: '@ABPNews', fallbackVideoId: 'ubOIfNDeimA' },
+  { id: 'ndtv-india', name: 'NDTV India', handle: '@NDTVIndia', fallbackVideoId: '5xy3gHT66WE' },
+  { id: 'zee-news', name: 'Zee News', handle: '@zeenews', fallbackVideoId: 'g4EyETzyy40' },
+  { id: 'india-tv', name: 'India TV', handle: '@IndiaTV', fallbackVideoId: 'pIoTwiXgLdU' },
+  { id: 'news18-india', name: 'News18 India', handle: '@News18India', fallbackVideoId: 'HV-Lp-RTVl8' },
+  { id: 'tv9-bharatvarsh', name: 'TV9 Bharatvarsh', handle: '@TV9Bharatvarsh', fallbackVideoId: 'f7PxeU-PLN8' },
+  { id: 'news24-hindi', name: 'News24', handle: '@News24', fallbackVideoId: 'Ereua4kbGWI' },
+  { id: 'republic-bharat', name: 'Republic Bharat', handle: '@RepublicBharat', fallbackVideoId: '7pdcIUKJJHQ' },
   // ─── India — Regional Language Live ───
   // Tamil
   { id: 'sun-news', name: 'Sun News', handle: '@SunNews', fallbackVideoId: 'RqPn8hqW_CA' },
@@ -476,13 +472,13 @@ export const OPTIONAL_CHANNEL_REGIONS: { key: string; labelKey: string; channelI
     channelIds: [
       'aaj-tak',
       'abp-news',
-      'ndtv-india-hindi',
+      'ndtv-india',
       'zee-news',
       'india-tv',
       'news18-india',
       'tv9-bharatvarsh',
       'news24-hindi',
-      'r-bharat',
+      'republic-bharat',
       'dd-kisan',
     ],
   },
@@ -574,8 +570,12 @@ export function loadChannelsFromStorage(): LiveChannel[] {
   const order = stored.order?.length ? stored.order : DEFAULT_STORED.order;
   const channelMap = new Map<string, LiveChannel>();
   for (const c of FULL_LIVE_CHANNELS) channelMap.set(c.id, { ...c });
-  for (const c of TECH_LIVE_CHANNELS) channelMap.set(c.id, { ...c });
-  for (const c of OPTIONAL_LIVE_CHANNELS) channelMap.set(c.id, { ...c });
+  for (const c of TECH_LIVE_CHANNELS) {
+    if (!channelMap.has(c.id)) channelMap.set(c.id, { ...c });
+  }
+  for (const c of OPTIONAL_LIVE_CHANNELS) {
+    if (!channelMap.has(c.id)) channelMap.set(c.id, { ...c });
+  }
   for (const c of stored.custom ?? []) {
     if (c.id && c.handle) channelMap.set(c.id, { ...c });
   }
@@ -584,11 +584,21 @@ export function loadChannelsFromStorage(): LiveChannel[] {
     const ch = channelMap.get(id);
     if (ch) ch.name = name;
   }
-  const result: LiveChannel[] = [];
+  let result: LiveChannel[] = [];
   for (const id of order) {
     const ch = channelMap.get(id);
     if (ch) result.push(ch);
   }
+
+  // Automatic reset/migration if user has old cached order without Indian channels
+  const hasIndianChannel = result.some((c) =>
+    FULL_LIVE_CHANNELS.some((f) => f.id === c.id),
+  );
+  if (SITE_VARIANT !== 'tech' && SITE_VARIANT !== 'happy' && (!hasIndianChannel || result.length < 3)) {
+    result = FULL_LIVE_CHANNELS.map((c) => ({ ...c }));
+    saveChannelsToStorage(result);
+  }
+
   return result;
 }
 

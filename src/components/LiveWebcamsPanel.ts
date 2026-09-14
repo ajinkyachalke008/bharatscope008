@@ -4,8 +4,9 @@ import { escapeHtml } from '@/utils/sanitize';
 import { t } from '../services/i18n';
 import { trackWebcamSelected, trackWebcamRegionFiltered } from '@/services/analytics';
 import { getStreamQuality, subscribeStreamQualityChange } from '@/services/ai-flow-settings';
+import { fetchLiveVideoInfo } from '@/services/live-news';
 
-type WebcamRegion = 'middle-east' | 'europe' | 'asia' | 'americas';
+type WebcamRegion = 'india' | 'middle-east' | 'europe' | 'asia' | 'americas';
 
 interface WebcamFeed {
   id: string;
@@ -19,6 +20,87 @@ interface WebcamFeed {
 // Verified YouTube live stream IDs — validated Feb 2026 via title cross-check.
 // IDs may rotate; update when stale.
 const WEBCAM_FEEDS: WebcamFeed[] = [
+  // ─── India — 24/7 Live Broadcast & City Feeds ───
+  {
+    id: 'delhi-aajtak',
+    city: 'Delhi (Aaj Tak)',
+    country: 'India',
+    region: 'india',
+    channelHandle: '@aajtak',
+    fallbackVideoId: '8LXzghudyLA',
+  },
+  {
+    id: 'mumbai-abp',
+    city: 'Mumbai (ABP News)',
+    country: 'India',
+    region: 'india',
+    channelHandle: '@ABPNews',
+    fallbackVideoId: 'ubOIfNDeimA',
+  },
+  {
+    id: 'delhi-ndtv',
+    city: 'Delhi (NDTV)',
+    country: 'India',
+    region: 'india',
+    channelHandle: '@NDTV',
+    fallbackVideoId: 'qPEoNHbCPQo',
+  },
+  {
+    id: 'india-indiatv',
+    city: 'India (India TV)',
+    country: 'India',
+    region: 'india',
+    channelHandle: '@IndiaTV',
+    fallbackVideoId: 'pIoTwiXgLdU',
+  },
+  {
+    id: 'india-zeenews',
+    city: 'India (Zee News)',
+    country: 'India',
+    region: 'india',
+    channelHandle: '@zeenews',
+    fallbackVideoId: 'g4EyETzyy40',
+  },
+  {
+    id: 'india-news18',
+    city: 'India (News18)',
+    country: 'India',
+    region: 'india',
+    channelHandle: '@News18India',
+    fallbackVideoId: 'HV-Lp-RTVl8',
+  },
+  {
+    id: 'india-ndtv-hindi',
+    city: 'Delhi (NDTV India)',
+    country: 'India',
+    region: 'india',
+    channelHandle: '@NDTVIndia',
+    fallbackVideoId: '5xy3gHT66WE',
+  },
+  {
+    id: 'india-republic',
+    city: 'Noida (Republic)',
+    country: 'India',
+    region: 'india',
+    channelHandle: '@RepublicWorld',
+    fallbackVideoId: 'RCB6c2nWhC8',
+  },
+  {
+    id: 'india-wion',
+    city: 'India (WION)',
+    country: 'India',
+    region: 'india',
+    channelHandle: '@WION',
+    fallbackVideoId: 'U7XCACq3HFg',
+  },
+  {
+    id: 'india-timesnow',
+    city: 'India (Times Now)',
+    country: 'India',
+    region: 'india',
+    channelHandle: '@TimesNow',
+    fallbackVideoId: 'DaWgCv-gbCQ',
+  },
   // Middle East — Jerusalem & Tehran adjacent (conflict hotspots)
   {
     id: 'jerusalem',
@@ -187,6 +269,7 @@ export class LiveWebcamsPanel extends Panel {
   private boundVisibilityHandler!: () => void;
   private readonly IDLE_PAUSE_MS = 5 * 60 * 1000;
   private isIdle = false;
+  private resolvedVideoIds = new Map<string, string>();
 
   constructor() {
     super({ id: 'live-webcams', title: t('panels.liveWebcams') });
@@ -195,7 +278,25 @@ export class LiveWebcamsPanel extends Panel {
     this.setupIntersectionObserver();
     this.setupIdleDetection();
     subscribeStreamQualityChange(() => this.render());
+    void this.resolveLiveFeeds();
     this.render();
+  }
+
+  private async resolveLiveFeeds(): Promise<void> {
+    for (const feed of WEBCAM_FEEDS) {
+      if (feed.channelHandle) {
+        try {
+          const info = await fetchLiveVideoInfo(feed.channelHandle);
+          if (info.videoId && info.videoId !== feed.fallbackVideoId) {
+            this.resolvedVideoIds.set(feed.id, info.videoId);
+          }
+        } catch {}
+      }
+    }
+  }
+
+  private getFeedVideoId(feed: WebcamFeed): string {
+    return this.resolvedVideoIds.get(feed.id) || feed.fallbackVideoId;
   }
 
   private get filteredFeeds(): WebcamFeed[] {
@@ -203,7 +304,7 @@ export class LiveWebcamsPanel extends Panel {
     return WEBCAM_FEEDS.filter((f) => f.region === this.regionFilter);
   }
 
-  private static readonly ALL_GRID_IDS = ['jerusalem', 'kyiv', 'tokyo', 'taipei'];
+  private static readonly ALL_GRID_IDS = ['delhi-aajtak', 'mumbai-abp', 'delhi-ndtv', 'india-indiatv'];
 
   private get gridFeeds(): WebcamFeed[] {
     if (this.regionFilter === 'all') {
@@ -223,6 +324,7 @@ export class LiveWebcamsPanel extends Panel {
 
     const regions: { key: RegionFilter; label: string }[] = [
       { key: 'all', label: t('components.webcams.regions.all') },
+      { key: 'india', label: '🇮🇳 India' },
       { key: 'middle-east', label: t('components.webcams.regions.mideast') },
       { key: 'europe', label: t('components.webcams.regions.europe') },
       { key: 'americas', label: t('components.webcams.regions.americas') },
@@ -311,7 +413,7 @@ export class LiveWebcamsPanel extends Panel {
   private createIframe(feed: WebcamFeed): HTMLIFrameElement {
     const iframe = document.createElement('iframe');
     iframe.className = 'webcam-iframe';
-    iframe.src = this.buildEmbedUrl(feed.fallbackVideoId);
+    iframe.src = this.buildEmbedUrl(this.getFeedVideoId(feed));
     iframe.title = `${feed.city} live webcam`;
     iframe.allow =
       'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
