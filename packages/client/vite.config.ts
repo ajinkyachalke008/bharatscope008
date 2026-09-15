@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@worldmonitor/shared': path.resolve(__dirname, '../shared/src'),
+      '@worldmonitor/shared': path.resolve(__dirname, './src/shared'),
     },
   },
   server: {

@@ -24,7 +24,10 @@
                 "./src/*"
             ],
             "@worldmonitor/shared": [
-                "../shared/src"
+                "./src/shared"
+            ],
+            "@worldmonitor/shared/*": [
+                "./src/shared/*"
             ]
         },
         "types": [
