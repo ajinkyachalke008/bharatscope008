@@ -5,6 +5,8 @@ import { mkdir, readFile, writeFile } from 'fs/promises';
 import { brotliCompress } from 'zlib';
 import { promisify } from 'util';
 import pkg from './package.json';
+import cesium from 'vite-plugin-cesium';
+import { localProviderPlugins } from './server/gods-eye/providers/local.js';
 
 const isE2E = process.env.VITE_E2E === '1';
 const isDesktopBuild = process.env.VITE_DESKTOP_RUNTIME === '1';
@@ -945,11 +947,32 @@ function youtubeLivePlugin(): Plugin {
   };
 }
 
+function godsEyeStaticPlugin(): Plugin {
+  return {
+    name: 'gods-eye-static-redirect',
+    configureServer(server) {
+      server.middlewares.use((req, _res, next) => {
+        if (req.url) {
+          if (req.url.startsWith('/models/')) {
+            req.url = '/gods-eye' + req.url;
+          } else if (req.url.startsWith('/cesium/')) {
+            req.url = '/gods-eye' + req.url;
+          }
+        }
+        next();
+      });
+    },
+  };
+}
+
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
   plugins: [
+    cesium(),
+    godsEyeStaticPlugin(),
+    ...localProviderPlugins(),
     htmlVariantPlugin(),
     polymarketPlugin(),
     rssProxyPlugin(),
@@ -1097,6 +1120,7 @@ export default defineConfig({
     }),
   ],
   resolve: {
+    preserveSymlinks: true,
     alias: {
       '@': resolve(__dirname, 'src'),
       child_process: resolve(__dirname, 'src/shims/child-process.ts'),
@@ -1107,7 +1131,16 @@ export default defineConfig({
       ),
     },
   },
+  optimizeDeps: {
+    esbuildOptions: {
+      target: 'esnext',
+      supported: {
+        'top-level-await': true,
+      },
+    },
+  },
   build: {
+    target: 'esnext',
     // Geospatial bundles (maplibre/deck) are expected to be large even when split.
     // Raise warning threshold to reduce noisy false alarms in CI.
     chunkSizeWarningLimit: 1200,
@@ -1181,7 +1214,11 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: !isE2E,
+    open: false,
+    fs: {
+      strict: false,
+      allow: ['..'],
+    },
     hmr: isE2E ? false : undefined,
     watch: {
       ignored: ['**/test-results/**', '**/playwright-report/**', '**/.playwright-mcp/**'],
