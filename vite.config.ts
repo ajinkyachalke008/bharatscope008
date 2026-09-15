@@ -966,6 +966,7 @@ function godsEyeStaticPlugin(): Plugin {
 }
 
 export default defineConfig({
+  root: __dirname,
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
@@ -1014,7 +1015,8 @@ export default defineConfig({
 
       workbox: {
         globPatterns: ['**/*.{js,css,ico,png,svg,woff2}'],
-        globIgnores: ['**/ml*.js', '**/onnx*.wasm', '**/locale-*.js', '**/gods-eye/**'],
+        globIgnores: ['**/ml*.js', '**/onnx*.wasm', '**/locale-*.js', '**/gods-eye/**', '**/cesium/**', '**/models/**'],
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
         navigateFallback: null,
         skipWaiting: true,
         clientsClaim: true,

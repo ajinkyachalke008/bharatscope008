@@ -1,61 +1,22 @@
-import { GODS_EYE_TEMPLATES_MARKUP } from '@/gods-eye/ui/templatesMarkup';
-import '@/gods-eye/style.css';
-
 export class GodsEyePanel {
   private container: HTMLElement;
-  private isInitialized = false;
-  private isLoading = false;
-  private app: any = null;
+  private iframe: HTMLIFrameElement | null = null;
 
   constructor(container: HTMLElement) {
     this.container = container;
   }
 
-  async init(): Promise<void> {
-    if (this.isInitialized || this.isLoading) return;
-    this.isLoading = true;
-
-    // Inject God's Eye component markup
-    this.container.innerHTML = GODS_EYE_TEMPLATES_MARKUP;
-
-    try {
-      // @ts-expect-error - JavaScript module without types
-      const { createStandaloneApplication } = await import('@/gods-eye/standalone/application.js');
-
-      this.app = createStandaloneApplication({
-        googleApiKey: (import.meta as any).env.GOOGLE_MAPS_API_KEY,
-        cesiumToken: (import.meta as any).env.CESIUM_ION_TOKEN,
-        allowQaRegistration: (import.meta as any).env.DEV,
-      });
-
-      await this.app.start();
-      this.isInitialized = true;
-    } catch (error) {
-      console.error("God's Eye View initialization failed:", error);
-      const loaderStatus = this.container.querySelector('#loading-screen .loader-status') as HTMLElement | null;
-      if (loaderStatus) {
-        loaderStatus.textContent = `Error: ${error instanceof Error ? error.message : String(error)}`;
-        loaderStatus.style.color = '#ff4444';
-      }
-    } finally {
-      this.isLoading = false;
-    }
+  init(): void {
+    this.iframe = this.container.querySelector('iframe');
   }
 
   show(): void {
     this.container.style.display = 'block';
-    if (!this.isInitialized && !this.isLoading) {
-      this.init();
-      return;
+    if (!this.iframe) {
+      this.iframe = this.container.querySelector('iframe');
     }
-
-    // Trigger Cesium viewer resize and repaint once visible
-    const gev = (window as any).__godsEyeView;
-    if (gev?.viewer && !gev.viewer.isDestroyed()) {
-      gev.viewer.resize();
-      if (gev.requestRender) {
-        gev.requestRender();
-      }
+    if (this.iframe && (!this.iframe.src || this.iframe.src === 'about:blank')) {
+      this.iframe.src = '/gods-eye/index.html';
     }
   }
 
@@ -64,12 +25,10 @@ export class GodsEyePanel {
   }
 
   destroy(): void {
-    if (this.app?.destroy) {
-      this.app.destroy().catch(console.error);
+    if (this.iframe) {
+      this.iframe.src = 'about:blank';
     }
-    this.isInitialized = false;
-    this.isLoading = false;
-    this.app = null;
-    this.container.innerHTML = '';
+    this.container.style.display = 'none';
   }
 }
+
