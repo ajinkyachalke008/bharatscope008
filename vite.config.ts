@@ -966,7 +966,6 @@ function godsEyeStaticPlugin(): Plugin {
 }
 
 export default defineConfig({
-  root: __dirname,
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
@@ -1161,9 +1160,9 @@ export default defineConfig({
         warn(warning);
       },
       input: {
-        main: resolve(__dirname, 'index.html'),
-        settings: resolve(__dirname, 'settings.html'),
-        liveChannels: resolve(__dirname, 'live-channels.html'),
+        main: resolve(process.cwd(), 'index.html'),
+        settings: resolve(process.cwd(), 'settings.html'),
+        liveChannels: resolve(process.cwd(), 'live-channels.html'),
       },
       output: {
         manualChunks(id) {
